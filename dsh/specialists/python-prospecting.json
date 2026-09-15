@@ -1,0 +1,20 @@
+{
+  "id": "python-prospecting",
+  "domain": "coding",
+  "stack": ["Python", "data pipelines", "web scraping"],
+  "required_skills": [
+    ".github/skills/scraping-pipeline/SKILL.md",
+    ".github/skills/testing-plan/SKILL.md",
+    ".github/skills/trace-eval-logging/SKILL.md",
+    ".github/skills/skill-router/SKILL.md",
+    ".github/skills/project-memory/SKILL.md"
+  ],
+  "defaults": {
+    "project_shape": "python-data-or-prospecting-pipeline",
+    "source_boundary": "project-defined-python-sources",
+    "verification": ["unit-tests", "fixture-tests", "dry-run-before-live-side-effects"],
+    "memory": "project-local"
+  },
+  "excluded_domains": ["sales", "marketing", "seo", "hr", "tax", "administration"],
+  "routing_note": "Use this preset for Python data collection, enrichment, recovery, and prospecting pipeline work. Sending and commercial decisions remain outside the coding specialist."
+}

@@ -1,8 +1,8 @@
 {
   "name": "project-harness",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "AI-assisted project harness with infer-before-implement discovery, engineering defaults, and deterministic execution controls.",
-  "main": "scripts/harness-init.js",
+  "main": "dsh/index.js",
   "type": "module",
   "dsh": {
     "bundle": {
