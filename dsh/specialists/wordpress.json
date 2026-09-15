@@ -1,0 +1,19 @@
+{
+  "id": "wordpress-coding",
+  "domain": "coding",
+  "stack": ["PHP", "WordPress APIs"],
+  "required_skills": [
+    ".github/skills/wordpress-way.md",
+    ".github/skills/wordpress-plugin/SKILL.md",
+    ".github/skills/skill-router/SKILL.md",
+    ".github/skills/project-memory/SKILL.md"
+  ],
+  "defaults": {
+    "project_shape": "wordpress-plugin-or-theme",
+    "source_boundary": "src/<project-slug>/",
+    "verification": ["php-syntax", "wordpress-conventions", "automated-tests"],
+    "memory": "project-local"
+  },
+  "excluded_domains": ["sales", "marketing", "seo", "analytics", "hr", "tax", "administration"],
+  "routing_note": "Use this preset for WordPress coding work only. Other business activities require a separate harness family."
+}

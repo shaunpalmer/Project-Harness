@@ -18,3 +18,11 @@ test('DSH adapter is read-only and exposes the compact resume tool', () => {
   assert.match(adapter, /read-only/);
   assert.doesNotMatch(adapter, /execFile|spawn|writeFile|rmSync|git /);
 });
+
+test('WordPress specialist preset is present and keeps non-coding domains separate', () => {
+  const preset = JSON.parse(fs.readFileSync(path.join(ROOT, 'dsh', 'specialists', 'wordpress.json'), 'utf8'));
+  assert.equal(preset.id, 'wordpress-coding');
+  assert.ok(preset.required_skills.includes('.github/skills/wordpress-plugin/SKILL.md'));
+  assert.ok(preset.excluded_domains.includes('sales'));
+  assert.ok(preset.excluded_domains.includes('seo'));
+});

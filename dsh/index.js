@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import Schema from '@deepseek-ai/schemastery';
 import { defineTool } from '@deepseek-ai/dsh-tools';
 
@@ -9,6 +10,8 @@ export const inject = ['tools'];
 export const Config = Schema.object({
   projectRoot: Schema.string().default(process.env.PROJECT_HARNESS_ROOT ?? process.cwd()),
 });
+
+const PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
 function readText(root, relativePath) {
   const filePath = path.join(root, relativePath);
@@ -50,6 +53,40 @@ function resumeProject(projectRoot) {
   }, null, 2);
 }
 
+function specialistFor(projectRoot) {
+  const root = path.resolve(projectRoot);
+  const topLevel = fs.existsSync(root) ? fs.readdirSync(root) : [];
+  const composer = readText(root, 'composer.json') ?? '';
+  const packageJson = readText(root, 'package.json') ?? '';
+  const hasWordPressDirectory = topLevel.includes('wp-content') || topLevel.includes('wp-admin');
+  const hasWordPressConfig = topLevel.includes('wp-config.php') || /wordpress/i.test(composer);
+  const phpFiles = topLevel.filter((entry) => entry.endsWith('.php')).slice(0, 20);
+  const hasPluginHeader = phpFiles.some((entry) => /Plugin Name:/i.test(readText(root, entry) ?? ''));
+  const hasWordPressDependency = /wordpress/i.test(`${composer}\n${packageJson}`);
+
+  if (hasPluginHeader || hasWordPressConfig || hasWordPressDirectory || hasWordPressDependency) {
+    const presetPath = path.join(PACKAGE_ROOT, 'dsh', 'specialists', 'wordpress.json');
+    const preset = JSON.parse(fs.readFileSync(presetPath, 'utf8'));
+    return {
+      specialist: preset.id,
+      confidence: hasPluginHeader || hasWordPressConfig ? 'high' : 'medium',
+      evidence: {
+        plugin_header: hasPluginHeader,
+        wordpress_config_or_dependency: hasWordPressConfig || hasWordPressDependency,
+        wordpress_directory: hasWordPressDirectory,
+      },
+      preset,
+    };
+  }
+
+  return {
+    specialist: null,
+    confidence: 'none',
+    evidence: {},
+    message: 'No installed Project Harness specialist matched this workspace yet.',
+  };
+}
+
 export function apply(ctx, config) {
   ctx.tools.register(defineTool({
     name: 'project_harness_resume',
@@ -61,6 +98,19 @@ export function apply(ctx, config) {
     },
     async execute() {
       return resumeProject(config.projectRoot);
+    },
+  }));
+
+  ctx.tools.register(defineTool({
+    name: 'project_harness_select_specialist',
+    description: 'Select a Project Harness specialist from workspace evidence. Currently routes WordPress coding projects only.',
+    parameters: {},
+    output: {
+      schema: { type: 'string' },
+      render: (_args, value) => [{ type: 'text', text: value }],
+    },
+    async execute() {
+      return JSON.stringify(specialistFor(config.projectRoot), null, 2);
     },
   }));
 }
