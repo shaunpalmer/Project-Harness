@@ -4,6 +4,16 @@
   "description": "AI-assisted project harness with infer-before-implement discovery, engineering defaults, and deterministic execution controls.",
   "main": "scripts/harness-init.js",
   "type": "module",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "*",
+    "@deepseek-ai/dsh-tools": "*",
+    "@deepseek-ai/schemastery": "*"
+  },
   "scripts": {
     "setup": "node scripts/harness-init.js",
     "lock": "node scripts/lock-project.js lock",

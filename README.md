@@ -144,6 +144,12 @@ The reference experience is a substantial brief followed by at most a small numb
 | `.harness/state/checkpoints/` | Generated factual handoffs |
 | Git | Exact code history |
 
+## DeepSeek Harness bundle
+
+Project Harness can be installed into a DeepSeek Harness profile as a bundle. The first bundle capability is the read-only `project_harness_resume` tool, which retrieves compact project memory and discovery status from the selected workspace.
+
+See `docs/DSH-INTEGRATION.md` for installation and the boundary between DSH runtime composition and Project Harness project control.
+
 ## Supported vs legacy controls
 
 Use `project-control.js`, `lock-project.js`, `project-handoff.js`, `vcs-control.js`, generated `project-ready.mjs`, tests, and GitHub checks as the supported control path.

@@ -1,0 +1,3 @@
+- insert:
+    - id: project-harness
+      name: project-harness/dsh/index.js
