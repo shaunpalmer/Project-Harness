@@ -18,11 +18,11 @@ A default may be overridden by evidence. A deviation that materially changes arc
 
 Routine engineering question budget: **0**.
 
-The agent must not ask Shaun to choose ordinary language syntax, naming, loop form, helper boundaries, file layout, OOP versus procedural style, test organisation, lint rules, or an ecosystem's established conventions.
+The agent must not ask the user to choose ordinary language syntax, naming, loop form, helper boundaries, file layout, OOP versus procedural style, test organisation, lint rules, or an ecosystem's established conventions.
 
 For genuinely consequential ambiguity, aim for **0-2 compact questions for the whole project**, not a stream of implementation questions. Before asking, inspect the repository, runtime, relevant skills, accepted decisions, and run the smallest bounded proof that could resolve the uncertainty.
 
-A question is justified only when the missing answer belongs to Shaun under the Decision Rights Contract or cannot be established safely from evidence.
+A question is justified only when the missing answer belongs to the user under the Decision Rights Contract or cannot be established safely from evidence.
 
 ## Language and runtime defaults
 
@@ -84,7 +84,7 @@ Use the ecosystem's standard before personal preference.
 - Bash: shell-safe quoting, `set -euo pipefail` where appropriate, and ShellCheck-compatible style.
 - PowerShell: approved verb-noun functions, explicit parameters, `$ErrorActionPreference`/error handling appropriate to the script's risk.
 
-Never ask Shaun "camelCase or snake_case?" when the ecosystem has already answered it.
+Never ask the user "camelCase or snake_case?" when the ecosystem has already answered it.
 
 ## Dependency policy
 

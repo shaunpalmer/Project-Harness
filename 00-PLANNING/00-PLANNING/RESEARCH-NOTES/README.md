@@ -10,7 +10,7 @@ The AI’s job is not to obey everything in this folder.
 
 The AI’s job is to process it.
 
-Use this folder when Shaun is still working through a problem and has not yet decided the final architecture, stack, database, workflow, or implementation approach.
+Use this folder when the user is still working through a problem and has not yet decided the final architecture, stack, database, workflow, or implementation approach.
 
 ---
 
@@ -83,12 +83,12 @@ When reading this folder, the AI must classify each relevant item as one of:
 
 | Type                 | Meaning                                                                         |
 | -------------------- | ------------------------------------------------------------------------------- |
-| `CONFIRMED_DECISION` | A clear decision Shaun has deliberately approved                                |
+| `CONFIRMED_DECISION` | A clear decision the user has deliberately approved                                |
 | `RESEARCH_NOTE`      | Useful information, but not a decision                                          |
 | `OPTION`             | A possible approach under consideration                                         |
 | `ASSUMPTION`         | Something believed to be true but not confirmed                                 |
 | `RISK`               | Something that could cause failure, delay, cost, confusion, or maintenance pain |
-| `OPEN_QUESTION`      | Something that needs Shaun or further investigation                             |
+| `OPEN_QUESTION`      | Something that needs the user or further investigation                             |
 | `REJECTED_IDEA`      | Something considered but not chosen                                             |
 | `CONFLICT`           | Something that disagrees with another note, file, or decision                   |
 | `EVIDENCE`           | A fact, example, test result, source, or observation that supports a decision   |
@@ -115,14 +115,14 @@ When this folder contains material relevant to the project, the agent must use t
 3. **Compare**
 
    * Find contradictions, overlaps, trade-offs, missing context, hidden dependencies, and duplicated ideas.
-   * Compare options against Shaun’s known stack, project type, maintainability, cost, and first useful build slice.
+   * Compare options against the user's known stack, project type, maintainability, cost, and first useful build slice.
 
 4. **Resolve**
 
    * Decide whether the issue is:
 
      * `SAFE_TO_RESOLVE`
-     * `NEEDS_SHAUN`
+     * `NEEDS_USER`
      * `NEEDS_ARCHITECTURE_UPDATE`
      * `NEEDS_TECH_SPEC_UPDATE`
      * `NEEDS_DATABASE_UPDATE`
@@ -150,10 +150,10 @@ A research note becomes a project decision only when:
 * It solves a real project problem.
 * It fits the project type.
 * It does not conflict with approved architecture.
-* It is maintainable by Shaun.
+* It is maintainable by the user.
 * It has acceptable complexity.
 * It supports the first useful build slice or a clearly planned future slice.
-* Shaun has confirmed it, or it is safely inferable from the approved planning docs.
+* the user has confirmed it, or it is safely inferable from the approved planning docs.
 * It is recorded in the correct source-of-truth file.
 
 Until then, it remains research.
@@ -164,7 +164,7 @@ Until then, it remains research.
 
 When research notes conflict with project files, use this priority:
 
-1. Confirmed instruction from Shaun
+1. Confirmed instruction from the user
 2. `ARCHITECTURE.md` for system structure
 3. `TECH-SPEC.md` for stack and tooling
 4. `DATABASE.md` for storage and schema
@@ -177,7 +177,7 @@ When research notes conflict with project files, use this priority:
 
 Important: quality architecture beats casual comments.
 
-If Shaun’s latest comment clearly changes the project, ask whether the architecture should be updated before implementing the change.
+If the user's latest comment clearly changes the project, ask whether the architecture should be updated before implementing the change.
 
 ---
 
@@ -238,7 +238,7 @@ State the recommended decision.
 
 ### Rationale
 
-Explain why this decision fits the project type, Shaun’s stack, architecture quality, maintainability, and first useful build slice.
+Explain why this decision fits the project type, the user's stack, architecture quality, maintainability, and first useful build slice.
 
 ### Updates Required
 

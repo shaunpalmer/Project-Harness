@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Move from intent to verified software without guessing unfamiliar architecture, handing routine engineering back to Shaun, or polishing forever.
+Move from intent to verified software without guessing unfamiliar architecture, handing routine engineering back to the user, or polishing forever.
 
 ## Core loop
 
@@ -34,7 +34,7 @@ Extract the desired outcome, user/business reason, first useful observable slice
 
 Inspect the repository, dependencies, existing architecture, accepted decisions, tests, external contracts, and relevant runtime evidence. Do not limit discovery to files that look familiar.
 
-When the domain is unfamiliar, investigate responsibilities and failure modes before selecting patterns. Ask Shaun only for information that cannot be safely inferred or proved and belongs to him under `docs/DECISION-RIGHTS.md`.
+When the domain is unfamiliar, investigate responsibilities and failure modes before selecting patterns. Ask the user only for information that cannot be safely inferred or proved and belongs to the user under `docs/DECISION-RIGHTS.md`.
 
 ## 3. System Model
 
@@ -56,7 +56,7 @@ Do not move beyond discovery until the model is evidence-backed. `UNKNOWN` means
 
 Infer a primary shape plus capabilities and confidence. Treat `PROJECT-TYPES.md` as preset evidence, not mandatory routing.
 
-Compare credible alternatives. Run the smallest bounded proof needed to resolve material uncertainty. Obtain Shaun's approval when architecture, language, framework, database, provider, cost, or security boundary materially changes. Then promote `HYPOTHESIS_STATUS` to `ACCEPTED`.
+Compare credible alternatives. Run the smallest bounded proof needed to resolve material uncertainty. Obtain the user's approval when architecture, language, framework, database, provider, cost, or security boundary materially changes. Then promote `HYPOTHESIS_STATUS` to `ACCEPTED`.
 
 ## 5. Planning
 
@@ -76,7 +76,7 @@ If proof fails, repair only the failed responsibility. Re-run proof. If evidence
 
 ## 9. Ship / stop
 
-Stop when the stated outcome, minimum slice, and proof condition pass. Do not add unrequested features. Merge, deployment, and release remain Shaun-owned actions unless explicitly authorised.
+Stop when the stated outcome, minimum slice, and proof condition pass. Do not add unrequested features. Merge, deployment, and release remain user-owned actions unless explicitly authorised.
 
 ## Readiness contract
 

@@ -7,7 +7,7 @@ A project may start as a natural-language outcome. Before architecture is treate
 - `00-PLANNING/SYSTEM-MODEL.md` — outcome, inputs, outputs, capabilities, data flow, persistent state, failure boundaries, invariants, unknowns, and evidence.
 - `00-PLANNING/ARCHITECTURE-HYPOTHESIS.md` — primary shape, capability composition, candidate patterns, assumptions, alternatives, bounded proof, proposed architecture, and approval evidence.
 
-Known project presets accelerate familiar work. Hybrid or unfamiliar work is composed from capabilities. Low confidence triggers evidence gathering or a bounded proof, not premature architecture and not routine questions to Shaun.
+Known project presets accelerate familiar work. Hybrid or unfamiliar work is composed from capabilities. Low confidence triggers evidence gathering or a bounded proof, not premature architecture and not routine questions to the user.
 
 ## Alignment Ladder
 
@@ -22,7 +22,7 @@ Every active task records eight evidence-backed gates. Valid answers are `YES`, 
 7. `debt_control` — reuse, security, testing, cost/rate controls, and future-change risks are addressed.
 8. `proof` — a concrete verification and stop condition exist.
 
-A `ready`, `in_progress`, or `completed` task requires `YES` on every gate, `MODEL_STATUS: CONFIRMED`, and `HYPOTHESIS_STATUS: ACCEPTED`. Each gate must occur exactly once with non-empty evidence. State uses `schema_version: 2`. A `blocked` task can record `NO` or `UNKNOWN`; changing its status cannot bypass unresolved gates. `UNKNOWN` triggers evidence gathering and asks Shaun only if the missing answer belongs to him under the Decision Rights Contract.
+A `ready`, `in_progress`, or `completed` task requires `YES` on every gate, `MODEL_STATUS: CONFIRMED`, and `HYPOTHESIS_STATUS: ACCEPTED`. Each gate must occur exactly once with non-empty evidence. State uses `schema_version: 2`. A `blocked` task can record `NO` or `UNKNOWN`; changing its status cannot bypass unresolved gates. `UNKNOWN` triggers evidence gathering and asks the user only if the missing answer belongs to the user under the Decision Rights Contract.
 
 ## Controlled Pivot Loop
 
@@ -35,7 +35,7 @@ When evidence invalidates an implementation route:
 5. Map affected code, tests, configuration, and documents.
 6. Compare credible alternatives against actual constraints.
 7. Prove the preferred route with a bounded spike.
-8. Ask Shaun if the pivot changes a consequential decision.
+8. Ask the user if the pivot changes a consequential decision.
 9. Unwind or migrate the failed route.
 10. Reconcile current documentation, tests, task state, and ADR history.
 11. Supersede the old ADR and create a verified checkpoint.
@@ -57,6 +57,47 @@ Git can restore code. The pivot record explains why the route changed and which 
 | Git | Exact file history |
 
 Conversation summaries and context compaction are useful transport, not authoritative memory.
+
+### Shared resume context
+
+The CLI and DSH adapter share `scripts/memory-context.js`. Resume returns purpose,
+invariants, current truth, next action, accepted decision summaries, selected source
+paths, and advisory freshness evidence. It never initialises or changes the project.
+Each source read is limited to 64 KiB, each text section to 4,096 characters, and
+the decision scan to 50 Markdown files. Truncation is reported; read the relevant
+full documents before consequential work.
+
+An existing project can explicitly select its own notes with `.harness/memory.json`:
+
+```json
+{"north_star":"README.md","current_state":"CURRENT_OUTPUTS.md"}
+```
+
+Creating this mapping is a separate, authorised write. Paths must remain inside
+the selected workspace, including symlink targets. The helper does not guess which
+existing note is authoritative. Canonical headings are preferred; an unstructured
+mapped note is returned as a bounded excerpt, with no invented next action.
+
+Current-state may contain `Verified commit: <full 40-character Git SHA>`. Without
+it, freshness is `unverified`. Missing memory is `missing`; unavailable Git evidence
+is `unknown`; a changed HEAD or dirty worktree is `review-needed`. A matching clean
+snapshot is `matches-snapshot`, not a guarantee that its prose is true. These are
+advisories, not readiness gates. A checkpoint normally describes an earlier verified
+commit, so committing the checkpoint itself can trigger review; do not continually
+rewrite the anchor merely to make it match its own commit.
+
+### Layer ownership
+
+DSH owns tool/session hosting and its permission controls. Project Harness owns
+project discovery, readiness and durable project memory. Specialist skills supply
+domain rules; they do not grant permission or change the user's approval boundaries.
+Host safety rules and explicit user scope constrain all project policy. Existing
+project configuration and accepted decisions then determine engineering precedence.
+No additional orchestration or memory-storage layer is needed for this slice.
+
+Reusable decision owners are `AGENT` and `USER` (previously `ATHENA` and `SHAUN`).
+Consumers of the decision CLI must update comparisons. Author attribution, historical
+ADRs and optional personal profiles are not rewritten as current operating policy.
 
 ## Session protocol
 

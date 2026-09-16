@@ -4,11 +4,11 @@ MODEL_STATUS: CONFIRMED
 
 ## Goal
 
-Make the harness behave like an engineering operating system: infer routine technical defaults, bind mature ecosystem rules automatically, keep meaningful work under recoverable version control, and minimise questions to Shaun without sacrificing architecture quality.
+Make the harness behave like an engineering operating system: infer routine technical defaults, bind mature ecosystem rules automatically, keep meaningful work under recoverable version control, and minimise questions to the user without sacrificing architecture quality.
 
 ## Inputs
 
-- Shaun's natural-language project brief and feature list.
+- the user's natural-language project brief and feature list.
 - Confirmed system-model evidence from the target project.
 - Existing repository/runtime conventions and accepted ADRs.
 - `ENGINEERING-DEFAULTS.md`.
@@ -53,7 +53,7 @@ Natural-language intent -> confirmed system model -> engineering defaults + requ
 
 ## Failure boundaries
 
-- A routine engineering choice must not be bounced back to Shaun when evidence/defaults already decide it.
+- A routine engineering choice must not be bounced back to the user when evidence/defaults already decide it.
 - Defaults must not override stronger repository configuration or accepted ADRs.
 - Skill binding must not be driven only by a project-type label.
 - Version-control commands must not prompt interactively, expose credentials, stage the whole worktree, force push, or push managed work directly to `main`/`master`.
@@ -62,8 +62,8 @@ Natural-language intent -> confirmed system model -> engineering defaults + requ
 
 ## Invariants
 
-- Shaun keeps consequential product/architecture deviations, provider/cost/security boundaries, destructive operations, merge, deployment, and release authority.
-- Athena decides routine/reversible implementation and established-default choices.
+- the user keeps consequential product/architecture deviations, provider/cost/security boundaries, destructive operations, merge, deployment, and release authority.
+- the agent decides routine/reversible implementation and established-default choices.
 - WordPress work follows mature WordPress conventions by default.
 - New scraping/ingestion work defaults to Python unless evidence establishes another stack.
 - The harness controller remains zero-runtime-dependency Node 20+.
@@ -74,6 +74,14 @@ Natural-language intent -> confirmed system model -> engineering defaults + requ
 No product-policy unknown blocks this slice. Implementation quality is bounded by regression tests and GitHub Actions. A later acceptance benchmark should run the same harness against representative WordPress, scraping, and automation briefs and score question count, completeness, architecture fit, and manual corrections.
 
 ## Evidence
+
+### Memory-context repair, 2026-09-16
+
+CLI resume returned useful prose while DSH returned mainly availability flags.
+Both now use one bounded, read-only memory reader. Explicit project-relative note
+mapping preserves existing project notes. Git snapshot differences signal review,
+not automatic rewriting. Host permissions constrain harness and specialist rules.
+No new persistence service, runtime dependency or orchestration layer is introduced.
 
 - Shaun's successful WordPress run demonstrated the desired experience: a large brief, very few questions, and rapid complete implementation.
 - Existing `.github/skills/wordpress-way.md` already contained strong WordPress defaults but duplicated its rule set internally.

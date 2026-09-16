@@ -16,7 +16,7 @@ You must periodically consolidate learnings to prevent context bloat while prese
    - **Decisions Log** (what + why)
    - **Patterns** (reusable approaches)
    - **Anti-Patterns** (things to avoid)
-4. Move consolidated insights into relevant files (e.g. `SHAUN-BUILD-PROFILE.md`, project-specific notes).
+4. Move consolidated insights into relevant files (e.g. accepted ADRs and project-specific notes).
 5. Archive older raw entries if needed, keeping only the summary in active memory.
 
 This keeps the agent sharp and context-efficient across long projects.

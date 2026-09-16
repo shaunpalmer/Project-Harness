@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import Schema from '@deepseek-ai/schemastery';
 import { defineTool } from '@deepseek-ai/dsh-tools';
+import { readMemoryContext } from '../scripts/memory-context.js';
 
 export const name = 'project-harness';
 export const inject = ['tools', 'skills'];
@@ -109,19 +110,17 @@ function resumeProject(projectRoot) {
 
   const { root } = resolution;
   const task = readJson(root, '.harness/state/active-task.json');
-  const currentState = readText(root, 'docs/CURRENT-STATE.md');
-  const northStar = readText(root, 'docs/NORTH-STAR.md');
+  const memory = readMemoryContext(root);
 
   return JSON.stringify({
+    ...memory,
     project_root: root,
-    harness_files_present: Boolean(task || currentState || northStar),
+    harness_files_present: Boolean(task || memory.current_state_available || memory.north_star_available),
     active_task: task,
     discovery: {
       system_model: markerStatus(root, '00-PLANNING/SYSTEM-MODEL.md', 'MODEL_STATUS: CONFIRMED'),
       architecture_hypothesis: markerStatus(root, '00-PLANNING/ARCHITECTURE-HYPOTHESIS.md', 'HYPOTHESIS_STATUS: ACCEPTED'),
     },
-    current_state_available: Boolean(currentState),
-    north_star_available: Boolean(northStar),
   }, null, 2);
 }
 

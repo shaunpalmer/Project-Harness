@@ -2,7 +2,7 @@
 
 ## Start with the outcome
 
-A natural-language brief is enough. Shaun does not need to choose the architecture, database, framework, pattern, or exact project type before handing work to the harness.
+A natural-language brief is enough. the user does not need to choose the architecture, database, framework, pattern, or exact project type before handing work to the harness.
 
 Capture five things in `PROJECT-INTAKE.md`:
 
@@ -38,7 +38,7 @@ Set `MODEL_STATUS: CONFIRMED` only when blocking unknowns are resolved or assign
 
 `00-PLANNING/ARCHITECTURE-HYPOTHESIS.md` must record primary shape + confidence, capability composition, candidate patterns, assumptions, alternatives, bounded proof, proposed architecture, and approval evidence.
 
-Set `HYPOTHESIS_STATUS: ACCEPTED` only after consequential architecture decisions have Shaun's approval.
+Set `HYPOTHESIS_STATUS: ACCEPTED` only after consequential architecture decisions have the user's approval.
 
 ## When coding may start
 
@@ -56,10 +56,10 @@ Run `npm run control:verify` in the harness. For generated projects, run `node s
 
 ## What UNKNOWN means
 
-`UNKNOWN` does not automatically mean `ask Shaun`.
+`UNKNOWN` does not automatically mean `ask the user`.
 
 - Internal/reversible unknown → inspect evidence or run a bounded proof and proceed.
-- Consequential architecture/provider/cost/security/scope choice → recommend one route and ask Shaun once.
+- Consequential architecture/provider/cost/security/scope choice → recommend one route and ask the user once.
 - Missing credentials or production authority → stop at the boundary; do not invent or consume.
 
 ## Final rule

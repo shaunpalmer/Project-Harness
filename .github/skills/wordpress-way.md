@@ -27,7 +27,7 @@ Follow the official WordPress Coding Standards (WPCS) and the established reposi
 - Follow WordPress spacing and indentation conventions; use tabs for PHP indentation.
 - Use Yoda conditions where WPCS expects them, for example `if ( true === $is_active )`.
 - Public APIs and non-obvious behaviour require useful PHPDoc/inline documentation.
-- Do not ask Shaun to choose naming or formatting already decided by WPCS or the repository.
+- Do not ask the user to choose naming or formatting already decided by WPCS or the repository.
 
 ## 3. Plugin bootstrap and lifecycle
 
@@ -189,4 +189,4 @@ Before declaring WordPress work complete, verify the applicable items:
 
 ## Final rule
 
-**WordPress is a mature ecosystem with established ways of doing common work. Apply those defaults automatically. Ask Shaun only when a decision changes the product or materially departs from the accepted WordPress/project architecture.**
+**WordPress is a mature ecosystem with established ways of doing common work. Apply those defaults automatically. Ask the user only when a decision changes the product or materially departs from the accepted WordPress/project architecture.**

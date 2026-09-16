@@ -1,13 +1,13 @@
 # ARCHITECTURE-TEMPLATES.md — Visual Patterns
 
-> Reference diagrams for Shaun's OOP + pipeline + automation style.
+> Reference diagrams for the user's OOP + pipeline + automation style.
 > AI: copy these shapes. Don't invent new ones unless the project genuinely needs it.
 
 ---
 
 ## 1. The Pipeline + Envelope (the core data architecture)
 
-This is Shaun's default for scraping, automation, and lead processing.
+This is the user's default for scraping, automation, and lead processing.
 
 ```
                           ┌──────────────┐

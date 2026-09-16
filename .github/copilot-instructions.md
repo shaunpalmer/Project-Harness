@@ -7,7 +7,7 @@ These instructions apply to all Copilot interactions in this repository.
 Always read the following files before generating code or suggestions:
 
 1. `AGENTS.md` — roles, conventions, constraints
-2. `SHAUN_PROJECT_CANVAS.md` — owner's style, patterns, and code standards
+2. `ENGINEERING-DEFAULTS.md` — reusable style, patterns, and code standards
 3. `PROJECT-INTAKE.md` — owner's 5-answer project brief
 4. `PRD.md` — product context
 5. `ARCHITECTURE.md` — system structure

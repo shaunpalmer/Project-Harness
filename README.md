@@ -1,6 +1,11 @@
 # Project Harness
 
-A planning-first engineering harness that accepts a natural-language outcome, models unfamiliar systems before architecture is locked, applies mature engineering defaults automatically, and keeps routine programming decisions with the AI instead of handing them back to Shaun.
+A planning-first engineering harness that accepts a natural-language outcome, models unfamiliar systems before architecture is locked, applies mature engineering defaults automatically, and keeps routine programming decisions with the AI instead of handing them back to the user.
+
+Reusable policy uses **user** and **agent** roles. The original named profile files
+are historical, optional examples, not defaults for new users. Attribution and
+accepted decision history are preserved. Explicitly opt into a personal profile
+only when it belongs to the current project owner.
 
 ## Operating model
 

@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Build a well-structured, maintainable WordPress plugin following Shaun's conventions:
+Build a well-structured, maintainable WordPress plugin following the project's established conventions:
 
 * WordPress hooks at the edge
 * A thin root plugin file
@@ -16,7 +16,7 @@ Build a well-structured, maintainable WordPress plugin following Shaun's convent
 
 The goal is not clever code.
 
-The goal is a plugin Shaun can read, maintain, extend, debug, and safely install six months later.
+The goal is a plugin the user can read, maintain, extend, debug, and safely install six months later.
 
 ---
 
@@ -58,7 +58,7 @@ Before code begins, the agent must know or ask for:
 * [ ] Does it need activation, deactivation, or uninstall behavior?
 * [ ] What is the first useful build slice?
 
-If any required input is unknown and relevant, ask Shaun before coding.
+If any required input is unknown and relevant, ask the user before coding.
 
 ---
 
@@ -67,7 +67,7 @@ If any required input is unknown and relevant, ask Shaun before coding.
 A WordPress plugin must be built around:
 
 1. WordPress conventions first
-2. Shaun's architecture rules second
+2. the user's architecture rules second
 3. Project-specific needs third
 
 Do not invent infrastructure when WordPress already provides the correct API.
@@ -111,7 +111,7 @@ Choose one structure in `ARCHITECTURE.md` before coding.
 
 Do not mix folder structures halfway through a plugin.
 
-### Option A — Shaun Default WordPress Plugin Structure
+### Option A — Lightweight WordPress Plugin Structure
 
 Use this for most practical WordPress plugins, especially plugins that do not need Composer or heavy build tooling.
 
@@ -226,7 +226,7 @@ plugin-slug/
 
 ### Structure Rule
 
-For Shaun's projects, prefer Option A unless there is a clear reason to use Option B.
+Prefer the existing project structure. For a new project, Option A is a starting point, not a mandatory scaffold.
 
 Use Option B when:
 
@@ -277,7 +277,7 @@ Example:
  * Version:           1.0.0
  * Requires at least: 6.0
  * Requires PHP:      8.0
- * Author:            Shaun Palmer
+ * Author:            Project Author
  * License:           GPL-2.0+
  * Text Domain:       example-plugin
  * Domain Path:       /languages
@@ -883,7 +883,7 @@ Example:
 
 ### Bootstrap Rule
 
-Shaun is more familiar with Bootstrap than Tailwind.
+Use the project's established UI stack and any explicitly recorded user preferences; do not assume a personal framework preference.
 
 Bootstrap may be used when it speeds up interface work and does not pollute the theme or WordPress admin globally.
 
@@ -901,7 +901,7 @@ Tailwind is allowed only when:
 
 * The project benefits from a utility-first build process.
 * The build tooling is documented.
-* Shaun approves the extra learning and maintenance cost.
+* the user approves the extra learning and maintenance cost.
 * The generated CSS is scoped and production-ready.
 
 Do not choose Tailwind just because it is fashionable.
@@ -975,7 +975,7 @@ Define:
 
 Choose either:
 
-* Shaun Default WordPress Plugin Structure
+* Lightweight WordPress Plugin Structure
 * Scalable OOP / Composer Structure
 
 Record the choice in `ARCHITECTURE.md`.
@@ -1068,7 +1068,7 @@ Test:
 
 ## Quality Check
 
-Before handing back to Shaun:
+Before handing back to the user:
 
 * [ ] Main plugin file is thin.
 * [ ] Plugin header exists.
@@ -1137,4 +1137,4 @@ Keep external services behind adapters.
 
 Keep architecture obvious.
 
-Make the plugin something Shaun can open six months later and still understand.
+Make the plugin something the user can open six months later and still understand.

@@ -38,6 +38,9 @@ function run(command, args, cwd = process.cwd(), options = {}) {
     env: NON_INTERACTIVE_ENV,
     timeout: options.timeout ?? 15000,
   });
+  if (result.error?.code === 'ENOENT' && options.allowFailure) {
+    return { status: 127, stdout: '', stderr: `${command} is not installed or not available on PATH.` };
+  }
   if (result.error) throw new Error(`${command} failed: ${result.error.message}`);
   if (result.status !== 0 && !options.allowFailure) {
     const detail = (result.stderr || result.stdout || `exit ${result.status}`).trim();

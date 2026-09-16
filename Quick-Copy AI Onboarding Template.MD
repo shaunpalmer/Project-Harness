@@ -18,7 +18,7 @@ When parameters appear in more than one place, the higher source wins:
 1. Owner's direct instruction in the current request
 2. `PROJECT-INTAKE.md`
 3. `PROJECT-TYPES.md` / `TECH-SPEC.md` / `ARCHITECTURE.md`
-4. `SHAUN_DEV_PROFILE.md` (defaults when nothing else specifies)
+4. `ENGINEERING-DEFAULTS.md` (defaults when nothing else specifies)
 
 ---
 
@@ -29,7 +29,7 @@ When parameters appear in more than one place, the higher source wins:
 | 1 | **ENVIRONMENT** | What runtime, versions, and tools are fixed? | `TECH-SPEC.md`, `PROJECT-INTAKE.md` |
 | 2 | **DATA CONTRACT** | What shape enters, what shape leaves? | `DATA-FLOW.md`, task request |
 | 3 | **ARCHITECTURE** | Standalone, plugin, module, or integration? | `PROJECT-TYPES.md`, `ARCHITECTURE.md` |
-| 4 | **GUARDRAILS** | What is required, what is forbidden? | `SHAUN_DEV_PROFILE.md`, `TECH-SPEC.md` |
+| 4 | **GUARDRAILS** | What is required, what is forbidden? | `ENGINEERING-DEFAULTS.md`, `TECH-SPEC.md` |
 | 5 | **TASK AT HAND** | What single feature is being written now? | Owner's current request, `TASKS.md` |
 
 ---

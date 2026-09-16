@@ -45,7 +45,7 @@
 │  MINUTE 8–15:  AI PLANS  (the AI, inside the rails)              │
 │                                                                   │
 │   AI reads:  AGENTS.md → PROJECT-INTAKE.md → PROJECT-TYPES.md    │
-│              → SHAUN_DEV_PROFILE.md                              │
+│              → ENGINEERING-DEFAULTS.md                              │
 │                                                                   │
 │   AI fills:  DECISIONS-TO-MAKE.md (5 gates)                      │
 │              PRD.md, ARCHITECTURE.md, TECH-SPEC.md               │

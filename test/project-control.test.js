@@ -21,16 +21,16 @@ function runFile(file, cwd) {
   return spawnSync(process.execPath, [file], { cwd, encoding: 'utf8' });
 }
 
-test('decision rights keep routine choices with Athena', () => {
+test('decision rights keep routine choices with the agent', () => {
   const result = run(['decision', '--kind', 'routine']);
   assert.equal(result.status, 0, result.stderr);
-  assert.equal(JSON.parse(result.stdout).owner, 'ATHENA');
+  assert.equal(JSON.parse(result.stdout).owner, 'AGENT');
 });
 
-test('decision rights reserve architectural choices for Shaun', () => {
+test('decision rights reserve architectural choices for the user', () => {
   const result = run(['decision', '--kind', 'architecture']);
   assert.equal(result.status, 0, result.stderr);
-  assert.equal(JSON.parse(result.stdout).owner, 'SHAUN');
+  assert.equal(JSON.parse(result.stdout).owner, 'USER');
 });
 
 test('destination preview separates source and deployment paths', () => {

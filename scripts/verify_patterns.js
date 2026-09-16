@@ -45,7 +45,7 @@ function runComplianceCheck() {
     // GATE 1: TEXT-BASED & METADATA SANITY CHECKS
     // ==========================================
 
-    // 1. Enforce Shaun's OOP Architectural Docblock Standards
+    // 1. Enforce the project's OOP Architectural Docblock Standards
     const requiredTokens = ['@description', '@responsibility', '@architecture', '@problem'];
     const missingTokens = [];
 

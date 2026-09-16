@@ -15,7 +15,7 @@ For each benchmark project record:
 | Relevant automated checks passing | 100% |
 | Architecture violations against accepted rules | 0 |
 | Unnecessary dependencies/frameworks | 0 |
-| Manual corrections needed from Shaun | As close to 0 as practical |
+| Manual corrections needed from the user | As close to 0 as practical |
 | Recoverable Git checkpoints | Every meaningful verified slice |
 
 Fewer questions alone is not quality. A zero-question run that makes bad assumptions fails the benchmark.
@@ -64,4 +64,4 @@ Expected default behaviour:
 
 A harness change is an improvement only if it preserves or improves these measures across the benchmark families. More ceremony, more questions, more dependencies, or more model-visible rules are not improvements by themselves.
 
-The reference experience is Shaun's successful rapid WordPress build: a long feature brief, very few genuine questions, then a complete working implementation. That is the usability bar v0.4 must preserve while becoming more general.
+The reference experience is the user's successful rapid WordPress build: a long feature brief, very few genuine questions, then a complete working implementation. That is the usability bar v0.4 must preserve while becoming more general.

@@ -8,7 +8,7 @@ The agent must show initiative.
 
 The agent must continue safely when it can.
 
-The agent must ask Shaun only when the missing decision is important enough to justify interrupting the work.
+The agent must ask the user only when the missing decision is important enough to justify interrupting the work.
 
 The goal is not blind guessing.
 
@@ -18,7 +18,7 @@ The goal is useful progress with controlled assumptions.
 
 ## Core Rule
 
-Do not ask Shaun every time information is missing.
+Do not ask the user every time information is missing.
 
 First decide whether the missing information is:
 
@@ -29,13 +29,13 @@ First decide whether the missing information is:
 * Safe to continue without
 * Important enough to stop and ask
 
-Ask Shaun only when the answer would change architecture, cost, risk, security, data ownership, user experience, business direction, or long-term maintenance.
+Ask the user only when the answer would change architecture, cost, risk, security, data ownership, user experience, business direction, or long-term maintenance.
 
 ---
 
 ## Initiative Ladder
 
-When blocked or uncertain, use this ladder before asking Shaun.
+When blocked or uncertain, use this ladder before asking the user.
 
 ### 1. Check the Existing Source of Truth
 
@@ -51,7 +51,7 @@ Read the relevant files first:
 * `AI-NOTES.md`
 * relevant skill files
 
-Do not ask Shaun for information that is already in the project files.
+Do not ask the user for information that is already in the project files.
 
 ---
 
@@ -71,9 +71,9 @@ Record the inference in `ASSUMPTIONS.md` or `AI-NOTES.md`.
 
 ---
 
-### 3. Use Shaun Defaults
+### 3. Use Explicit Project Defaults
 
-If Shaun has a known preference, use it.
+Use preferences explicitly recorded for this project. The examples below are optional preferences, not assumptions about every user; ENGINEERING-DEFAULTS.md and accepted project decisions take precedence.
 
 Examples:
 
@@ -102,7 +102,7 @@ Prefer choices that:
 * Do not add external services yet
 * Do not create new infrastructure
 * Do not change deployment
-* Do not force Shaun into a large learning curve
+* Do not force the user into a large learning curve
 * Keep the first build slice small
 
 If the decision can be changed later without major cost, keep moving.
@@ -170,9 +170,9 @@ Record the result before choosing.
 
 ---
 
-### 8. Ask Shaun Only When Needed
+### 8. Ask the user Only When Needed
 
-Ask Shaun when the decision is:
+Ask the user when the decision is:
 
 * Architectural
 * Expensive to reverse
@@ -203,9 +203,9 @@ Over:
 
 ## Question Budget Rule
 
-The agent should not interrupt Shaun repeatedly.
+The agent should not interrupt the user repeatedly.
 
-Before asking Shaun, batch related questions.
+Before asking the user, batch related questions.
 
 Maximum normal question batch:
 
@@ -227,7 +227,7 @@ Ask only the “must answer now” questions.
 
 ## Stop Conditions
 
-Stop and ask Shaun only when:
+Stop and ask the user only when:
 
 * The same blocker remains after two safe attempts.
 * Continuing would create bad architecture.
@@ -248,7 +248,7 @@ Before stopping, the agent must state:
 1. What it checked
 2. What it can safely infer
 3. What it can safely continue with
-4. What still needs Shaun
+4. What still needs the user
 5. Why that question matters
 
 Bad:
@@ -257,7 +257,7 @@ Bad:
 
 Good:
 
-> “I can continue using SQLite as a local cache because this is a scraping pipeline and the first build slice only needs deduplication. I’ll record that as an assumption. I only need Shaun if this data must be shared across multiple machines.”
+> “I can continue using SQLite as a local cache because this is a scraping pipeline and the first build slice only needs deduplication. I’ll record that as an assumption. I only need the user if this data must be shared across multiple machines.”
 
 ---
 
@@ -291,12 +291,12 @@ When uncertain but able to continue, use this format:
 
 ---
 
-## Ask Shaun Format
+## Ask the user Format
 
-When Shaun is truly needed, ask like this:
+When the user is truly needed, ask like this:
 
 ```md
-## Status: Needs Shaun / Senior Developer
+## Status: Needs the user / Senior Developer
 
 ### Blocker
 
@@ -329,13 +329,13 @@ Always recommend a path unless the information is genuinely unknowable.
 
 ### Example 1 — WordPress Plugin CSS
 
-Unknown: whether Shaun wants Bootstrap or custom CSS.
+Unknown: whether the user wants Bootstrap or custom CSS.
 
 Action: Continue with custom CSS using CSS variables and WordPress admin classes.
 
 Reason: Reversible, maintainable, no framework lock-in.
 
-Do not ask Shaun unless Bootstrap is required for speed or layout complexity.
+Do not ask the user unless Bootstrap is required for speed or layout complexity.
 
 ---
 
@@ -357,7 +357,7 @@ Unknown: whether local automation needs a database.
 
 Action: If data must persist, start with SQLite. If it is one-off export only, use CSV/JSON.
 
-Ask Shaun only if data must be shared, synced, queried heavily, or retained long term.
+Ask the user only if data must be shared, synced, queried heavily, or retained long term.
 
 ---
 
@@ -369,13 +369,13 @@ Action: Do not choose React by default.
 
 Reason: It changes the project shape and adds learning cost.
 
-Ask Shaun before introducing React or another heavy frontend framework.
+Ask the user before introducing React or another heavy frontend framework.
 
 ---
 
 ### Example 5 — Architecture Conflict
 
-Unknown: Shaun made a casual comment that conflicts with `ARCHITECTURE.md`.
+Unknown: the user made a casual comment that conflicts with `ARCHITECTURE.md`.
 
 Action: Do not overwrite architecture.
 
@@ -505,7 +505,7 @@ The agent may only rewrite a file when one of these is true:
 * The current file violates approved architecture.
 * The code is duplicated beyond safe repair.
 * The implementation is fundamentally pointed at the wrong responsibility.
-* Shaun explicitly approves the rewrite.
+* the user explicitly approves the rewrite.
 * The agent first explains why repair-in-place is worse than replacement.
 
 Before rewriting, the agent must state:
@@ -603,7 +603,7 @@ Do not combine:
 * style cleanup
 * architecture change
 
-unless Shaun explicitly asked for that combined change.
+unless the user explicitly asked for that combined change.
 
 Prefer:
 
@@ -717,4 +717,4 @@ Do not guess recklessly.
 
 Do not stop helplessly.
 
-Make safe progress, record assumptions, recommend a path, and ask Shaun only when the decision truly needs Shaun.
+Make safe progress, record assumptions, recommend a path, and ask the user only when the decision truly needs the user.

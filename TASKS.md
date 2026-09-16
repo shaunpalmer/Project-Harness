@@ -14,7 +14,7 @@ Do NOT look for tasks yet. Instead:
 
 1. Read `ONBOARDING.md` — understand the two-phase workflow
 2. Produce a Planning Summary (see ONBOARDING.md)
-3. Wait for Shaun's approval
+3. Wait for the user's approval
 4. Fill planning files in this order:
    - `ARCHITECTURE.md` (defines structure first)
    - `TECH-SPEC.md` (defines stack)
@@ -22,7 +22,7 @@ Do NOT look for tasks yet. Instead:
    - `DATA-FLOW.md` (if architecture mentions data movement)
    - `TASKS.md` (fill with first useful build slice + 3–5 tasks)
    - `AI-NOTES.md` (record key decisions)
-5. Wait for Shaun's second approval
+5. Wait for the user's second approval
 6. Only THEN proceed to **PHASE 3: Pick up a task**
 
 ---
