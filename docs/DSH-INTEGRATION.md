@@ -7,14 +7,18 @@ Project Harness is also an installable DeepSeek Harness (DSH) bundle. The bundle
 The first integration deliberately exposes the compact Project Harness state, the first specialist selector, and a native DSH skill layer:
 
 - active task state;
-- current-state and North Star presence;
+- bounded purpose, invariants, current truth and next action, with source paths;
+- accepted decision summaries and advisory Git-snapshot freshness evidence;
 - system-model confirmation;
 - architecture-hypothesis acceptance.
 - WordPress evidence detection and the `wordpress-coding` preset.
 - Python/prospecting evidence detection and the `python-prospecting` preset.
 - Specialist skills through DSH's on-demand `ctx.skills` registry. The model sees short summaries first and loads the full Markdown only when it invokes a selected skill.
 
-It does not write files, execute shell commands, change Git state, or deploy anything. Generated projects remain separate from the Project Harness source repository.
+It does not write project files, run a shell, change Git state, or deploy anything.
+Resume invokes bounded, read-only Git queries with optional locks disabled for
+freshness evidence; missing Git produces a warning, not an installation attempt.
+Generated projects remain separate from the Project Harness source repository.
 
 ## Install from this repository
 
@@ -36,4 +40,13 @@ The bundle refuses to use an unset workspace, a missing directory, or the DeepSe
 
 DSH owns the runtime composition, model connection, and tool registry. Project Harness owns planning, memory, specialist routing, project boundaries, and verification. The integration is an adapter between those boundaries, not a replacement for either system.
 
-The next integration slice will map existing project planning files into Project Harness memory without overwriting them. Additional specialists will use the same provider boundary rather than copying domain instructions into a universal prompt.
+Existing project notes can be mapped through `.harness/memory.json` without copying
+or overwriting them; see `docs/PROJECT-CONTROL.md`. Additional specialists should
+use the same provider boundary rather than copying domain instructions into a universal prompt.
+
+The adapter retains `ctx.tools.register(defineTool(...))` and the existing string
+output contract. See the upstream [tool-authoring reference](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/cookbook/adding-a-tool.md).
+Handler fixture tests stub host APIs; they do not replace a live DSH acceptance run.
+
+Package snapshots (`*.tgz`) are excluded from the next package preview so an old
+local archive cannot be nested inside a newer installable bundle.

@@ -21,6 +21,8 @@ function run(args, cwd) {
     encoding: 'utf8',
     env: {
       ...process.env,
+      GIT_CONFIG_GLOBAL: os.devNull,
+      GIT_CONFIG_NOSYSTEM: '1',
       GIT_TERMINAL_PROMPT: '0',
       GH_PROMPT_DISABLED: '1',
       GCM_INTERACTIVE: 'Never',
@@ -52,6 +54,9 @@ test('vcs init creates a non-protected work branch without prompting', (t) => {
 test('vcs preflight reports missing identity and required remote as explicit failures', (t) => {
   const cwd = temporaryDirectory(t);
   assert.equal(run(['init'], cwd).status, 0);
+  // Explicitly shadow any environment-injected Git identity as well.
+  git(['config', 'user.name', ''], cwd);
+  git(['config', 'user.email', ''], cwd);
   const result = run(['preflight', '--require-remote'], cwd);
   assert.notEqual(result.status, 0);
   const output = JSON.parse(result.stdout);

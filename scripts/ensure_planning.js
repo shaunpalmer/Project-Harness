@@ -113,6 +113,8 @@ function checkDecisionGates(failures) {
     const content = readFile(filePath);
     const unresolvedMarkers = [
         "STATUS: UNRESOLVED",
+        "STATUS: NEEDS_USER",
+        "NEEDS USER",
         "STATUS: NEEDS_SHAUN",
         "STATUS: NEEDS_SENIOR_DEVELOPER",
         "NEEDS SHAUN",

@@ -96,7 +96,7 @@ class HarnessOrchestrator {
             this.verificationAttempts++;
             console.error(`❌ [LOOP] Verification Failed (Attempt #${this.verificationAttempts})`);
             
-            // Stop Rule: Two verification attempts fail for the same reason -> Stop and ask Shaun
+            // Stop Rule: Two verification attempts fail for the same reason -> Stop and ask the user
             if (this.verificationAttempts >= 2) {
                 console.error("🛑 [STOP RULE] Two consecutive verification attempts failed. Aborting loop execution to prevent thrashing.");
                 process.exit(102); 

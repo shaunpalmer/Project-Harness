@@ -1,6 +1,6 @@
 # AGENTS.md — AI Operating Contract
 
-This repository is Shaun Palmer's project harness. Act as a competent developer inside an approved design envelope: preserve the destination, choose the route, prove the work, and stop when the stated outcome is complete.
+This repository contains the reusable Project Harness. Act as a competent developer inside an approved design envelope: preserve the destination, choose the route, prove the work, and stop when the stated outcome is complete.
 
 ## Entry protocol
 
@@ -23,18 +23,18 @@ Run `npm run memory:resume` for a compact reconstruction, then verify its claims
 
 Use `docs/DECISION-RIGHTS.md` as the authority.
 
-- Decide routine and reversible implementation details without asking Shaun.
-- Apply established engineering defaults and ecosystem skills without asking Shaun to re-decide them.
+- Decide routine and reversible implementation details without asking the user.
+- Apply established engineering defaults and ecosystem skills without asking the user to re-decide them.
 - When uncertain about an internal choice, inspect evidence or run a bounded proof and proceed.
 - Ask only when a choice materially changes purpose, architecture, an established/default stack, database, provider, cost, security boundary, scope, production data, destructive risk, merge, deployment, or release.
-- For a consequential fork, recommend one best option in a compact Decision Card. Do not make Shaun program through you.
+- For a consequential fork, recommend one best option in a compact Decision Card. Do not make the user program through you.
 - Never merge, deploy, spend credits, call a live provider, or mutate production without explicit approval.
 
 ## Engineering defaults and question budget
 
 `ENGINEERING-DEFAULTS.md` is the baseline engineering operating system.
 
-Routine engineering question budget is **zero**. Do not ask Shaun to choose language syntax, naming, formatting, loop form, helper boundaries, ordinary OOP/procedural style, test organisation, or ecosystem conventions when those are already established by the project/defaults.
+Routine engineering question budget is **zero**. Do not ask the user to choose language syntax, naming, formatting, loop form, helper boundaries, ordinary OOP/procedural style, test organisation, or ecosystem conventions when those are already established by the project/defaults.
 
 Examples:
 
@@ -46,7 +46,7 @@ Defaults are evidence-backed starting points, not cages. A material departure fr
 
 ## Infer before implement
 
-A natural-language project prompt is a valid intake. Do not require Shaun to pre-architect unfamiliar work.
+A natural-language project prompt is a valid intake. Do not require the user to pre-architect unfamiliar work.
 
 1. Separate the desired outcome from implementation guesses.
 2. Build an evidence-backed system model: inputs, outputs, capabilities, data flow, state, failure boundaries, invariants, unknowns, and evidence.
@@ -55,10 +55,10 @@ A natural-language project prompt is a valid intake. Do not require Shaun to pre
 5. Treat `PROJECT-TYPES.md` as preset evidence, not mandatory architecture.
 6. When confidence is low or an assumption is material, inspect evidence or run the smallest bounded proof that can resolve it.
 7. Write an architecture hypothesis only after the system model is confirmed.
-8. Obtain Shaun's approval only for consequential architecture/deviation decisions, then promote the hypothesis to accepted.
+8. Obtain the user's approval only for consequential architecture/deviation decisions, then promote the hypothesis to accepted.
 9. Only then plan and execute the smallest useful slice.
 
-`UNKNOWN` means investigate autonomously unless the Decision Rights Contract assigns the missing answer to Shaun.
+`UNKNOWN` means investigate autonomously unless the Decision Rights Contract assigns the missing answer to the user.
 
 ## Alignment Ladder
 
@@ -100,12 +100,12 @@ Use `scripts/vcs-control.js` for deterministic Git operations when working from 
 - Use existing machine Git/SSH/GitHub CLI authentication. Never request, log, embed, or persist access tokens in project files.
 - Never use broad automatic staging in a mixed worktree.
 - Never force push or push a managed change directly to `main`/`master`.
-- Remote repository creation/deletion, merge, release, deployment, and destructive history edits remain Shaun-owned.
+- Remote repository creation/deletion, merge, release, deployment, and destructive history edits remain user-owned.
 - Version-control failures are explicit execution failures; do not freeze, wait for hidden terminal prompts, or silently continue unversioned.
 
 ## Controlled pivots
 
-Follow `docs/PROJECT-CONTROL.md` when an assumption fails. Keep the North Star stable unless Shaun changes it. Freeze the affected slice, record evidence, prove the replacement, obtain consequential approval, unwind or migrate, reconcile documentation and tests, and supersede the old ADR.
+Follow `docs/PROJECT-CONTROL.md` when an assumption fails. Keep the North Star stable unless the user changes it. Freeze the affected slice, record evidence, prove the replacement, obtain consequential approval, unwind or migrate, reconcile documentation and tests, and supersede the old ADR.
 
 Do not confuse Git rollback with decision memory. Git restores files; ADRs preserve why the route changed.
 
@@ -137,7 +137,7 @@ The harness repository, canonical project source, build output, distribution art
 ## Prohibited actions
 
 - Do not invent business rules, credentials, external services, or production targets.
-- Do not ask Shaun to choose ordinary syntax, naming, loops, helper methods, internal class organisation, standard language defaults, or normal ecosystem conventions.
+- Do not ask the user to choose ordinary syntax, naming, loops, helper methods, internal class organisation, standard language defaults, or normal ecosystem conventions.
 - Do not use a project-type preset as evidence that a database/framework/pattern is required.
 - Do not treat a superseded ADR or stale changelog entry as current truth.
 - Do not push directly to the default branch.
@@ -156,4 +156,4 @@ Before reporting completion:
 - Version-control state is known and recoverable.
 - No known blocker is hidden.
 - The exact next action is recorded.
-- Merging or releasing is left to Shaun unless he explicitly authorises it.
+- Merging or releasing is left to the user unless the user explicitly authorises it.

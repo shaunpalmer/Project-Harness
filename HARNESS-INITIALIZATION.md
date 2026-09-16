@@ -1,6 +1,11 @@
 The System Contract
 
-This project operates under a strict Cognitive Harness. The AI is not a chatbot; it is a Managed Developer Component integrated into Shaun's specific workflow.
+Compatibility note: `AGENTS.md`, `docs/PROJECT-CONTROL.md` and
+`ENGINEERING-DEFAULTS.md` are the current operating contract and take precedence
+over this legacy checklist. Read relevant evidence rather than every file; routine
+questions remain zero, and historical personal profiles are opt-in only.
+
+This project operates under a strict Cognitive Harness. The AI is not a chatbot; it is a Managed Developer Component integrated into the user's specific workflow.
 
 1. The Execution Loop (HARNESS-LOOP.md)
 
@@ -18,13 +23,13 @@ Ship: Stop immediately when the goal is met. No polishing.
 
 2. The Decision Engine (agent-initiative/SKILL.md)
 
-The AI must show Initiative based on Shaun’s preferences:
+The AI must show Initiative based on explicit project preferences and ENGINEERING-DEFAULTS.md:
 
 Repair In Place: Never rewrite a file if a surgical patch can fix it.
 
 No Thrashing: Do not abandon code. Debug the flow, the names, and the load order.
 
-Inference Ladder: Use Shaun's defaults (PHP, SQLite, standard libraries) before asking questions.
+Inference Ladder: Use established project defaults and ENGINEERING-DEFAULTS.md before asking routine questions; do not assume a personal stack.
 
 Question Budget: Max 3 questions at a time. Only ask "Must Answer Now" questions.
 
@@ -34,7 +39,7 @@ Casual chat is NOT architecture.
 
 Precedence: ARCHITECTURE.md > SKILL.md > Research Notes > Casual Comments.
 
-Sanitization: If Shaun thinks out loud, the AI must classify that thought as an "Option" or "Casual Comment" before it affects the build.
+Sanitization: If the user thinks out loud, the AI must classify that thought as an "Option" or "Casual Comment" before it affects the build.
 
 4. State Persistence (The External Memory)
 

@@ -1,36 +1,31 @@
-# Current Plan — Project Control and Lifecycle Foundation
+# Current Plan — Memory Context and Neutral Roles
 
-Status: COMPLETE
-Owner: Athena
-Approved by: Shaun Palmer, 2026-08-01
+Status: READY FOR REVIEW
+Owner: Agent
+Scope authorised by the user in the current repair request.
 
 ## Outcome
 
-Turn the agreed harness principles into a runnable control layer and give every generated product an independent, self-orienting workspace with explicit lifecycle folders.
-
-## Scope
-
-- Define alignment, competency, decision-rights, pivot, memory, and destination contracts.
-- Add a file-backed project-memory workflow for resume, checkpoint, and verification.
-- Add safe destination preview/create support that separates harness source from generated projects.
-- Scaffold project-local guidance, planning, source, test, build, and distribution boundaries.
-- Define the WordPress source tree and installable ZIP contract without performing deployment.
-- Repair the executable module mismatch on the touched command path.
-- Prove behaviour with automated tests and command-line scenarios.
+Make CLI and DSH resume useful and consistent, surface stale-memory evidence,
+and remove personal assumptions from reusable operating instructions.
 
 ## Execution checklist
 
-- [x] Add canonical control documentation and memory templates.
-- [x] Add the `project-memory` skill.
-- [x] Implement `project-control` CLI commands.
-- [x] Add the project lifecycle and WordPress distribution contract.
-- [x] Generate a project-local agent contract, intake, and memory starters.
-- [x] Prove the generated folder tree in a temporary external workspace.
-- [x] Wire commands into `package.json` and repair lock-status execution.
-- [x] Run automated and manual verification.
-- [x] Update current state and decision history.
-- [x] Commit, push, and open a draft PR (publication step executed after local verification).
+- [x] Inspect the 0.4.1 baseline, memory contracts and DSH registration boundary.
+- [x] Reuse one bounded reader for CLI and DSH memory context.
+- [x] Add explicit note mapping without automatic initialisation.
+- [x] Add advisory freshness evidence and reconcile obsolete current-state claims.
+- [x] Generalise current user/agent roles; preserve history and attribution.
+- [x] Remove implicit personal-profile loading from entry instructions.
+- [x] Keep existing layers and explain responsibility/permission precedence.
+- [x] Add regression fixtures, including actual adapter handlers with host stubs.
+- [x] Prevent stale `.tgz` package snapshots from entering a later package.
+- [x] Complete final full-suite and control verification (44 tests, control:verify, memory:resume).
+- [ ] Publish a feature-branch PR for review.
+- [ ] After approval, verify the package in a fresh live DSH session.
 
 ## Stop condition
 
-Stop when the commands and tests pass, the documentation agrees with the implementation, and the work is available in one focused draft PR. Do not merge or release without Shaun.
+Stop after verified branch publication and review handoff. No merge, release,
+installation on the user's machine, or Prospecting project changes are authorised
+by this implementation task.

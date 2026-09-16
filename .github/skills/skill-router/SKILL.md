@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Select the smallest specialist skill set from the confirmed system model and current phase. Do not choose skills from a project-type label alone, and do not ask Shaun to activate skills that the evidence already makes mandatory.
+Select the smallest specialist skill set from the confirmed system model and current phase. Do not choose skills from a project-type label alone, and do not ask the user to activate skills that the evidence already makes mandatory.
 
 ## Inputs
 
@@ -76,9 +76,9 @@ If a repository already establishes a language, formatter, framework, or test st
 
 ### 6. Enforce the question budget
 
-Routine engineering question budget is zero. Before asking Shaun anything about skill selection, language, naming, OOP/procedural style, test organisation, or normal framework conventions, verify that the answer is not already determined by the evidence or defaults.
+Routine engineering question budget is zero. Before asking the user anything about skill selection, language, naming, OOP/procedural style, test organisation, or normal framework conventions, verify that the answer is not already determined by the evidence or defaults.
 
-Ask only when the missing answer belongs to Shaun under `docs/DECISION-RIGHTS.md` or a material ambiguity survives repository inspection and bounded proof.
+Ask only when the missing answer belongs to the user under `docs/DECISION-RIGHTS.md` or a material ambiguity survives repository inspection and bounded proof.
 
 ### 7. Define the promotion gate
 

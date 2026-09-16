@@ -123,8 +123,8 @@ Describe what was checked.
 
 ---
 
-## Notes for Shaun
+## Notes for the user
 
-What should Shaun review first?
+What should the user review first?
 
 *

@@ -4,6 +4,18 @@ This file records meaningful user-facing harness changes. Git remains the source
 
 ## Unreleased
 
+### Memory context and reusable roles
+
+- Shared bounded CLI/DSH resume context with explicit existing-note mapping and
+  advisory Git-snapshot freshness evidence; no automatic initialisation.
+- Reconciled current state with the recovered 0.4.1 baseline.
+- Reusable operating policy and generated decision owners use user/agent roles.
+  Decision CLI consumers must migrate `ATHENA`/`SHAUN` comparisons to `AGENT`/`USER`.
+  Historical records and personal profile filenames are preserved.
+- Optional missing GitHub CLI no longer breaks local Git checks; VCS fixtures
+  isolate user identity from the machine running tests.
+- Package previews exclude nested generated `.tgz` snapshots.
+
 ### Added
 
 - `ENGINEERING-DEFAULTS.md` as the routine engineering operating policy, including language/runtime defaults, architecture defaults, testing/failure rules, question budget, and version-control expectations.

@@ -8,7 +8,7 @@ It must be used before writing new code, adding files, adding dependencies, crea
 
 The goal is not tiny code.
 
-The goal is the smallest correct implementation that fits the approved architecture, solves the current build slice, and stays maintainable for Shaun.
+The goal is the smallest correct implementation that fits the approved architecture, solves the current build slice, and stays maintainable for the user.
 
 ---
 
@@ -131,7 +131,7 @@ Before adding a dependency, ask:
 * Does the project already have something that solves this?
 * Can the standard library or platform solve it cleanly?
 * Does the dependency reduce code and risk?
-* Does Shaun need to approve the learning or maintenance cost?
+* Does the user need to approve the learning or maintenance cost?
 
 Use libraries boldly for solved problems.
 
@@ -161,7 +161,7 @@ Before adding Composer, npm, Vite, Webpack, Tailwind, React, Vue, Docker, queues
 
 * Does the first useful slice need this?
 * Is the maintenance cost justified?
-* Can Shaun run and debug it easily?
+* Can the user run and debug it easily?
 * Is there a simpler version?
 * Has the choice been recorded in `TECH-SPEC.md`?
 
@@ -239,4 +239,4 @@ Do not remove structure that protects maintainability.
 
 Do not add structure that only decorates the project.
 
-The best implementation is the smallest safe implementation that fits the architecture and lets Shaun keep moving.
+The best implementation is the smallest safe implementation that fits the architecture and lets the user keep moving.

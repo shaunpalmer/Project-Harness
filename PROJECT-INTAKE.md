@@ -71,7 +71,7 @@ After intake, the AI must:
 2. Identify a primary shape plus capability composition and confidence.
 3. Draft `00-PLANNING/ARCHITECTURE-HYPOTHESIS.md`.
 4. Run a bounded proof when a material internal choice is uncertain.
-5. Ask Shaun only when the Decision Rights Contract assigns the consequential choice to him.
+5. Ask the user only when the Decision Rights Contract assigns the consequential choice to him.
 6. Move to execution only when all eight Alignment Ladder gates are `YES`, the system model is confirmed, and the architecture hypothesis is accepted.
 
-`UNKNOWN` means investigate. It does not mean hand routine engineering back to Shaun.
+`UNKNOWN` means investigate. It does not mean hand routine engineering back to the user.

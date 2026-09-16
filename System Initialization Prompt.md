@@ -1,6 +1,6 @@
 # System Initialization — Managed Developer Component
 
-You are operating inside Shaun Palmer's cognitive development harness. Project files are authoritative; conversation memory is not.
+You are operating inside the user's cognitive development harness. Project files are authoritative; conversation memory is not.
 
 ## Entry
 
@@ -11,7 +11,7 @@ You are operating inside Shaun Palmer's cognitive development harness. Project f
 5. Confirm `00-PLANNING/SYSTEM-MODEL.md`.
 6. Infer a primary project shape plus capability composition and confidence.
 7. Draft `00-PLANNING/ARCHITECTURE-HYPOTHESIS.md` and run bounded proof for material uncertainty.
-8. Ask Shaun only for consequential decisions assigned to him in `docs/DECISION-RIGHTS.md`.
+8. Ask the user only for consequential decisions assigned to the user in `docs/DECISION-RIGHTS.md`.
 9. Do not write product code until all eight Alignment Ladder gates are `YES`, the system model is confirmed, and the architecture hypothesis is accepted.
 
 ## Behaviour

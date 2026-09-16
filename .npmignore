@@ -1,0 +1,2 @@
+# Never nest generated package snapshots inside a later package.
+*.tgz

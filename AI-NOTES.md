@@ -51,12 +51,12 @@
 ## Extended Parameters (optional lookup)
 
 > Beyond the core five in the entry protocol. Resolve when the task needs them.
-> Most are inferred from `SHAUN_DEV_PROFILE.md` / `TECH-SPEC.md`; confirm when the task is sensitive to them.
+> Most are inferred from `ENGINEERING-DEFAULTS.md` / `TECH-SPEC.md`; confirm when the task is sensitive to them.
 
 | Parameter | Resolves | Default source |
 |-----------|----------|----------------|
 | **ERROR STRATEGY** | How errors surface and bubble (envelope / Result / exception+log); one bad record vs whole-run failure | `ARCHITECTURE-TEMPLATES.md` (error bubbling) |
-| **LOGGING** | What is logged, where, at what level; structured or plain | `SHAUN_DEV_PROFILE.md` (fail loudly, log) |
+| **LOGGING** | What is logged, where, at what level; structured or plain | `ENGINEERING-DEFAULTS.md` (fail loudly, log) |
 | **TESTING** | What proves this slice works; the smallest useful test; the verify command | `testing-plan` skill |
 | **SECURITY** | Sanitise-in / escape-out, secrets handling, nonces (WordPress), auth | `TECH-SPEC.md`, `wordpress-plugin` skill |
 | **PERFORMANCE BUDGET** | Concrete target (e.g. 100 URLs < 60s); memory ceiling | `PRD.md` success metrics |

@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { readMemoryContext } from './memory-context.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const TASK_SCHEMA_VERSION = 2;
@@ -98,31 +99,11 @@ function extractHeadingBody(markdown, heading) {
   return body.join('\n').trim();
 }
 
-function listActiveDecisions() {
-  const decisionDir = path.join(ROOT, 'docs', 'decisions');
-  if (!fs.existsSync(decisionDir)) return [];
-  return fs.readdirSync(decisionDir)
-    .filter((name) => name.endsWith('.md'))
-    .sort()
-    .map((name) => ({ name, content: fs.readFileSync(path.join(decisionDir, name), 'utf8') }))
-    .filter(({ content }) => /^status:\s*accepted\s*$/mi.test(content))
-    .map(({ name, content }) => ({
-      id: content.match(/^id:\s*(.+)$/mi)?.[1]?.trim() ?? name,
-      title: content.match(/^title:\s*(.+)$/mi)?.[1]?.trim() ?? name,
-    }));
-}
-
 function resume() {
-  const northStar = readText('docs/NORTH-STAR.md');
-  const currentState = readText('docs/CURRENT-STATE.md');
   const task = readJson('.harness/state/active-task.json', false);
   console.log(JSON.stringify({
-    project: extractHeadingBody(northStar, 'Project purpose'),
-    invariants: extractHeadingBody(northStar, 'Invariants'),
-    current_state: extractHeadingBody(currentState, 'Current truth'),
-    next_action: extractHeadingBody(currentState, 'Next action'),
+    ...readMemoryContext(ROOT),
     active_task: task,
-    active_decisions: listActiveDecisions(),
     discovery: DISCOVERY_ARTIFACTS.map((artifact) => ({
       path: artifact.path,
       status: hasExactLine(readText(artifact.path, false), artifact.marker) ? 'confirmed' : 'draft-or-missing',
@@ -244,15 +225,15 @@ function checkpoint(args) {
 
 function decision(args) {
   const policies = {
-    routine: ['ATHENA', 'decide-and-proceed'],
-    reversible: ['ATHENA', 'recommend-test-and-proceed'],
-    architecture: ['SHAUN', 'recommend-and-request-approval'],
-    financial: ['SHAUN', 'recommend-and-request-approval'],
-    provider: ['SHAUN', 'recommend-and-request-approval'],
-    security: ['SHAUN', 'request-approval-if-risk-changes'],
-    destructive: ['SHAUN', 'request-explicit-approval'],
-    merge: ['SHAUN', 'request-explicit-approval'],
-    release: ['SHAUN', 'request-explicit-approval'],
+    routine: ['AGENT', 'decide-and-proceed'],
+    reversible: ['AGENT', 'recommend-test-and-proceed'],
+    architecture: ['USER', 'recommend-and-request-approval'],
+    financial: ['USER', 'recommend-and-request-approval'],
+    provider: ['USER', 'recommend-and-request-approval'],
+    security: ['USER', 'request-approval-if-risk-changes'],
+    destructive: ['USER', 'request-explicit-approval'],
+    merge: ['USER', 'request-explicit-approval'],
+    release: ['USER', 'request-explicit-approval'],
   };
   const selected = policies[args.kind];
   if (!selected) throw new Error(`Unknown decision kind. Use: ${Object.keys(policies).join(', ')}`);
@@ -317,12 +298,12 @@ function projectGuidanceFiles(project, layout) {
   const sourcePath = layout.relative.source.split(path.sep).join('/');
   const createdAt = new Date().toISOString();
   return {
-    'AGENTS.md': `# ${project.name} — Agent Contract\n\nThis is the canonical product project. Product code belongs here, not in the starter repository.\n\n## Entry order\n\n1. Read \`docs/NORTH-STAR.md\`.\n2. Read \`docs/CURRENT-STATE.md\`.\n3. Read \`.harness/project.json\` and \`.harness/state/active-task.json\`.\n4. Complete \`00-PLANNING/PROJECT-INTAKE.md\`.\n5. Confirm \`00-PLANNING/SYSTEM-MODEL.md\` from evidence.\n6. Draft and obtain approval for \`00-PLANNING/ARCHITECTURE-HYPOTHESIS.md\`.\n7. Inspect relevant source, tests, decisions, dependencies, and Git history.\n8. Run \`node scripts/project-ready.mjs\` before product execution.\n\n## Infer before implement\n\nA natural-language prompt is a valid starting point. Infer a primary shape only after modelling inputs, outputs, capabilities, state, failure boundaries, invariants, unknowns, and evidence. Hybrid capability composition is valid. Low confidence means inspect or run a bounded proof; it does not mean ask Shaun to program through you.\n\n## Folder ownership\n\n- Plan in \`00-PLANNING/\`.\n- Write canonical product code only in \`${sourcePath}/\`.\n- Put proof in \`tests/\`.\n- Treat \`build/\` as disposable assembly.\n- Put only verified delivery artifacts in \`dist/\`.\n\n## Development behaviour\n\nDo not start product code until all eight Alignment Ladder gates are YES, the system model is confirmed, the architecture hypothesis is accepted, and \`node scripts/project-ready.mjs\` passes. Never merge, deploy, publish, spend credits, or mutate production without explicit approval.\n`,
+    'AGENTS.md': `# ${project.name} — Agent Contract\n\nThis is the canonical product project. Product code belongs here, not in the starter repository.\n\n## Entry order\n\n1. Read \`docs/NORTH-STAR.md\`.\n2. Read \`docs/CURRENT-STATE.md\`.\n3. Read \`.harness/project.json\` and \`.harness/state/active-task.json\`.\n4. Complete \`00-PLANNING/PROJECT-INTAKE.md\`.\n5. Confirm \`00-PLANNING/SYSTEM-MODEL.md\` from evidence.\n6. Draft and obtain approval for \`00-PLANNING/ARCHITECTURE-HYPOTHESIS.md\`.\n7. Inspect relevant source, tests, decisions, dependencies, and Git history.\n8. Run \`node scripts/project-ready.mjs\` before product execution.\n\n## Infer before implement\n\nA natural-language prompt is a valid starting point. Infer a primary shape only after modelling inputs, outputs, capabilities, state, failure boundaries, invariants, unknowns, and evidence. Hybrid capability composition is valid. Low confidence means inspect or run a bounded proof; it does not mean ask the user to program through you.\n\n## Folder ownership\n\n- Plan in \`00-PLANNING/\`.\n- Write canonical product code only in \`${sourcePath}/\`.\n- Put proof in \`tests/\`.\n- Treat \`build/\` as disposable assembly.\n- Put only verified delivery artifacts in \`dist/\`.\n\n## Development behaviour\n\nDo not start product code until all eight Alignment Ladder gates are YES, the system model is confirmed, the architecture hypothesis is accepted, and \`node scripts/project-ready.mjs\` passes. Never merge, deploy, publish, spend credits, or mutate production without explicit approval.\n`,
     '00-PLANNING/PROJECT-INTAKE.md': `# Project Intake\n\nProject: ${project.name}\nSlug: \`${project.slug}\`\nInitial type hint: \`${project.type}\`\n\nA natural-language brief is enough to begin discovery.\n\n1. **Purpose and commercial reason:**\n2. **Initial shape hint:** known preset, \`infer\`, or \`hybrid\`.\n3. **First useful working slice:**\n4. **Known constraints:** runtime/language/storage/providers/cost/deployment, or \`infer from evidence\`.\n5. **Done condition:**\n\nOptional: integrations, auth/users, hard constraints, data volume, existing system to preserve.\n`,
     '00-PLANNING/SYSTEM-MODEL.md': `# System Model\n\nMODEL_STATUS: DRAFT\n\nPromote the status only when each section is evidence-backed and blocking unknowns are resolved or assigned under decision rights.\n\n## Goal\nDescribe the outcome without prescribing implementation.\n\n## Inputs\nList data, commands, events, files, users, or external sources.\n\n## Outputs\nList observable outputs and delivery destinations.\n\n## Capabilities\nCompose required capabilities freely.\n\n## Data flow\nDescribe information movement without naming classes.\n\n## State and persistence\nWhat must survive retries, crashes, reruns, or sessions?\n\n## Failure boundaries\nList partial failures, retry/fallback routes, and stop conditions.\n\n## Invariants\nState facts that must remain true regardless of route.\n\n## Unknowns\nRecord unresolved questions and how each will be resolved.\n\n## Evidence\nList repository/runtime/provider/test evidence supporting the model.\n`,
     '00-PLANNING/ARCHITECTURE-HYPOTHESIS.md': `# Architecture Hypothesis\n\nHYPOTHESIS_STATUS: DRAFT\n\nPromote the status only after the system model is confirmed, alternatives are compared, bounded proof is run where needed, and consequential choices are approved.\n\n## Primary shape\nState preset/hybrid/custom shape and confidence.\n\n## Capabilities\nMap capabilities to responsibilities.\n\n## Candidate patterns\nList only patterns that solve observed problems.\n\n## Assumptions\nList assumptions that could invalidate the route.\n\n## Alternatives considered\nRecord credible alternatives and trade-offs.\n\n## Bounded proof\nState the smallest experiment and observed result.\n\n## Proposed architecture\nDescribe components, boundaries, ownership, storage, dependencies, and flow.\n\n## Approval evidence\nRecord consequential approval or why the choice is routine/reversible.\n`,
     'scripts/project-ready.mjs': generatedReadinessScript(),
-    'docs/NORTH-STAR.md': `# North Star\n\n## Project purpose\n\nTo be completed from \`00-PLANNING/PROJECT-INTAKE.md\` before execution.\n\n## Invariants\n\n- Product code remains inside \`${sourcePath}/\`.\n- Build and distribution output never becomes canonical source.\n- Consequential decisions remain with Shaun; routine development remains with Athena.\n- Unfamiliar work is modelled before architecture is locked.\n\n## Success condition\n\nTo be defined during intake.\n`,
+    'docs/NORTH-STAR.md': `# North Star\n\n## Project purpose\n\nTo be completed from \`00-PLANNING/PROJECT-INTAKE.md\` before execution.\n\n## Invariants\n\n- Product code remains inside \`${sourcePath}/\`.\n- Build and distribution output never becomes canonical source.\n- Consequential decisions remain with the user; routine development remains with the agent.\n- Unfamiliar work is modelled before architecture is locked.\n\n## Success condition\n\nTo be defined during intake.\n`,
     'docs/CURRENT-STATE.md': `# Current State\n\nLast verified: ${createdAt}\n\n## Current truth\n\nThe lifecycle scaffold exists. No product implementation has started; the initial type is a hint only.\n\n## Known boundaries\n\n- Intake and North Star are incomplete.\n- System model and architecture hypothesis are drafts.\n- Active task is blocked until the readiness contract passes.\n- Creation did not build, package, deploy, publish, or call providers.\n\n## Next action\n\nComplete intake, confirm the system model, then produce an evidence-backed architecture hypothesis.\n`,
   };
 }

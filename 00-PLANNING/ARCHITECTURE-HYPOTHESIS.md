@@ -46,6 +46,12 @@ Evolve the existing zero-dependency Node control plane with an engineering-defau
 
 ## Proposed architecture
 
+Memory-context repair (2026-09-16): share a read-only Node module between CLI and
+DSH resume rather than duplicate memory policy. Keep the existing layers and
+permission boundaries. Add explicit note mapping and advisory freshness evidence;
+preserve the legacy resume fields. The user authorised this bounded repair and
+generic user/agent naming on a feature branch; merge/release remain separate.
+
 `ENGINEERING-DEFAULTS.md` owns routine language/style/architecture/testing/failure/version-control defaults. `AGENTS.md` and `docs/DECISION-RIGHTS.md` establish zero routine-question behaviour and distinguish applying a default from materially deviating from one. `.github/skills/skill-router/SKILL.md` automatically binds ecosystem rules when capabilities are confirmed. `.github/skills/wordpress-way.md` becomes one non-duplicated authoritative WordPress contract.
 
 `scripts/vcs-control.js` is a zero-dependency, non-interactive Git control surface. It uses `GIT_TERMINAL_PROMPT=0`, existing machine credentials, explicit file lists for staging, safe non-default branches, remote verification via `git ls-remote`, and hard refusal of force/default-branch managed writes. `package.json` exposes the controller without replacing project-control.

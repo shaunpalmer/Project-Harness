@@ -41,6 +41,12 @@ _Replace with actual diagram or ASCII art._
 
 ## Layers / Modules
 
+For the reusable harness itself, DSH hosts sessions/tools; `dsh/index.js` adapts
+project controls; `scripts/project-control.js` owns readiness and CLI orchestration;
+`scripts/memory-context.js` owns shared bounded memory reads; project-local documents
+own intent/state; specialist skills own domain rules. The remaining template sections
+are for generated projects, not a requirement to add backend/database layers here.
+
 | Layer | Responsibility | Key files/folders |
 |-------|---------------|-------------------|
 |       |               |                   |
@@ -159,7 +165,7 @@ Casual comments, brainstorming, possible options, or rough ideas do not override
 
 Architecture may only change when:
 
-* Shaun confirms the change deliberately.
+* the user confirms the change deliberately.
 * The reason for the change is recorded.
 * The relevant planning files are updated.
 * `AI-NOTES.md` records the decision and rationale.
@@ -180,7 +186,7 @@ A good library solves a focused problem.
 
 A framework controls the shape of the project.
 
-Shaun does not need to know every library deeply before using it. If a library is mature, project-appropriate, understandable at the call site, and solves a real problem, it may be the best design choice.
+the user does not need to know every library deeply before using it. If a library is mature, project-appropriate, understandable at the call site, and solves a real problem, it may be the best design choice.
 
 Do not rewrite solved problems from scratch just to avoid dependencies.
 
@@ -229,7 +235,7 @@ Before adding a dependency, classify it:
 #### 4. Framework
 
 - Controls project structure, routing, rendering, state, build process, or deployment.
-- Requires stronger justification and Shaun approval.
+- Requires stronger justification and the user approval.
 
 #### 5. Platform / Infrastructure Choice
 
@@ -257,9 +263,9 @@ Do not introduce React, Next.js, Laravel, Django, complex frontend frameworks, m
 Before recommending a framework, explain:
 
 1. What problem it solves.
-2. Why Shaun's known stack is not enough.
+2. Why the user's known stack is not enough.
 3. What files and commands it adds.
-4. How Shaun will run, debug, and maintain it.
+4. How the user will run, debug, and maintain it.
 5. What the simpler version would look like.
 6. Whether the long-term benefit is worth the learning cost.
 
@@ -299,4 +305,4 @@ Use libraries boldly when they reduce risk.
 
 Use frameworks carefully when they change the shape of the project.
 
-Do not make Shaun maintain a project structure he does not understand unless the benefit is deliberate, documented, and approved.
+Do not make the user maintain a project structure he does not understand unless the benefit is deliberate, documented, and approved.

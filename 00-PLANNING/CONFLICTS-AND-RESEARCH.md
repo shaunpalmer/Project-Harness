@@ -5,7 +5,7 @@ that file becomes the place where the agent works through:
 competing ideas
 different possible architectures
 old notes vs new notes
-Shaun thinking out loud
+the user thinking out loud
 AI recommendations that disagree
 research snippets
 library/framework choices
@@ -17,7 +17,7 @@ implementation options
 
 This file controls how the agent handles competing ideas, research notes, unclear instructions, and conflicts between planning documents.
 
-Shaun may collect rough notes, compare options, think out loud, or change direction while working through a design.
+the user may collect rough notes, compare options, think out loud, or change direction while working through a design.
 
 The agent must not treat all notes as decisions.
 
@@ -42,7 +42,7 @@ Confirmed decisions beat suggestions.
 
 Research informs decisions, but does not automatically become architecture.
 
-If unsure, ask Shaun.
+If unsure, ask the user.
 
 ## Research Folder Rule
 
@@ -57,7 +57,7 @@ Summarize them into options, trade-offs, risks, and recommendations.
 Every conflict must end with one status:
 
 - RESOLVED
-- NEEDS SHAUN/Senior Developer
+- NEEDS USER/Senior Developer
 - NEEDS ARCHITECTURE UPDATE
 - NEEDS PROTOTYPE
 - DEFERRED
