@@ -109,5 +109,7 @@ test('DSH registers all three handlers and resume uses mapped context (host API 
   assert.equal(result.writes_performed, false);
   const inventory = JSON.parse(await handlers.get('project_harness_inventory').execute());
   assert.equal(inventory.writes_performed, false);
+  const specialist = JSON.parse(await handlers.get('project_harness_select_specialist').execute());
+  assert.equal(specialist.writes_performed, false);
   assert.equal(fs.existsSync(path.join(root, 'docs')), false);
 });
