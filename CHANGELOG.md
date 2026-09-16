@@ -14,6 +14,7 @@ This file records meaningful user-facing harness changes. Git remains the source
   Historical records and personal profile filenames are preserved.
 - Optional missing GitHub CLI no longer breaks local Git checks; VCS fixtures
   isolate user identity from the machine running tests.
+- Package previews exclude nested generated `.tgz` snapshots.
 
 ### Added
 

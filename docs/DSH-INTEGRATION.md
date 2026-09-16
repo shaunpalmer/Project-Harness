@@ -47,3 +47,6 @@ use the same provider boundary rather than copying domain instructions into a un
 The adapter retains `ctx.tools.register(defineTool(...))` and the existing string
 output contract. See the upstream [tool-authoring reference](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/cookbook/adding-a-tool.md).
 Handler fixture tests stub host APIs; they do not replace a live DSH acceptance run.
+
+Package snapshots (`*.tgz`) are excluded from the next package preview so an old
+local archive cannot be nested inside a newer installable bundle.

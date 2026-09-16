@@ -19,6 +19,7 @@ and remove personal assumptions from reusable operating instructions.
 - [x] Remove implicit personal-profile loading from entry instructions.
 - [x] Keep existing layers and explain responsibility/permission precedence.
 - [x] Add regression fixtures, including actual adapter handlers with host stubs.
+- [x] Prevent stale `.tgz` package snapshots from entering a later package.
 - [x] Complete final full-suite and control verification (44 tests, control:verify, memory:resume).
 - [ ] Publish a feature-branch PR for review.
 - [ ] After approval, verify the package in a fresh live DSH session.
