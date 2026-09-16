@@ -153,6 +153,8 @@ The reference experience is a substantial brief followed by at most a small numb
 
 Project Harness can be installed into a DeepSeek Harness profile as a bundle. The bundle provides read-only project-memory resume, evidence-based specialist selection, and native on-demand WordPress and Python/prospecting skills for the explicitly selected workspace.
 
+For the DSH quick-check tools and fresh-session diagnostic prompt, see `docs/DSH-INTEGRATION.md`.
+
 See `docs/DSH-INTEGRATION.md` for installation and the boundary between DSH runtime composition and Project Harness project control.
 
 ## Supported vs legacy controls
