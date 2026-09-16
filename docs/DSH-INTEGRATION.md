@@ -1,6 +1,6 @@
 # DeepSeek Harness integration
 
-Project Harness is also an installable DeepSeek Harness (DSH) bundle. The bundle adds a read-only `project_harness_resume` tool to the selected DSH profile.
+Project Harness is also an installable DeepSeek Harness (DSH) bundle. The bundle adds read-only project-control tools and specialist routing to the selected DSH profile.
 
 ## What the first bundle does
 
@@ -35,6 +35,27 @@ Before starting DSH, explicitly select the project workspace. For example:
 `export PROJECT_HARNESS_ROOT=/path/to/the/selected-project`
 
 The bundle refuses to use an unset workspace, a missing directory, or the DeepSeek Harness source checkout itself. This prevents the runtime repository from being mistaken for the project being managed. The same value can be supplied through the profile's `projectRoot` setting when a persistent profile configuration is preferred.
+
+## Quick workspace checks
+
+Use these DSH tools after selecting a workspace, installing or reinstalling the bundle, moving a project folder, or starting work on a pre-existing project.
+
+| Order | DSH tool | Purpose | Expected write behaviour |
+|---|---|---|---|
+| 1 | `project_harness_inventory` | Lists the selected project root, top-level files, and likely memory sources. | Read-only; reports `writes_performed: false`. |
+| 2 | `project_harness_resume` | Loads compact Project Harness memory, decisions, active task, and freshness warnings. | Read-only; reports `writes_performed: false`. |
+| 3 | `project_harness_select_specialist` | Detects whether the workspace should use a specialist preset such as WordPress or Python/prospecting. | Read-only; reports `writes_performed: false`. |
+
+Suggested fresh-session prompt:
+
+```text
+Read-only diagnostic. Run project_harness_inventory, then project_harness_resume,
+then project_harness_select_specialist for the selected workspace. Do not
+initialise or modify project files. Return the exact results and flag any
+freshness or workspace-boundary warnings.
+```
+
+For an existing project, run `project_harness_inventory` before assuming Project Harness files are present. If resume memory is missing, stale, or points at another repository, treat that as a setup/reconciliation task rather than creating files automatically. If `project_harness_select_specialist` returns a specialist, use it as routing evidence before starting implementation.
 
 ## Design boundary
 
