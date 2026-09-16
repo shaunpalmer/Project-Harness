@@ -134,6 +134,7 @@ function specialistFor(projectRoot) {
       status: 'blocked',
       code: resolution.code,
       message: resolution.message,
+      writes_performed: false,
     };
   }
 
@@ -174,6 +175,7 @@ function specialistFor(projectRoot) {
         wordpress_directory: hasWordPressDirectory,
       },
       preset,
+      writes_performed: false,
     };
   }
 
@@ -189,6 +191,7 @@ function specialistFor(projectRoot) {
         prospecting_shape: hasProspectingShape,
       },
       preset,
+      writes_performed: false,
     };
   }
 
@@ -197,6 +200,7 @@ function specialistFor(projectRoot) {
     confidence: 'none',
     evidence: {},
     message: 'No installed Project Harness specialist matched this workspace yet.',
+    writes_performed: false,
   };
 }
 
