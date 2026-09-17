@@ -982,3 +982,68 @@ test('readCatalog fails closed when the file is missing or malformed', () => {
     removeWorkspace(workspace);
   }
 });
+
+// ---------------------------------------------------------------------------
+// YAML-subset conformance
+//
+// These rules exist because the library claims its files are valid input for DSH's
+// own filesystem provider. Anything this parser accepts must parse to the same value
+// in real YAML, so out-of-subset content is refused instead of silently mis-read.
+// test/fixtures/dsh-frontmatter-conformance.mts proves the agreement against DSH.
+// ---------------------------------------------------------------------------
+
+const CONFORMANCE_DESCRIPTION = 'A routing description that is comfortably long enough to satisfy the gate.';
+
+const frontmatterValue = (line) => parseFrontmatter(`---\nname: sample-skill\n${line}\n---\nBody.\n`)?.data.description;
+
+const frontmatterReason = (line) => {
+  const result = readSkillMetadata(`---\nname: sample-skill\n${line}\n---\nBody.\n`, 'sample');
+  return result.ok ? undefined : result.reason;
+};
+
+test('an unquoted scalar loses a YAML comment, as it would in DSH', () => {
+  assert.equal(frontmatterValue(`description: ${CONFORMANCE_DESCRIPTION} # trailing note`), CONFORMANCE_DESCRIPTION);
+  assert.equal(frontmatterValue('# leading comment\nname: sample-skill\ndescription: ' + CONFORMANCE_DESCRIPTION), CONFORMANCE_DESCRIPTION);
+  // A `#` inside a word is literal, not a comment.
+  assert.equal(frontmatterValue(`description: ${CONFORMANCE_DESCRIPTION}#tag`), `${CONFORMANCE_DESCRIPTION}#tag`);
+  // A value that is only a comment is empty, and an empty description is refused.
+  assert.match(frontmatterReason('description: # gone'), /requires a non-empty "description"/);
+});
+
+test('a quoted scalar keeps its hash and rejects trailing content', () => {
+  assert.equal(frontmatterValue(`description: "${CONFORMANCE_DESCRIPTION} # not a comment"`), `${CONFORMANCE_DESCRIPTION} # not a comment`);
+  assert.equal(frontmatterValue(`description: '${CONFORMANCE_DESCRIPTION}'`), CONFORMANCE_DESCRIPTION);
+  assert.match(frontmatterReason(`description: "${CONFORMANCE_DESCRIPTION}" junk`), /unexpected content after a quoted scalar/);
+  assert.match(frontmatterReason('description: "unterminated'), /unterminated double-quoted scalar/);
+  assert.match(frontmatterReason("description: 'unterminated"), /unterminated single-quoted scalar/);
+});
+
+test('out-of-subset YAML constructs are refused rather than mis-read', () => {
+  // DSH's YAML reader rejects or reinterprets each of these; accepting them as plain
+  // text would advertise a different description in each provider.
+  assert.match(frontmatterReason(`description: [draft] ${CONFORMANCE_DESCRIPTION}`), /unterminated flow collection/);
+  assert.match(frontmatterReason('description: {a: b}'), /flow mappings are outside the supported frontmatter subset/);
+  assert.match(frontmatterReason('description: |'), /unsupported YAML construct/);
+  assert.match(frontmatterReason('description: >'), /unsupported YAML construct/);
+  assert.match(frontmatterReason(`description: &anchor ${CONFORMANCE_DESCRIPTION}`), /unsupported YAML construct/);
+  assert.match(frontmatterReason(`description: *alias ${CONFORMANCE_DESCRIPTION}`), /unsupported YAML construct/);
+  assert.match(frontmatterReason(`description: !!str ${CONFORMANCE_DESCRIPTION}`), /unsupported YAML construct/);
+  assert.match(frontmatterReason(`description: @reserved ${CONFORMANCE_DESCRIPTION}`), /unsupported YAML construct/);
+});
+
+test('a complete flow sequence still parses, and a folded scalar still joins', () => {
+  assert.deepEqual(parseFrontmatter('---\nname: sample-skill\ntags: [one, two]\n---\nBody.\n')?.data.tags, ['one', 'two']);
+  assert.deepEqual(parseFrontmatter('---\nname: sample-skill\ntags: [one, two] # note\n---\nBody.\n')?.data.tags, ['one', 'two']);
+  assert.deepEqual(parseFrontmatter('---\nname: sample-skill\ntags:\n  - one\n  - two\n---\nBody.\n')?.data.tags, ['one', 'two']);
+
+  const folded = parseFrontmatter(`---\nname: sample-skill\ndescription:\n  ${CONFORMANCE_DESCRIPTION}\n  continued # note\n---\nBody.\n`);
+  assert.equal(folded?.data.description, `${CONFORMANCE_DESCRIPTION} continued`);
+});
+
+test('the parser reports a precise reason instead of a generic malformed message', () => {
+  // parseFrontmatter surfaces content faults; readSkillMetadata turns them into a reason
+  // so `skills:verify` can point an author at the exact construct that is unsupported.
+  assert.throws(() => parseFrontmatter('---\nname: sample\n  bad: indent\n---\nBody.\n'), /unexpected indentation/);
+  const reason = frontmatterReason('description: |');
+  assert.ok(reason !== undefined && reason.startsWith('sample: '), reason);
+});

@@ -91,7 +91,12 @@ export function parseFrontmatter(raw) {
  * @returns {{ ok: true, skill: object } | { ok: false, reason: string }} Parsed skill or a reason it is unusable.
  */
 export function readSkillMetadata(content, fallbackName = 'skill') {
-  const parsed = parseFrontmatter(content);
+  let parsed;
+  try {
+    parsed = parseFrontmatter(content);
+  } catch (error) {
+    return { ok: false, reason: `${fallbackName}: ${error.message}` };
+  }
   if (parsed === undefined) {
     return { ok: false, reason: `${fallbackName}: missing or malformed YAML frontmatter` };
   }
@@ -231,12 +236,9 @@ function parseBlock(blockLines) {
     lines.push({ indent, text: raw.trim(), no: index + 2 });
   }
 
-  try {
-    const state = { i: 0 };
-    return parseMap(lines, state, lines[0]?.indent ?? 0);
-  } catch {
-    return undefined;
-  }
+  if (lines.length === 0) return {};
+  const state = { i: 0 };
+  return parseMap(lines, state, lines[0].indent);
 }
 
 function parseMap(lines, state, indent) {
@@ -293,34 +295,98 @@ function parseSequence(lines, state, indent) {
 function parseFolded(lines, state, indent) {
   const parts = [];
   while (state.i < lines.length && lines[state.i].indent >= indent) {
-    parts.push(lines[state.i].text);
+    parts.push(stripComment(lines[state.i].text).trim());
     state.i += 1;
   }
-  return parts.join(' ');
+  return parts.filter((part) => part !== '').join(' ');
 }
 
-function parseScalar(text) {
-  if (text.startsWith('[') && text.endsWith(']')) {
-    const inner = text.slice(1, -1).trim();
+function parseScalar(rawText) {
+  const text = rawText.trim();
+
+  // A quoted scalar is taken verbatim; only a trailing comment is dropped.
+  if (text.startsWith('"') || text.startsWith("'")) {
+    const quote = text[0];
+    const closing = findClosingQuote(text, quote);
+    if (closing < 0) throw new Error(`unterminated ${quote === '"' ? 'double' : 'single'}-quoted scalar`);
+    const inner = text.slice(1, closing);
+    const trailing = stripComment(text.slice(closing + 1)).trim();
+    if (trailing !== '') throw new Error(`unexpected content after a quoted scalar: ${trailing}`);
+    return quote === '"'
+      ? inner.replace(/\\(["\\])/gu, '$1')
+      : inner.replace(/''/gu, "'");
+  }
+
+  const value = stripComment(text).trim();
+  if (value === '') return null;
+
+  if (value.startsWith('[') || value.startsWith('{')) {
+    const closing = value.startsWith('[') ? ']' : '}';
+    if (!value.endsWith(closing)) throw new Error(`unterminated flow collection: ${value}`);
+    if (value === '[]') return [];
+    if (value === '{}') return {};
+    if (value.startsWith('{')) throw new Error('flow mappings are outside the supported frontmatter subset');
+    const inner = value.slice(1, -1).trim();
     if (inner === '') return [];
     return splitInline(inner).map((part) => parseScalar(part.trim()));
   }
-  if (text === '{}') return {};
-  if (text === '[]') return [];
 
-  if (text.length >= 2 && text.startsWith('"') && text.endsWith('"')) {
-    return text.slice(1, -1).replace(/\\(["\\])/gu, '$1');
-  }
-  if (text.length >= 2 && text.startsWith("'") && text.endsWith("'")) {
-    return text.slice(1, -1).replace(/''/gu, "'");
+  // YAML indicator characters that would change the value's meaning. Accepting them as
+  // plain text would make this parser disagree with DeepSeek Harness's own YAML reader,
+  // so they are refused rather than silently mis-read.
+  if (['&', '*', '!', '|', '>', '%', '@', '`'].includes(value[0])) {
+    throw new Error(`unsupported YAML construct at "${value.slice(0, 24)}"`);
   }
 
-  if (text === 'true') return true;
-  if (text === 'false') return false;
-  if (text === 'null' || text === '~') return null;
-  if (/^-?\d+$/u.test(text)) return Number.parseInt(text, 10);
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  if (value === 'null' || value === '~') return null;
+  if (/^-?\d+$/u.test(value)) return Number.parseInt(value, 10);
 
+  return value;
+}
+
+/**
+ * Remove a trailing YAML comment from an unquoted scalar.
+ *
+ * A `#` starts a comment only at the beginning of a value or after whitespace; a `#`
+ * inside a word is literal. Without this, a file DeepSeek Harness reads as
+ * `Build things` would be read here as `Build things # a comment`, and the two
+ * providers would advertise different routing text for the same file.
+ *
+ * @param {string} text Raw scalar text.
+ * @returns {string} Text with any trailing comment removed.
+ */
+function stripComment(text) {
+  for (let index = 0; index < text.length; index += 1) {
+    if (text[index] !== '#') continue;
+    if (index === 0 || /\s/u.test(text[index - 1])) return text.slice(0, index);
+  }
   return text;
+}
+
+/**
+ * Find the closing quote of a quoted scalar, honouring escapes and `''`.
+ *
+ * @param {string} text Text beginning with a quote.
+ * @param {string} quote The quote character, `"` or `'`.
+ * @returns {number} Index of the closing quote, or -1 when unterminated.
+ */
+function findClosingQuote(text, quote) {
+  for (let index = 1; index < text.length; index += 1) {
+    if (quote === '"' && text[index] === '\\') {
+      index += 1;
+      continue;
+    }
+    if (text[index] === quote) {
+      if (quote === "'" && text[index + 1] === "'") {
+        index += 1;
+        continue;
+      }
+      return index;
+    }
+  }
+  return -1;
 }
 
 /** Split an inline array body on commas that are not inside quotes. */
