@@ -12,7 +12,7 @@
     {
       "gate": "evidence",
       "answer": "YES",
-      "evidence": "Read the DSH skill subsystem doc and source, PR #6, PR #8, the merged regression test and the divergent branch; then executed the provider against DSH's real registry and filesystem provider and diffed our frontmatter parser against DSH's own, which found two real divergences."
+      "evidence": "Read the DSH skill/tool subsystem docs, develop guides, testing policy, postmortems and cookbooks; ran three parallel doc-audit agents across the remaining 112 English docs (30,884 lines) to find every requirement binding an out-of-tree bundle; and executed the provider against DSH's real registry, tool runtime and a live headless session."
     },
     {
       "gate": "system_model",
@@ -42,7 +42,7 @@
     {
       "gate": "proof",
       "answer": "YES",
-      "evidence": "Node 22.23.2: 103/103 tests including the merged PR #8 regression tests, the catalog validator, and two live DeepSeek Harness probes (39 integration checks covering the real registry, tool runtime and Loader export contract; 174 conformance checks across 39 cases), plus the same probes against the packed artifact installed into a throwaway DSH profile; skills:verify, skills:catalog --check, dsh:verify, control:verify, memory:resume and git diff --check passed. Both new guards were proven by injecting the regression and watching them fail. An in-session live model run still needs approval because it spends provider credits."
+      "evidence": "Node 22.23.2: 104/104 tests including the merged PR #8 regression tests, the catalog validator, and two live DeepSeek Harness probes (39 integration + 174 conformance checks); the same probes against the packed artifact installed into a throwaway DSH profile; and an end-to-end acceptance task through the shipped headless app with a live model, which composed the designed 13-skill WordPress catalogue and served a project-local override from the nearer layer. skills:verify, skills:catalog --check, dsh:verify, control:verify, memory:resume and git diff --check passed."
     }
   ]
 }

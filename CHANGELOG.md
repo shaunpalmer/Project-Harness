@@ -121,6 +121,20 @@ This file records meaningful user-facing harness changes. Git remains the source
   configuration fails while the plugin loads instead of silently disabling catalogue
   refresh.
 
+### Live in-session acceptance, and native-layer reconciliation
+
+- Ran an end-to-end acceptance task through the shipped `headless` app with the packed
+  bundle installed: `project_harness_skill_catalog` and `project_harness_find_skills` both
+  executed against a real session. The composed catalogue matched the design exactly
+  (13 skills for a WordPress fixture: 4 core, `find-skills`, 2 specialist, and 6
+  evidence-bound capabilities), the session cwd won over the configured root, and a
+  project-local `.dsh/skills` override was served from the nearer layer.
+- Fixed: the catalogue and search reports described a skill using the harness copy even
+  when a `.dsh/skills` entry of the same name was what DSH actually published to the model.
+  Both now report the winning layer's description and flag `shadowed_by_native`, and
+  `find_skills` searches the union of the shipped library and the native layer with exactly
+  one entry per name so a superseded copy can never win the ranking. Found by the live run.
+
 ### Canonical tool values and Loader export guard
 
 - Every tool now returns one canonical JSON value and declares DSH's `json` author spec

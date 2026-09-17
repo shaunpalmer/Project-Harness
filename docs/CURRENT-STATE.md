@@ -86,6 +86,26 @@ throwaway profile was removed afterwards; the live `web` profile was not touched
 The package now declares the documented dependency roles (schemastery as a dependency, not
 a peer) and ships 72 files instead of 146.
 
+## Live in-session acceptance
+
+An end-to-end task ran through the shipped `headless` app with the packed bundle installed
+in a throwaway profile, against a WordPress fixture with its own `.git` and a project-local
+`.dsh/skills/database-design` override. The model ran both diagnostic tools and reported:
+
+- `project_root_source: session-cwd` with the fixture root, so session identity won over
+  configuration and the DSH-checkout guard did not misfire;
+- `specialist: wordpress-coding` at high confidence, and
+  `detected_capabilities: [testing, database, api, ui, oop]`;
+- 13 visible skills: 4 core, `find-skills`, 2 specialist, `testing-plan`, two database
+  skills, `api-design`, `interface-design` and `oop-standards` — each with its composing
+  reason, and `wordpress-way`/`oop-standards` correctly model-only;
+- the project-local override served from the nearer layer, which is what the live run
+  exposed as an inconsistency in the reports.
+
+That inconsistency is fixed: the catalogue and `find_skills` now report the description of
+the layer DSH actually publishes, flag `shadowed_by_native`, and search the union of the
+shipped library and the native layer with one entry per name.
+
 ## Tool and export contracts
 
 Following the DSH develop documentation and `docs/testing.md`, the plugin now matches two
