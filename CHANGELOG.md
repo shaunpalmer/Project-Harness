@@ -4,6 +4,37 @@ This file records meaningful user-facing harness changes. Git remains the source
 
 ## Unreleased
 
+### Subprocess, environment and state-write hygiene
+
+Four blocking findings from a DeepSeek Harness documentation audit are fixed. Each fix
+carries a test that was proven to fail when the regression was reintroduced.
+
+- The read-only `git` probe no longer hands the whole ambient environment to a child. It
+  runs through the harness shell seam when one is mounted, which scrubs
+  `*KEY*`/`*SECRET*`/`*TOKEN*`/`*PASSWORD*` and the `DSH_*` namespace, manages the child's
+  lifecycle, applies the session's confinement policy, and forwards the caller's abort
+  signal. When no shell is mounted it falls back to a local spawn that mirrors the same
+  scrub rule and is equally bounded and abortable.
+- `GIT_TERMINAL_PROMPT=0` is now actually set on that path. It previously was not, and the
+  documentation claimed otherwise.
+- The activation write is hardened: the `.harness` directory is refused if it is a symlink
+  out of the workspace *before* anything is created, the state directory is created `0o700`,
+  the temp file name gains random bytes, the create is exclusive and owner-only
+  (`flag: 'wx'`, `mode: 0o600`), and a failed rename removes the temp file instead of
+  leaving the previous record on disk.
+- Every tool now refuses to start work the caller already cancelled, and `resume` forwards
+  the signal into the probe. Cancellation is reported as cancellation rather than as a
+  successful result carrying empty freshness evidence.
+- `readMemoryContext` is now async and accepts an injected `{ runGit, signal }`. This is a
+  breaking signature change; both in-repo callers were updated in the same change, and
+  `resumeProject` is async as a result.
+- Added `scripts/child-env.js` (the scrub rule, mirroring the harness seam), and
+  `scripts/git-probe.js` (the single frozen argv table plus the local runner). No new
+  dependency: `ctx.shell` is used as a service property and the shell package is never
+  imported.
+- ADR-0006 records the decision, including why `scripts/vcs-control.js` was left alone.
+
+
 ### Skill architecture v2
 
 - Every skill in `.github/skills` now carries DSH-native frontmatter (`name`,

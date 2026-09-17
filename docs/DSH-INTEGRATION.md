@@ -103,9 +103,17 @@ Activation writes exactly one file, `.harness/state/skills.json`, inside the
 selected workspace, and only when the model or the user calls
 `project_harness_activate_skills`. The write is validated, path-contained and
 atomic. No tool runs a shell, changes Git state, touches product source, or
-deploys anything. Resume invokes bounded, read-only Git queries with optional
-locks disabled for freshness evidence; missing Git produces a warning, not an
-installation attempt. Generated projects remain separate from the Project Harness
+deploys anything.
+
+Resume's freshness evidence comes from a bounded, read-only `git` probe. When the harness
+mounts a shell executor the probe runs through that seam, which scrubs credential-shaped
+variables from the child environment, registers the command with the managed-child
+lifecycle, applies the session's confinement policy, and forwards the caller's abort
+signal. When no shell is mounted it falls back to a local spawn that mirrors the same
+credential-scrub rule and is equally bounded and abortable, so a deployment can lose the
+seam but never the hygiene. `GIT_TERMINAL_PROMPT=0` and `GIT_OPTIONAL_LOCKS=0` are set on
+both paths, so the probe can neither block on a credential prompt nor take a lock. Missing
+Git produces a warning, not an installation attempt. Generated projects remain separate from the Project Harness
 source repository.
 
 ## Workspace selection
