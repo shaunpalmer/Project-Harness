@@ -122,12 +122,28 @@ test('the capability vocabulary is data, not hard-coded composition', () => {
   }
 });
 
-test('the adapter declares no external runtime dependency beyond DSH peers', () => {
+test('the package declares the documented dependency roles and ships what it reads', () => {
   const packageJson = readJson('package.json');
+
+  // Cordis and the tool registry are provided by the host at runtime, so they are peers.
+  // Schemastery is a runtime validator and belongs in dependencies, matching the
+  // documented package pattern and the published dsh-github-intelligence bundle. pnpm
+  // reports the two peers as missing because a profile lists the host bundles rather than
+  // depending on them; that warning is inherent to an out-of-tree DSH bundle.
   assert.deepEqual(Object.keys(packageJson.peerDependencies).sort(), [
     '@deepseek-ai/cordis',
     '@deepseek-ai/dsh-tools',
-    '@deepseek-ai/schemastery',
   ]);
-  assert.equal(packageJson.dependencies, undefined);
+  assert.deepEqual(Object.keys(packageJson.dependencies), ['@deepseek-ai/schemastery']);
+
+  // The plugin reads these from its own package root, so the published package must carry
+  // them. A missing entry here breaks the installed bundle while the source checkout still
+  // works, which is exactly the failure a files allowlist can introduce.
+  // Both surfaces must survive publication: the DSH bundle reads dsh/, cordis.patch.yml,
+  // .github/skills and scripts/memory-context.js from its own root, and the toolkit keeps
+  // its scripts and root contracts. tests, docs, planning artifacts and dsh/probes are
+  // development-only and are deliberately not published.
+  for (const shipped of ['cordis.patch.yml', 'dsh/index.js', 'dsh/skills', 'dsh/specialists', '.github/skills', 'scripts', 'ENGINEERING-DEFAULTS.md', 'AGENTS.md']) {
+    assert.ok(packageJson.files.includes(shipped), `package files must include ${shipped}`);
+  }
 });

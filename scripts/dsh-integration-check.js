@@ -8,7 +8,12 @@
  * report, and removes the copy even when the probe fails.
  *
  * Usage:
- *   node scripts/dsh-integration-check.js [--fixture name] [--dsh-root /path] [--json]
+ *   node scripts/dsh-integration-check.js [--fixture name] [--dsh-root /path] \
+ *        [--package-root /path/to/installed/project-harness] [--json]
+ *
+ * `--package-root` points the probes at an installed copy instead of this checkout, which
+ * is how the published artifact is verified: the shipped package must compose skills from
+ * its own `.github/skills`, not only from the repository.
  *
  * With no DeepSeek Harness checkout available, the runner reports unavailability rather
  * than a false pass: these probes are an integration gate, not a hermetic unit test.
@@ -63,7 +68,7 @@ export function findDshCheckout(explicit) {
  * Run one probe fixture against a checkout.
  *
  * @param {{ file: string, name: string }} probe Probe to run.
- * @param {{ dshRoot: string, timeoutMs?: number }} options Run options.
+ * @param {{ dshRoot: string, packageRoot?: string, timeoutMs?: number }} options Run options.
  * @returns {{ available: true, ok: boolean, report: object, stdout: string, stderr: string }} Probe outcome.
  */
 export function runProbe(probe, options) {
@@ -74,7 +79,7 @@ export function runProbe(probe, options) {
   try {
     const stdout = execFileSync(
       process.execPath,
-      ['--import', 'tsx/esm', target, ROOT],
+      ['--import', 'tsx/esm', target, options.packageRoot ?? ROOT],
       {
         cwd: options.dshRoot,
         encoding: 'utf8',
@@ -104,11 +109,12 @@ function parseReport(stdout) {
 }
 
 function parseArgs(argv) {
-  const args = { json: false, fixture: '', dshRoot: '' };
+  const args = { json: false, fixture: '', dshRoot: '', packageRoot: '' };
   for (let index = 0; index < argv.length; index += 1) {
     if (argv[index] === '--json') { args.json = true; continue; }
     if (argv[index] === '--fixture') { args.fixture = argv[index + 1] ?? ''; index += 1; continue; }
     if (argv[index] === '--dsh-root') { args.dshRoot = argv[index + 1] ?? ''; index += 1; continue; }
+    if (argv[index] === '--package-root') { args.packageRoot = argv[index + 1] ?? ''; index += 1; continue; }
   }
   return args;
 }
@@ -135,15 +141,22 @@ function main() {
     return;
   }
 
+  const packageRoot = args.packageRoot === '' ? undefined : path.resolve(args.packageRoot);
+  if (packageRoot !== undefined && !fs.existsSync(path.join(packageRoot, 'dsh', 'index.js'))) {
+    console.error(`Not a Project Harness package root: ${packageRoot}`);
+    process.exitCode = 1;
+    return;
+  }
+
   const outcomes = [];
   for (const probe of probes) {
-    const outcome = runProbe(probe, { dshRoot });
+    const outcome = runProbe(probe, { dshRoot, packageRoot });
     outcomes.push({ probe, outcome });
     if (args.json) continue;
 
     const failed = outcome.report?.failed ?? (outcome.ok ? 0 : 1);
     const total = outcome.report?.checks ?? outcome.report?.total ?? 0;
-    console.log(`${outcome.ok ? 'PASS' : 'FAIL'} ${probe.name}: ${total - failed}/${total} checks`);
+    console.log(`${outcome.ok ? 'PASS' : 'FAIL'} ${probe.name}: ${total - failed}/${total} checks against ${packageRoot ?? ROOT}`);
     if (!outcome.ok) {
       for (const divergence of outcome.report?.detail ?? []) {
         console.log(`  - ${divergence.case ?? ''}.${divergence.field ?? ''} ours=${JSON.stringify(divergence.ours)} dsh=${JSON.stringify(divergence.dsh)}`);

@@ -20,7 +20,10 @@ export const inject = ['tools', 'skills'];
 
 export const Config = Schema.object({
   projectRoot: Schema.string().default(process.env.PROJECT_HARNESS_ROOT ?? ''),
-  skillWatchIntervalMs: Schema.number().default(DEFAULT_SKILL_WATCH_INTERVAL_MS),
+  // Constrained in the schema so bad configuration fails while the plugin loads with an
+  // actionable error instead of silently disabling catalogue refresh. 0 turns the poll off
+  // for a deployment that watches the library some other way.
+  skillWatchIntervalMs: Schema.number().step(1).min(0).default(DEFAULT_SKILL_WATCH_INTERVAL_MS),
 });
 
 export function apply(ctx, config) {
