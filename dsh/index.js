@@ -13,6 +13,9 @@ export const Config = Schema.object({
 });
 
 const PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const SKILL_CATALOG_PATH = path.join(PACKAGE_ROOT, 'dsh', 'skill-catalog.json');
+const SKILL_LAYERS = new Set(['core', 'specialist', 'capability', 'discovery']);
+const SKILL_NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
 function readText(root, relativePath) {
   const filePath = path.join(root, relativePath);
@@ -285,10 +288,48 @@ function inventoryProject(projectRoot, projectRootSource = 'configured-fallback'
 }
 
 /**
- * Convert a Project Harness skill path into DSH's kebab-case skill identity.
+ * Load and validate the package-owned DSH skill catalog.
+ * Specialist presets recommend skills; the catalog controls packaged availability.
+ *
+ * @returns {Array<object>} Validated skill catalog entries.
+ */
+function readSkillCatalog() {
+  const parsed = JSON.parse(fs.readFileSync(SKILL_CATALOG_PATH, 'utf8'));
+  if (parsed?.schema_version !== 1 || !Array.isArray(parsed.skills)) {
+    throw new Error('Invalid Project Harness skill catalog schema.');
+  }
+
+  const seen = new Set();
+  return parsed.skills.map((entry) => {
+    if (!entry || typeof entry !== 'object') throw new Error('Skill catalog entries must be objects.');
+    if (typeof entry.name !== 'string' || !SKILL_NAME.test(entry.name)) {
+      throw new Error(`Invalid Project Harness skill name: ${String(entry.name)}`);
+    }
+    if (seen.has(entry.name)) throw new Error(`Duplicate Project Harness skill name: ${entry.name}`);
+    seen.add(entry.name);
+    if (typeof entry.path !== 'string' || !entry.path.trim()) {
+      throw new Error(`Skill ${entry.name} is missing a path.`);
+    }
+    if (typeof entry.description !== 'string' || !entry.description.trim()) {
+      throw new Error(`Skill ${entry.name} is missing a description.`);
+    }
+    if (!SKILL_LAYERS.has(entry.layer)) {
+      throw new Error(`Skill ${entry.name} has invalid layer: ${String(entry.layer)}`);
+    }
+    const invocation = entry.invocation ?? {};
+    if (typeof invocation.modelInvocable !== 'boolean' || typeof invocation.userInvocable !== 'boolean') {
+      throw new Error(`Skill ${entry.name} has invalid invocation policy.`);
+    }
+    return entry;
+  });
+}
+
+/**
+ * Convert a legacy Project Harness skill path into its kebab-case identity.
+ * This remains only for backward-compatible specialist presets.
  *
  * @param {string} relativePath Project-relative Markdown skill path.
- * @returns {string} DSH skill name.
+ * @returns {string} Skill name.
  */
 function skillNameFromPath(relativePath) {
   const normalized = relativePath.replaceAll('\\', '/');
@@ -300,32 +341,32 @@ function skillNameFromPath(relativePath) {
 }
 
 /**
- * Produce a short routing description without loading the full skill body into
- * the model-facing catalogue.
+ * Flatten the specialist's recommended skill profile into one set of names.
+ * Availability remains controlled by the package catalog and DSH's other layers.
  *
- * @param {string} content Markdown skill content.
- * @param {string} name Skill identity.
- * @returns {string} Short description.
+ * @param {object | undefined} preset Specialist preset.
+ * @returns {Set<string>} Recommended skill names.
  */
-function skillDescription(content, name) {
-  const withoutFrontmatter = content.replace(/^---[\s\S]*?---\s*/u, '');
-  const heading = withoutFrontmatter.match(/^#\s+(.+)$/mu)?.[1]?.trim();
-  const paragraph = withoutFrontmatter
-    .split(/\r?\n\s*\r?\n/u)
-    .map((part) => part.replace(/\r?\n/g, ' ').trim())
-    .find((part) => part && !part.startsWith('#'));
+function recommendedSkillNames(preset) {
+  const profile = preset?.skill_profile;
+  if (profile && typeof profile === 'object') {
+    const names = Object.values(profile)
+      .flatMap((value) => Array.isArray(value) ? value : [])
+      .filter((value) => typeof value === 'string');
+    return new Set(names);
+  }
 
-  return (heading || paragraph || `Project Harness skill: ${name}.`).slice(0, 500);
+  return new Set((preset?.required_skills ?? []).map(skillNameFromPath));
 }
 
 /**
- * Resolve a skill from the selected workspace first, then the installed
- * Project Harness package. This keeps generated projects authoritative while
- * still allowing the bundle to work before a project handoff has copied the
- * skills locally.
+ * Resolve a packaged Project Harness skill from the selected workspace first,
+ * then the installed Project Harness package. The project copy is an override
+ * for curated Project Harness skills only; arbitrary project/user skills remain
+ * DSH's native filesystem provider responsibility.
  *
  * @param {string} projectRoot Selected workspace root.
- * @param {string} relativePath Project-relative skill path.
+ * @param {string} relativePath Catalog skill path.
  * @returns {{ content: string, filePath: string } | null} Skill file or null.
  */
 function resolveSkill(projectRoot, relativePath) {
@@ -343,82 +384,125 @@ function resolveSkill(projectRoot, relativePath) {
 }
 
 /**
- * Build the specialist skill catalogue for one workspace.
+ * Build the Project Harness packaged skill catalog for one workspace.
+ * All curated entries stay discoverable; specialist profiles only mark which
+ * ones are recommended for the detected project type.
  *
  * @param {string} projectRoot Selected workspace root.
  * @param {'session-cwd' | 'configured-fallback'} projectRootSource Root provenance.
- * @returns {Array<object>} DSH skill candidates for the selected specialist.
+ * @returns {Array<object>} DSH skill candidates.
  */
-function specialistSkills(projectRoot, projectRootSource) {
-  const specialist = specialistFor(projectRoot, projectRootSource);
-  const requiredSkills = specialist.preset?.required_skills ?? [];
+function projectHarnessSkills(projectRoot, projectRootSource) {
+  const resolution = resolveProjectRoot(projectRoot);
+  if (!resolution.ok) return [];
 
-  return requiredSkills
-    .map((relativePath) => {
-      const resolved = resolveSkill(projectRoot, relativePath);
+  const specialist = specialistFor(resolution.root, projectRootSource);
+  const recommended = recommendedSkillNames(specialist.preset);
+
+  return readSkillCatalog()
+    .map((entry) => {
+      const resolved = resolveSkill(resolution.root, entry.path);
       if (!resolved) return null;
+      const isRecommended = recommended.has(entry.name)
+        || (specialist.specialist === null && entry.layer === 'discovery');
 
-      const name = skillNameFromPath(relativePath);
       return {
-        name,
-        description: skillDescription(resolved.content, name),
-        whenToUse: `Use for ${specialist.specialist} work in the selected workspace.`,
+        name: entry.name,
+        description: entry.description,
+        ...(entry.when_to_use ? { whenToUse: entry.when_to_use } : {}),
         source: 'project-harness',
         provider: 'project-harness',
         rank: 250,
-        locator: relativePath,
+        locator: { name: entry.name, path: entry.path },
         path: resolved.filePath,
-        invocation: { modelInvocable: true, userInvocable: true },
+        invocation: entry.invocation,
+        metadata: {
+          projectHarnessLayer: entry.layer,
+          recommended: isRecommended,
+          specialist: specialist.specialist,
+        },
       };
     })
     .filter(Boolean);
 }
 
 /**
- * Register a cwd-sensitive Project Harness skill provider. DSH supplies the
- * active session workspace in SkillLookupOptions.cwd; configured projectRoot
- * remains only the agentless fallback.
+ * Resolve one provider candidate against the current catalog and workspace.
+ *
+ * @param {object} candidate Candidate selected by DSH.
+ * @param {string} projectRoot Current workspace root.
+ * @returns {{ entry: object, resolved: { content: string, filePath: string } } | null} Valid load target.
+ */
+function resolveCatalogCandidate(candidate, projectRoot) {
+  if (!candidate?.locator || typeof candidate.locator !== 'object') return null;
+  const locatorName = candidate.locator.name;
+  const locatorPath = candidate.locator.path;
+  if (typeof locatorName !== 'string' || typeof locatorPath !== 'string') return null;
+  if (candidate.name !== locatorName) return null;
+
+  const entry = readSkillCatalog().find((item) => item.name === locatorName && item.path === locatorPath);
+  if (!entry) return null;
+  const resolved = resolveSkill(projectRoot, entry.path);
+  if (!resolved) return null;
+  return { entry, resolved };
+}
+
+/**
+ * Register a cwd-sensitive Project Harness skill provider. DSH owns cross-layer
+ * merging and project/user discovery; this provider supplies the curated global
+ * Project Harness catalog and uses provider-scoped invalidation for manifest changes.
  *
  * @param {import('@deepseek-ai/cordis').Context} ctx DSH plugin context.
  * @param {string} configuredRoot Configured fallback workspace root.
  * @returns {void}
  */
-function registerSpecialistSkills(ctx, configuredRoot) {
-  ctx.effect(() => ctx.skills.registerProvider(() => ({
-    name: 'project-harness',
-    async list(options = {}) {
-      const selected = selectProjectRoot(options.cwd, configuredRoot);
-      return specialistSkills(selected.projectRoot, selected.source);
-    },
-    async get(candidate, options = {}) {
-      const selected = selectProjectRoot(options.cwd, configuredRoot);
-      const specialist = specialistFor(selected.projectRoot, selected.source);
-      const allowedSkills = new Set(specialist.preset?.required_skills ?? []);
-
-      if (typeof candidate.locator !== 'string' || !allowedSkills.has(candidate.locator)) {
-        return undefined;
-      }
-
-      const resolved = resolveSkill(selected.projectRoot, candidate.locator);
-      if (!resolved) return undefined;
-
-      const name = skillNameFromPath(candidate.locator);
-      if (name !== candidate.name) return undefined;
-
+function registerProjectHarnessSkills(ctx, configuredRoot) {
+  ctx.effect(() => {
+    let invalidate = () => {};
+    const disposeProvider = ctx.skills.registerProvider((control) => {
+      invalidate = control.invalidate;
       return {
-        ...candidate,
-        description: skillDescription(resolved.content, name),
-        whenToUse: `Use for ${specialist.specialist} work in the selected workspace.`,
-        content: resolved.content,
-        path: resolved.filePath,
-        resourceBase: { kind: 'directory', path: path.dirname(resolved.filePath) },
+        name: 'project-harness',
+        async list(options = {}) {
+          options.signal?.throwIfAborted?.();
+          const selected = selectProjectRoot(options.cwd, configuredRoot);
+          return projectHarnessSkills(selected.projectRoot, selected.source);
+        },
+        async get(candidate, options = {}) {
+          options.signal?.throwIfAborted?.();
+          const selected = selectProjectRoot(options.cwd, configuredRoot);
+          const resolution = resolveProjectRoot(selected.projectRoot);
+          if (!resolution.ok) return undefined;
+          const loaded = resolveCatalogCandidate(candidate, resolution.root);
+          if (!loaded) return undefined;
+
+          return {
+            ...candidate,
+            description: loaded.entry.description,
+            ...(loaded.entry.when_to_use ? { whenToUse: loaded.entry.when_to_use } : {}),
+            invocation: loaded.entry.invocation,
+            content: loaded.resolved.content,
+            path: loaded.resolved.filePath,
+            resourceBase: { kind: 'directory', path: path.dirname(loaded.resolved.filePath) },
+          };
+        },
       };
-    },
-  })));
+    });
+
+    const onCatalogChange = (current, previous) => {
+      if (current.mtimeMs !== previous.mtimeMs || current.size !== previous.size) invalidate();
+    };
+    fs.watchFile(SKILL_CATALOG_PATH, { persistent: false, interval: 500 }, onCatalogChange);
+
+    return () => {
+      fs.unwatchFile(SKILL_CATALOG_PATH, onCatalogChange);
+      disposeProvider();
+    };
+  });
 }
 
 export function apply(ctx, config) {
-  registerSpecialistSkills(ctx, config.projectRoot);
+  registerProjectHarnessSkills(ctx, config.projectRoot);
 
   ctx.tools.register(defineTool({
     name: 'project_harness_resume',
@@ -436,7 +520,7 @@ export function apply(ctx, config) {
 
   ctx.tools.register(defineTool({
     name: 'project_harness_select_specialist',
-    description: 'Select a Project Harness specialist from workspace evidence. Currently routes WordPress and Python prospecting projects.',
+    description: 'Select a Project Harness specialist from workspace evidence. Specialist profiles recommend skill layers; the wider curated catalog stays discoverable on demand.',
     parameters: {},
     output: {
       schema: { type: 'string' },
