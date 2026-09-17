@@ -78,6 +78,31 @@ This file records meaningful user-facing harness changes. Git remains the source
   that flag never reaches the model; composition stays evidence-bound at 12-14 skills
   with the executable find/activate loop.
 
+### Verified against real DeepSeek Harness, and YAML-faithful frontmatter
+
+- Added `npm run dsh:verify`: boots DeepSeek Harness's real skill registry, real filesystem
+  provider and real consumer-facing snapshot API and runs the provider against them. It
+  proves composition per workspace, workspace scoping in both directions,
+  `snapshot().complete`, the find/activate/invalidate/republish loop, suppression, and
+  that a project `.dsh/skills` entry shadows the packaged skill of the same name. Needs a
+  checkout on disk (`DSH_CHECKOUT` or `--dsh-root`) and exits non-zero when it cannot find
+  one rather than reporting a pass it did not earn; without a checkout its tests skip, so a
+  hermetic clone still gets a green suite.
+- Added a frontmatter conformance probe: every shipped skill and a table of edge cases are
+  parsed by DeepSeek Harness's own provider and compared field by field with this
+  repository's parser (174 assertions across 39 cases). It found two real divergences, both
+  fixed here.
+- Fixed: an unquoted `#` was kept as text here while DeepSeek Harness strips it as a YAML
+  comment, so the two providers would have advertised different routing descriptions for
+  the same file. Unquoted scalars now strip YAML comments; `#` inside a word stays literal.
+- Fixed: an unquoted value starting with `[` was accepted as plain text here while
+  DeepSeek Harness's YAML reader rejects it. Block scalars, anchors, aliases, tags, flow
+  mappings, unterminated flow collections and trailing content after a quoted scalar are
+  now rejected with a precise reason instead of being silently mis-read, so anything this
+  parser accepts parses identically in DeepSeek Harness.
+- Parse failures now carry a specific message rather than a generic malformed-frontmatter
+  one, so `skills:verify` can name the unsupported construct.
+
 ### Memory context and reusable roles
 
 - Shared bounded CLI/DSH resume context with explicit existing-note mapping and

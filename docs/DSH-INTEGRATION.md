@@ -117,6 +117,38 @@ The provider is workspace-scoped in both directions: `list()` composes only the 
 workspace's catalogue, and `get()` refuses a candidate that the current workspace would
 not have offered, so a skill resolved for one project cannot be loaded into another.
 
+## Verification
+
+Two gates cover this integration, and they cover different things.
+
+`npm test` is hermetic: every other test in this repository stubs the DSH host, so it
+proves the logic without depending on a checkout.
+
+`npm run dsh:verify` runs the same provider against a **real** DeepSeek Harness
+checkout — the real skill registry, the real filesystem provider and the real
+consumer-facing snapshot API — and is the only coverage of the integration boundary.
+It needs a checkout on disk (set `DSH_CHECKOUT` or pass `--dsh-root`) and exits non-zero
+when it cannot find one rather than reporting a pass it did not earn. Without a checkout
+its tests skip, so a hermetic clone still gets a green suite.
+
+It asserts:
+
+- composed catalogues per workspace (core, discovery, specialist, default and
+  evidence-bound capabilities) and the exclusion of another specialist's skills;
+- `snapshot().complete`, without which DSH holds the catalogue back;
+- a project `<project>/.dsh/skills` entry shadowing the packaged skill of the same name,
+  reported as `project-dsh`, which is the native layering this provider relies on;
+- `get()` refusing a candidate the current workspace would not offer, in both directions;
+- the find, activate, invalidate, republish round trip, including suppression;
+- frontmatter **conformance**: every shipped skill and a table of edge cases parsed by
+  DSH's own provider and compared field by field with this repository's parser.
+
+That last item is what makes the portability claim true rather than asserted. The parser
+accepts a YAML subset and refuses anything it cannot read identically to real YAML —
+unquoted `#` comments are stripped, and block scalars, anchors, aliases, tags and flow
+mappings are rejected instead of silently mis-read. `skills:verify` enforces the same
+rules hermetically, and the conformance probe confirms the agreement against DSH itself.
+
 ## Configuration
 
 | Key | Default | Purpose |

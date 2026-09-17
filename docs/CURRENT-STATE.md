@@ -3,7 +3,7 @@
 Last verified: 2026-09-17
 Verified commit: 44eb167 (main after PR #6 and PR #8)
 Working branch: `feature/skill-architecture-v2` (rebased onto 44eb167)
-Verification: Node 22.23.2; 88/88 tests including the merged `test/dsh-workspace-routing.test.js`, plus `skills:verify`, `control:verify`, `memory:resume` and `git diff --check`. DSH host APIs are stubbed in adapter fixtures; live acceptance is pending.
+Verification: Node 22.23.2; 102/102 tests including the merged `test/dsh-workspace-routing.test.js` and two live DeepSeek Harness integration probes, plus `skills:verify`, `skills:catalog --check`, `control:verify`, `memory:resume` and `git diff --check`.
 
 ## Current truth
 
@@ -59,6 +59,21 @@ its best ideas onto this branch:
 
 The remote branch is retained for reference. Do not merge it wholesale.
 
+## Verified against a real DeepSeek Harness checkout
+
+`npm run dsh:verify` runs the provider against DeepSeek Harness's real skill registry,
+real filesystem provider and real consumer-facing snapshot API, and parses every shipped
+skill file through DeepSeek Harness's own provider to diff it against this repository's
+parser. The first run found two genuine divergences — an unquoted `#` kept as text here but
+stripped as a YAML comment by DeepSeek Harness, and a leading `[` accepted here but rejected
+by its YAML reader — and both are fixed. The check is now 174 assertions across 39 cases,
+and both probes run inside `npm test` when a checkout is present and skip without one.
+
+This turned three previously asserted claims into facts: a project `.dsh/skills` entry does
+shadow the packaged skill of the same name (rank 600 works as intended), the provider's
+catalogue satisfies `snapshot().complete`, and the find → activate → invalidate →
+republish loop works against the real registry.
+
 ## Working capabilities
 
 - DSH-native skill library with routing-quality descriptions and verified metadata.
@@ -79,8 +94,12 @@ The remote branch is retained for reference. Do not merge it wholesale.
   `dsh/index.js` through a `data:` URL, so its loader rewrites the adapter's
   module-relative imports to absolute URLs. Its assertions are unmodified.
 - `skills:verify` proves metadata and binding integrity, not routing quality.
-- Live DSH verification of the new provider still requires installing this
-  branch's package and starting a fresh session after review.
+- An end-to-end run inside a booted `dsh` profile with a live model is still not covered;
+  it would consume provider credits and needs explicit approval. The registry-level and
+  parser-level integration are covered; the model-facing in-session run is not.
+- `.harness/state/skills.json` is not covered by any `.gitignore`, here or in the handoff,
+  so activating a skill leaves an untracked file in the project. The lifecycle decision
+  (commit as project intent, or ignore as regenerable state) is still open.
 - `.github/skills/INDEX.md` was removed and `guard_debugging.md` renamed to
   `guard-debugging.md`; `scripts/guard_debugging.js` was updated to match.
 - The root `complexity-brake/` directory is a byte-identical duplicate of

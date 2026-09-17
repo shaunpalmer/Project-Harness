@@ -299,3 +299,19 @@ catalog entries to every session and marks specialist fits with
 catalogue (`packages/skill/tool-skill/src/index.ts`), so `metadata` never reaches the
 model; the practical effect is a wider catalogue with no additional routing signal.
 This branch keeps 12-14 evidence-bound skills plus the executable find/activate loop.
+
+## Live verification and YAML conformance (2026-09-17)
+
+The gap this plan recorded as a known boundary — "no live DSH session is started" — is
+partly closed. `npm run dsh:verify` boots DeepSeek Harness's real skill registry, real
+filesystem provider and real consumer-facing snapshot API and runs the provider against
+them, then parses every shipped skill file through DSH's own provider and diffs the result
+against this repository's parser.
+
+The first run of the conformance probe found two real divergences (unquoted `#` comments,
+and a leading `[` treated as text here but rejected by YAML). Both are fixed in
+`dsh/skills/frontmatter.js`; the full check is 174 assertions across 39 cases and is now
+part of `npm test` when a checkout is present.
+
+What is still not covered: an end-to-end run inside a booted `dsh` profile with a live
+model, which would consume provider credits and therefore needs the user's approval.

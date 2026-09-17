@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "id": "skill-architecture-v2",
-  "goal": "Replace the flat specialist skill lists with a composed, discoverable, DSH-native skill layer: verified frontmatter, layered core/specialist/capability composition, find-activate-load discovery wired to DSH invalidation, a provider contract reconciled with the merged session-workspace routing fix, and a generated, schema-validated package catalog.",
+  "goal": "Replace the flat specialist skill lists with a composed, discoverable, DSH-native skill layer: verified frontmatter, layered composition, find-activate-load discovery wired to DSH invalidation, a provider contract reconciled with the merged session-workspace routing fix, a generated package catalog, and verification against a real DeepSeek Harness checkout.",
   "status": "completed",
   "alignment": [
     {
@@ -12,7 +12,7 @@
     {
       "gate": "evidence",
       "answer": "YES",
-      "evidence": "Read the DSH skill subsystem doc and source (registry, tool-skill catalogue rendering, filesystem provider frontmatter, ranks, invalidation, watcher) plus PR #6, PR #8, the merged test/dsh-workspace-routing.test.js and the divergent origin/feat/skill-architecture-v2 before reconciling."
+      "evidence": "Read the DSH skill subsystem doc and source, PR #6, PR #8, the merged regression test and the divergent branch; then executed the provider against DSH's real registry and filesystem provider and diffed our frontmatter parser against DSH's own, which found two real divergences."
     },
     {
       "gate": "system_model",
@@ -32,7 +32,7 @@
     {
       "gate": "minimum_slice",
       "answer": "YES",
-      "evidence": "Phase one, the mandatory reconciliation with main, and the reviewed merge of the parallel branch's layer vocabulary and catalog validation. Native .dsh/skills migration and new specialists are out of scope; the parallel branch's broader-catalogue composition model was deliberately not merged."
+      "evidence": "Phase one, reconciliation with main, the reviewed merge of the parallel branch's layer vocabulary and catalog validation, plus live integration and YAML-conformance verification against a real DeepSeek Harness checkout. Native .dsh/skills migration, new specialists, and an in-session live model run remain out of scope."
     },
     {
       "gate": "debt_control",
@@ -42,7 +42,7 @@
     {
       "gate": "proof",
       "answer": "YES",
-      "evidence": "Node 22.23.2: 94/94 tests including the four merged PR #8 workspace-routing regression tests with no assertion weakened, the catalog validator, freshness and legacy-alias tests; skills:verify, skills:catalog --check, control:verify, memory:resume and git diff --check passed. Live DSH acceptance remains a separate step."
+      "evidence": "Node 22.23.2: 102/102 tests including the merged PR #8 regression tests, the catalog validator, and two live DeepSeek Harness probes (29 integration checks, 174 conformance checks across 39 cases); skills:verify, skills:catalog --check, control:verify, memory:resume and git diff --check passed. An in-session live model run still needs approval because it spends provider credits."
     }
   ]
 }

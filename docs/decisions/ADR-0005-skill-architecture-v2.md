@@ -127,3 +127,42 @@ file is a failure.
 This is an integrity gate, not a second composition mechanism. Frontmatter and
 `capabilities.json` still decide what the package ships and what a workspace sees; the
 catalog is a verified view of the first, and nothing reads it at runtime.
+
+## Addendum: verified against a real DeepSeek Harness checkout
+
+Everything above was originally proven against a stub host. That left the entire
+integration boundary — registration, catalogue publication, layering, invalidation —
+unverified, and it left the portability claim ("these files are valid input for DSH's own
+provider") as an assertion about a parser this repository wrote itself.
+
+`npm run dsh:verify` now boots the real packages and checks both.
+
+**Integration, against the real registry.** Composition per workspace, workspace scoping
+in both directions, `snapshot().complete === true`, and the find → activate → invalidate →
+republish loop all behave as designed. One claim became fact: a project
+`<project>/.dsh/skills` entry does shadow the packaged skill of the same name and is
+reported as `project-dsh`, so rank 600 buys native layering exactly as intended. Context
+teardown settles, so the registered effect disposers run.
+
+**Conformance, against DSH's own parser.** Every shipped skill file and a table of
+frontmatter edge cases are parsed by DSH's provider and compared field by field. The
+first run found two genuine divergences, both now fixed by tightening this parser rather
+than relaxing the claim:
+
+- an unquoted `#` was kept as text here and stripped as a YAML comment by DSH, so the two
+  providers would have advertised different routing descriptions for one file;
+- an unquoted value beginning with `[` was accepted as a plain string here and rejected by
+  DSH's YAML reader.
+
+`stripComment()` now removes a YAML comment from an unquoted scalar, and the parser
+refuses block scalars, anchors, aliases, tags, flow mappings and unterminated flow
+collections with a precise reason. Anything this parser accepts now parses to the same
+value in DSH; anything outside the subset is rejected instead of mis-read. Parse failures
+also carry a specific message instead of a generic malformed-frontmatter one, so
+`skills:verify` can name the unsupported construct.
+
+The probes must execute inside the checkout — they import its packages, so bare
+`@deepseek-ai/*` specifiers resolve — and the runner copies a probe in, runs it with the
+checkout's `tsx`, and removes the copy even when the probe fails. They live in
+`dsh/probes/` rather than under `test/`, because Node's test runner treats every file
+under a `test` directory as a test.
