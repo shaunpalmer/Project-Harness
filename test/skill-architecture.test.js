@@ -27,8 +27,12 @@ import {
   isDshCheckout,
   registerHarnessSkills,
   resolveProjectRoot,
+  inventoryProject,
+  renderSkillPlan,
+  resumeProject,
   specialistFor,
-  workspaceForLookup,
+  resolveWorkspace,
+  selectWorkspace,
 } from '../dsh/skills/plan.js';
 import { verifySkillLibrary } from '../scripts/skills-verify.js';
 
@@ -348,6 +352,8 @@ test('an unknown workspace reports why instead of advertising a catalogue', () =
   const plan = buildSkillPlan(path.join(os.tmpdir(), 'project-harness-does-not-exist'), undefined);
   assert.equal(plan.workspace, null);
   assert.deepEqual(plan.entries, []);
+  assert.equal(plan.unavailableCode, 'WORKSPACE_NOT_FOUND');
+  assert.equal(plan.workspaceSource, 'configured-fallback');
   assert.match(plan.unavailable, /does not exist|not configured/i);
 });
 
@@ -699,16 +705,137 @@ test('the refused workspace cases keep their explicit codes', () => {
   try {
     assert.equal(isDshCheckout(checkout), true);
     assert.equal(resolveProjectRoot(checkout).code, 'DSH_CHECKOUT_REJECTED');
-    assert.equal(workspaceForLookup('', checkout).ok, false);
-    assert.match(workspaceForLookup('', checkout).reason, /Refusing to use the DeepSeek Harness checkout/);
+    assert.equal(resolveWorkspace('', checkout).ok, false);
+    assert.equal(resolveWorkspace('', checkout).code, 'DSH_CHECKOUT_REJECTED');
+    assert.equal(resolveWorkspace('', checkout).source, 'session-cwd');
   } finally {
     removeWorkspace(checkout);
   }
 
   // The harness repository itself is a legitimate workspace to dogfood.
-  assert.equal(workspaceForLookup('', ROOT).root, ROOT);
+  assert.equal(resolveWorkspace('', ROOT).root, ROOT);
   assert.equal(buildSkillPlan('', ROOT).entries.length > 0, true);
 
   // A subdirectory resolves to its git root rather than being treated as a project.
-  assert.equal(workspaceForLookup('', path.join(ROOT, 'dsh')).root, ROOT);
+  assert.equal(resolveWorkspace('', path.join(ROOT, 'dsh')).root, ROOT);
+});
+
+// ---------------------------------------------------------------------------
+// Session-workspace identity (the contract locked by test/dsh-workspace-routing.test.js)
+// ---------------------------------------------------------------------------
+
+test('a session cwd owns project identity and reports its provenance', () => {
+  const configured = makeWorkspace({ 'README.md': '# fallback\n' });
+  const session = makeWorkspace({ 'README.md': '# session\n' });
+
+  try {
+    const fromSession = selectWorkspace(configured, session);
+    assert.equal(fromSession.path, session);
+    assert.equal(fromSession.source, 'session-cwd');
+
+    const fromConfig = selectWorkspace(configured, undefined);
+    assert.equal(fromConfig.path, configured);
+    assert.equal(fromConfig.source, 'configured-fallback');
+
+    // An empty or whitespace cwd is not a session identity.
+    assert.equal(selectWorkspace(configured, '   ').source, 'configured-fallback');
+
+    const resolved = resolveWorkspace(configured, session);
+    assert.equal(resolved.ok, true);
+    assert.equal(resolved.root, session);
+    assert.equal(resolved.source, 'session-cwd');
+  } finally {
+    removeWorkspace(configured);
+    removeWorkspace(session);
+  }
+});
+
+test('an invalid session cwd fails closed rather than falling back to another project', () => {
+  const configured = makeWorkspace({ 'README.md': '# fallback\n' });
+  const missing = path.join(os.tmpdir(), `project-harness-missing-${Date.now()}`);
+
+  try {
+    const resolved = resolveWorkspace(configured, missing);
+    assert.equal(resolved.ok, false);
+    assert.equal(resolved.code, 'WORKSPACE_NOT_FOUND');
+    assert.equal(resolved.source, 'session-cwd');
+
+    // The specialist must not be selected from the configured fallback project.
+    const specialist = specialistFor(missing, 'session-cwd');
+    assert.equal(specialist.status, 'blocked');
+    assert.equal(specialist.code, 'WORKSPACE_NOT_FOUND');
+    assert.equal(specialist.project_root_source, 'session-cwd');
+
+    const inventory = JSON.parse(inventoryProject(missing, 'session-cwd'));
+    assert.equal(inventory.status, 'blocked');
+    assert.equal(inventory.code, 'WORKSPACE_NOT_FOUND');
+    assert.equal(inventory.project_root_source, 'session-cwd');
+
+    const resume = JSON.parse(resumeProject(missing, 'session-cwd'));
+    assert.equal(resume.status, 'blocked');
+    assert.equal(resume.code, 'WORKSPACE_NOT_FOUND');
+    assert.equal(resume.project_root_source, 'session-cwd');
+
+    // A caller with no cwd still gets the configured fallback.
+    assert.equal(specialistFor(configured, 'configured-fallback').project_root_source, 'configured-fallback');
+  } finally {
+    removeWorkspace(configured);
+  }
+});
+
+test('tool reports name the resolved workspace and its provenance', () => {
+  const workspace = makeWorkspace({ 'requirements.txt': 'requests\n', 'scraper.py': 'print(1)\n' });
+
+  try {
+    const inventory = JSON.parse(inventoryProject(workspace, 'configured-fallback'));
+    assert.equal(inventory.project_root, workspace);
+    assert.equal(inventory.project_root_source, 'configured-fallback');
+
+    const specialist = specialistFor(workspace, 'configured-fallback');
+    assert.equal(specialist.specialist, 'python-prospecting');
+    assert.equal(specialist.project_root, workspace);
+    assert.equal(specialist.project_root_source, 'configured-fallback');
+
+    const catalog = JSON.parse(renderSkillPlan(buildSkillPlan('', workspace)));
+    assert.equal(catalog.project_root, workspace);
+    assert.equal(catalog.project_root_source, 'session-cwd');
+
+    const blocked = JSON.parse(renderSkillPlan(buildSkillPlan('', path.join(os.tmpdir(), 'project-harness-none'))));
+    assert.equal(blocked.status, 'blocked');
+    assert.equal(blocked.code, 'WORKSPACE_NOT_FOUND');
+    assert.equal(blocked.project_root_source, 'session-cwd');
+
+    // With no cwd at all, the configured root is the labelled fallback.
+    const fallback = JSON.parse(renderSkillPlan(buildSkillPlan(workspace)));
+    assert.equal(fallback.project_root, workspace);
+    assert.equal(fallback.project_root_source, 'configured-fallback');
+  } finally {
+    removeWorkspace(workspace);
+  }
+});
+
+test('the provider refuses a candidate the current workspace would not offer', async () => {
+  const wordpress = makeWorkspace({ 'wp-content/.keep': '' });
+  const python = makeWorkspace({ 'pyproject.toml': '[project]\nname="p"\ndependencies=["scrapy"]\n', 'scrapers/a.py': 'import scrapy\n' });
+
+  try {
+    const { ctx, state } = createStubHost();
+    registerHarnessSkills(ctx, { projectRoot: '', skillWatchIntervalMs: 0 });
+    const provider = state.providers[0];
+
+    const wordpressSkills = await provider.list({ cwd: wordpress });
+    const wordpressPlugin = wordpressSkills.find((candidate) => candidate.name === 'wordpress-plugin');
+    assert.ok(wordpressPlugin, 'the WordPress workspace must offer wordpress-plugin');
+
+    // Same candidate, same registration, different session: refused.
+    assert.equal(await provider.get(wordpressPlugin, { cwd: python }), undefined);
+
+    // And loaded normally in its own workspace.
+    const loaded = await provider.get(wordpressPlugin, { cwd: wordpress });
+    assert.equal(loaded.name, 'wordpress-plugin');
+    assert.equal(loaded.provider, 'project-harness');
+  } finally {
+    removeWorkspace(wordpress);
+    removeWorkspace(python);
+  }
 });

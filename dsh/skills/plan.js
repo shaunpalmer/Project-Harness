@@ -140,27 +140,43 @@ export function resolveProjectRoot(configuredRoot) {
 }
 
 /**
- * Resolve the workspace for one skill lookup.
+ * Select the workspace one DSH operation should use.
  *
- * DSH passes the calling agent's session cwd in `options.cwd`, so the provider
- * is workspace-sensitive rather than configuration-sensitive. The configured
- * root remains the fallback for a caller with no cwd.
+ * A calling session owns project identity, so an explicit session cwd always wins
+ * and the configured root is only the agentless fallback. The selected cwd is
+ * resolved to its nearest `.git` ancestor, the way DSH's own filesystem skill
+ * provider resolves a project root.
  *
- * @param {string} configuredRoot Configured workspace root.
- * @param {string | undefined} lookupPath Cwd supplied by DSH.
- * @returns {{ ok: true, root: string, origin: string } | { ok: false, reason: string }} Resolution result.
+ * Selection performs no validation: an explicit cwd that turns out to be invalid
+ * fails closed in {@link resolveWorkspace} rather than silently routing the
+ * operation at a different project.
+ *
+ * @param {string | undefined} configuredRoot Configured fallback workspace.
+ * @param {string | undefined} sessionCwd Calling DSH session workspace.
+ * @returns {{ path: string, source: 'session-cwd' | 'configured-fallback' }} Selection with provenance.
  */
-export function workspaceForLookup(configuredRoot, lookupPath) {
-  const fromCwd = typeof lookupPath === 'string' && lookupPath.trim() !== '';
-  const candidate = fromCwd ? findProjectRoot(lookupPath) : String(configuredRoot ?? '').trim();
-  const origin = fromCwd ? 'session cwd' : 'projectRoot configuration';
+export function selectWorkspace(configuredRoot, sessionCwd) {
+  if (typeof sessionCwd === 'string' && sessionCwd.trim() !== '') {
+    return { path: findProjectRoot(sessionCwd), source: 'session-cwd' };
+  }
 
-  if (candidate === '') return { ok: false, reason: 'No workspace cwd or projectRoot was supplied.' };
+  return { path: String(configuredRoot ?? '').trim(), source: 'configured-fallback' };
+}
 
-  const resolution = resolveProjectRoot(candidate);
-  if (!resolution.ok) return { ok: false, reason: resolution.message };
-
-  return { ok: true, root: resolution.root, origin };
+/**
+ * Resolve and validate the workspace for one operation.
+ *
+ * @param {string | undefined} configuredRoot Configured fallback workspace.
+ * @param {string | undefined} sessionCwd Calling DSH session workspace.
+ * @returns {{ ok: true, root: string, source: string } | { ok: false, code: string, message: string, source: string }} Resolution result.
+ */
+export function resolveWorkspace(configuredRoot, sessionCwd) {
+  const selected = selectWorkspace(configuredRoot, sessionCwd);
+  const resolution = resolveProjectRoot(selected.path);
+  if (!resolution.ok) {
+    return { ok: false, code: resolution.code, message: resolution.message, source: selected.source };
+  }
+  return { ok: true, root: resolution.root, source: selected.source };
 }
 
 /** Read the calling agent's session cwd from a DSH tool execution context. */
@@ -173,10 +189,16 @@ export function containsFileExtension(root, extension) {
   return containsExtension(root, extension);
 }
 
-export function resumeProject(projectRoot) {
+export function resumeProject(projectRoot, projectRootSource = 'configured-fallback') {
   const resolution = resolveProjectRoot(projectRoot);
   if (!resolution.ok) {
-    return JSON.stringify({ status: 'blocked', code: resolution.code, message: resolution.message }, null, 2);
+    return JSON.stringify({
+      status: 'blocked',
+      code: resolution.code,
+      message: resolution.message,
+      project_root_source: projectRootSource,
+      writes_performed: false,
+    }, null, 2);
   }
 
   const { root } = resolution;
@@ -186,6 +208,7 @@ export function resumeProject(projectRoot) {
   return JSON.stringify({
     ...memory,
     project_root: root,
+    project_root_source: projectRootSource,
     harness_files_present: Boolean(task || memory.current_state_available || memory.north_star_available),
     active_task: task,
     discovery: {
@@ -195,7 +218,7 @@ export function resumeProject(projectRoot) {
   }, null, 2);
 }
 
-export function specialistFor(projectRoot) {
+export function specialistFor(projectRoot, projectRootSource = 'configured-fallback') {
   const resolution = resolveProjectRoot(projectRoot);
   if (!resolution.ok) {
     return {
@@ -205,6 +228,7 @@ export function specialistFor(projectRoot) {
       status: 'blocked',
       code: resolution.code,
       message: resolution.message,
+      project_root_source: projectRootSource,
       writes_performed: false,
     };
   }
@@ -245,6 +269,8 @@ export function specialistFor(projectRoot) {
           wordpress_config_or_dependency: hasWordPressConfig || hasWordPressDependency,
           wordpress_directory: hasWordPressDirectory,
         },
+        project_root: root,
+        project_root_source: projectRootSource,
         preset,
         writes_performed: false,
       };
@@ -262,6 +288,8 @@ export function specialistFor(projectRoot) {
           python_project_marker: hasPythonProjectMarker,
           prospecting_shape: hasProspectingShape,
         },
+        project_root: root,
+        project_root_source: projectRootSource,
         preset,
         writes_performed: false,
       };
@@ -272,15 +300,23 @@ export function specialistFor(projectRoot) {
     specialist: null,
     confidence: 'none',
     evidence: {},
+    project_root: root,
+    project_root_source: projectRootSource,
     message: 'No installed Project Harness specialist matched this workspace yet.',
     writes_performed: false,
   };
 }
 
-export function inventoryProject(projectRoot) {
+export function inventoryProject(projectRoot, projectRootSource = 'configured-fallback') {
   const resolution = resolveProjectRoot(projectRoot);
   if (!resolution.ok) {
-    return JSON.stringify({ status: 'blocked', code: resolution.code, message: resolution.message }, null, 2);
+    return JSON.stringify({
+      status: 'blocked',
+      code: resolution.code,
+      message: resolution.message,
+      project_root_source: projectRootSource,
+      writes_performed: false,
+    }, null, 2);
   }
 
   const { root } = resolution;
@@ -301,6 +337,7 @@ export function inventoryProject(projectRoot) {
 
   return JSON.stringify({
     project_root: root,
+    project_root_source: projectRootSource,
     top_level: fs.readdirSync(root).sort(),
     memory_candidates: candidates.map((relativePath) => ({
       path: relativePath,
@@ -310,11 +347,12 @@ export function inventoryProject(projectRoot) {
   }, null, 2);
 }
 
-function emptyPlan(vocabulary, reason) {
+function emptyPlan(vocabulary, code, reason, source) {
   return {
     workspace: null,
-    workspaceOrigin: null,
+    workspaceSource: source,
     unavailable: reason,
+    unavailableCode: code,
     vocabulary,
     specialist: null,
     specialistConfidence: 'none',
@@ -354,9 +392,9 @@ export function normalizeSpecialistPreset(preset, vocabulary) {
  */
 export function buildSkillPlan(configuredRoot, cwd) {
   const vocabulary = readVocabulary(PACKAGE_ROOT) ?? {};
-  const resolved = workspaceForLookup(configuredRoot, cwd);
+  const resolved = resolveWorkspace(configuredRoot, cwd);
 
-  if (!resolved.ok) return emptyPlan(vocabulary, resolved.reason);
+  if (!resolved.ok) return emptyPlan(vocabulary, resolved.code, resolved.message, resolved.source);
 
   const basePreset = readPreset(PACKAGE_ROOT, 'generic');
   const root = resolved.root;
@@ -382,7 +420,7 @@ export function buildSkillPlan(configuredRoot, cwd) {
 
   return {
     workspace: root,
-    workspaceOrigin: resolved.origin,
+    workspaceSource: resolved.source,
     unavailable: null,
     vocabulary,
     specialist: specialist.specialist,
@@ -443,7 +481,7 @@ export function allowedSkillRoots(configuredRoot, cwd) {
 
   for (const candidate of candidates) {
     if (String(candidate).trim() === '') continue;
-    const resolved = workspaceForLookup('', candidate);
+    const resolved = resolveProjectRoot(findProjectRoot(candidate));
     if (resolved.ok) roots.push(path.join(resolved.root, '.github', 'skills'));
   }
   return roots;
@@ -511,7 +549,7 @@ export function registerHarnessSkills(ctx, config, holder = {}) {
     return {
       name: SKILL_PROVIDER_NAME,
       async list(options = {}) {
-        const resolved = workspaceForLookup(config.projectRoot, options.cwd);
+        const resolved = resolveWorkspace(config.projectRoot, options.cwd);
         lastWorkspace = resolved.ok ? resolved.root : null;
 
         // Belt and braces alongside the poll: a workspace switch or an edit
@@ -525,6 +563,14 @@ export function registerHarnessSkills(ctx, config, holder = {}) {
         return buildSkillPlan(config.projectRoot, options.cwd).entries.map(toCandidate);
       },
       async get(candidate, options = {}) {
+        // The catalogue is workspace-scoped in both directions. A candidate the
+        // current workspace would not have offered must not load, so a skill
+        // resolved for one session cannot be pulled into another.
+        const plan = buildSkillPlan(config.projectRoot, options.cwd);
+        const entry = plan.entries.find((item) => item.name === candidate.name);
+        if (entry === undefined) return undefined;
+        if (path.resolve(candidate.locator) !== path.resolve(entry.library.filePath)) return undefined;
+
         const definition = loadSkillDefinition(
           candidate.locator,
           allowedSkillRoots(config.projectRoot, options.cwd),
@@ -593,8 +639,10 @@ function scheduleInvalidate(control, delay = 0) {
 export function renderSkillPlan(plan) {
   if (plan.workspace === null) {
     return JSON.stringify({
-      status: 'no-workspace',
+      status: 'blocked',
+      code: plan.unavailableCode,
       message: plan.unavailable,
+      project_root_source: plan.workspaceSource,
       visible_skills: [],
       writes_performed: false,
     }, null, 2);
@@ -602,7 +650,7 @@ export function renderSkillPlan(plan) {
 
   return JSON.stringify({
     project_root: plan.workspace,
-    workspace_resolved_from: plan.workspaceOrigin,
+    project_root_source: plan.workspaceSource,
     specialist: plan.specialist,
     specialist_confidence: plan.specialistConfidence,
     detected_capabilities: plan.detected,
@@ -689,9 +737,15 @@ export function findSkills(configuredRoot, cwd, query, limit = 8) {
  * @returns {string} JSON report.
  */
 export function activateSkill(configuredRoot, cwd, holder, rawName, rawAction) {
-  const resolved = workspaceForLookup(configuredRoot, cwd);
+  const resolved = resolveWorkspace(configuredRoot, cwd);
   if (!resolved.ok) {
-    return JSON.stringify({ status: 'blocked', message: resolved.reason, writes_performed: false }, null, 2);
+    return JSON.stringify({
+      status: 'blocked',
+      code: resolved.code,
+      message: resolved.message,
+      project_root_source: resolved.source,
+      writes_performed: false,
+    }, null, 2);
   }
 
   const root = resolved.root;

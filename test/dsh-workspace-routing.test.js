@@ -42,9 +42,14 @@ function wordpressFixture(t) {
 async function loadAdapter() {
   const adapter = new URL('../dsh/index.js', import.meta.url);
   const source = fs.readFileSync(adapter, 'utf8')
-    .replace("import Schema from '@deepseek-ai/schemastery';", 'const Schema = { object: x => x, string: () => ({ default: x => x }) };')
+    .replace("import Schema from '@deepseek-ai/schemastery';", 'const Schema = { object: x => x, string: () => ({ default: x => x }), number: () => ({ default: x => x }) };')
     .replace("import { defineTool } from '@deepseek-ai/dsh-tools';", 'const defineTool = x => x;')
     .replace("'../scripts/memory-context.js'", JSON.stringify(pathToFileURL(fileURLToPath(new URL('../scripts/memory-context.js', import.meta.url))).href))
+    // The adapter is executed from a data: URL, which has no directory to resolve
+    // module-relative specifiers against, so point them at their real files. The
+    // modules they import resolve normally from their own locations.
+    .replace("'./skills/plan.js'", JSON.stringify(pathToFileURL(fileURLToPath(new URL('../dsh/skills/plan.js', import.meta.url))).href))
+    .replace("'./skills/state.js'", JSON.stringify(pathToFileURL(fileURLToPath(new URL('../dsh/skills/state.js', import.meta.url))).href))
     .replace('fileURLToPath(import.meta.url)', JSON.stringify(fileURLToPath(adapter)));
 
   return import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);

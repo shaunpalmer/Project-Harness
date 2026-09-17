@@ -10,8 +10,8 @@ import {
   registerHarnessSkills,
   renderSkillPlan,
   resumeProject,
+  selectWorkspace,
   specialistFor,
-  workspaceForLookup,
 } from './skills/plan.js';
 import { SKILL_STATE_PATH } from './skills/state.js';
 
@@ -26,12 +26,13 @@ export const Config = Schema.object({
 export function apply(ctx, config) {
   const holder = registerHarnessSkills(ctx, config);
 
-  /** Resolve the workspace for one tool call: session cwd first, configuration second. */
-  const workspaceFor = (exec) => workspaceForLookup(config.projectRoot, lookupCwd(exec));
-  const workspaceOrConfigured = (exec) => {
-    const resolved = workspaceFor(exec);
-    return resolved.ok ? resolved.root : config.projectRoot;
-  };
+  /**
+   * Select the workspace for one tool call: the calling session cwd wins, and the
+   * configured root is only the agentless fallback. Selection deliberately does not
+   * validate, so an explicit cwd that is missing fails closed with
+   * `WORKSPACE_NOT_FOUND` instead of quietly routing at another project.
+   */
+  const workspaceFor = (exec) => selectWorkspace(config.projectRoot, lookupCwd(exec));
 
   const stringOutput = {
     schema: { type: 'string' },
@@ -44,7 +45,8 @@ export function apply(ctx, config) {
     parameters: {},
     output: stringOutput,
     async execute(_args, exec) {
-      return resumeProject(workspaceOrConfigured(exec));
+      const selected = workspaceFor(exec);
+      return resumeProject(selected.path, selected.source);
     },
   }));
 
@@ -54,7 +56,8 @@ export function apply(ctx, config) {
     parameters: {},
     output: stringOutput,
     async execute(_args, exec) {
-      return JSON.stringify(specialistFor(workspaceOrConfigured(exec)), null, 2);
+      const selected = workspaceFor(exec);
+      return JSON.stringify(specialistFor(selected.path, selected.source), null, 2);
     },
   }));
 
@@ -64,7 +67,8 @@ export function apply(ctx, config) {
     parameters: {},
     output: stringOutput,
     async execute(_args, exec) {
-      return inventoryProject(workspaceOrConfigured(exec));
+      const selected = workspaceFor(exec);
+      return inventoryProject(selected.path, selected.source);
     },
   }));
 
