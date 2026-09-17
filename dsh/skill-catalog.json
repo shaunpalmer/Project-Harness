@@ -1,0 +1,153 @@
+{
+  "schema_version": 1,
+  "skills": [
+    {
+      "name": "find-skills",
+      "path": ".github/skills/find-skills/SKILL.md",
+      "description": "Discover an installed or external agent skill when the current catalog does not cover the requested capability, and guide safe installation into a DSH-visible skill layer.",
+      "layer": "discovery",
+      "when_to_use": "Use when a task needs a capability that is missing, unclear, or better handled by a reusable skill.",
+      "invocation": { "modelInvocable": true, "userInvocable": true }
+    },
+    {
+      "name": "project-memory",
+      "path": ".github/skills/project-memory/SKILL.md",
+      "description": "Read and maintain compact project memory so the agent resumes from current evidence instead of reconstructing state from chat history.",
+      "layer": "core",
+      "invocation": { "modelInvocable": true, "userInvocable": true }
+    },
+    {
+      "name": "skill-router",
+      "path": ".github/skills/skill-router/SKILL.md",
+      "description": "Choose the smallest relevant set of project skills for the current task and avoid loading unrelated instructions.",
+      "layer": "core",
+      "invocation": { "modelInvocable": true, "userInvocable": true }
+    },
+    {
+      "name": "complexity-brake",
+      "path": ".github/skills/complexity-brake/SKILL.md",
+      "description": "Challenge unnecessary files, abstractions, dependencies, tables, and infrastructure before implementation grows beyond the smallest maintainable solution.",
+      "layer": "core",
+      "invocation": { "modelInvocable": true, "userInvocable": true }
+    },
+    {
+      "name": "memory-consolidation",
+      "path": ".github/skills/memory-consolidation/SKILL.md",
+      "description": "Consolidate project learnings and current truth when working notes or session context become noisy or repetitive.",
+      "layer": "core",
+      "invocation": { "modelInvocable": true, "userInvocable": true }
+    },
+    {
+      "name": "trace-eval-logging",
+      "path": ".github/skills/trace-eval-logging/SKILL.md",
+      "description": "Record execution traces, evaluation evidence, and outcomes for important pipeline or engineering changes that need auditable verification.",
+      "layer": "core",
+      "invocation": { "modelInvocable": true, "userInvocable": true }
+    },
+    {
+      "name": "wordpress-plugin",
+      "path": ".github/skills/wordpress-plugin/SKILL.md",
+      "description": "Build, extend, review, and refactor WordPress plugins using WordPress lifecycle conventions, hooks, services, repositories, admin UI, REST, cron, and persistence patterns.",
+      "layer": "specialist",
+      "invocation": { "modelInvocable": true, "userInvocable": true }
+    },
+    {
+      "name": "wordpress-way",
+      "path": ".github/skills/wordpress-way.md",
+      "description": "Prefer native WordPress APIs, conventions, security boundaries, and lifecycle hooks before introducing custom infrastructure.",
+      "layer": "specialist",
+      "invocation": { "modelInvocable": true, "userInvocable": true }
+    },
+    {
+      "name": "scraping-pipeline",
+      "path": ".github/skills/scraping-pipeline/SKILL.md",
+      "description": "Design and operate scraping or ingestion pipelines with controlled acquisition, parsing, validation, dedupe, persistence, retry, fallback, and export behavior.",
+      "layer": "specialist",
+      "invocation": { "modelInvocable": true, "userInvocable": true }
+    },
+    {
+      "name": "testing-plan",
+      "path": ".github/skills/testing-plan/SKILL.md",
+      "description": "Choose focused unit, fixture, integration, regression, and acceptance coverage that proves the current change without building an unnecessary test framework.",
+      "layer": "capability",
+      "invocation": { "modelInvocable": true, "userInvocable": true }
+    },
+    {
+      "name": "code-review",
+      "path": ".github/skills/code-review/SKILL.md",
+      "description": "Review code systematically for correctness, regressions, maintainability, security boundaries, and evidence that the requested behavior is actually covered.",
+      "layer": "capability",
+      "invocation": { "modelInvocable": true, "userInvocable": true }
+    },
+    {
+      "name": "api-design",
+      "path": ".github/skills/api-design/SKILL.md",
+      "description": "Design stable API contracts, request validation, errors, versioning, authentication boundaries, and integration behavior.",
+      "layer": "capability",
+      "invocation": { "modelInvocable": true, "userInvocable": true }
+    },
+    {
+      "name": "database-selection",
+      "path": ".github/skills/database-selection/SKILL.md",
+      "description": "Choose storage technology from deployment, data shape, query, durability, and operational evidence instead of habit.",
+      "layer": "capability",
+      "invocation": { "modelInvocable": true, "userInvocable": true }
+    },
+    {
+      "name": "database-design",
+      "path": ".github/skills/database-design/SKILL.md",
+      "description": "Design schemas, keys, migrations, constraints, indexes, and data ownership for systems that genuinely need persistent structured state.",
+      "layer": "capability",
+      "invocation": { "modelInvocable": true, "userInvocable": true }
+    },
+    {
+      "name": "interface-design",
+      "path": ".github/skills/interface-design/SKILL.md",
+      "description": "Plan clear UI and component contracts, states, accessibility, interaction flow, and maintainable interface structure.",
+      "layer": "capability",
+      "invocation": { "modelInvocable": true, "userInvocable": true }
+    },
+    {
+      "name": "chrome-devtools-mcp",
+      "path": ".github/skills/chrome-devtools-mcp.md",
+      "description": "Use live browser and Chrome DevTools evidence to inspect, debug, and verify frontend, CSS, JavaScript, rendering, and network behavior.",
+      "layer": "capability",
+      "invocation": { "modelInvocable": true, "userInvocable": true }
+    },
+    {
+      "name": "documentation",
+      "path": ".github/skills/documentation/SKILL.md",
+      "description": "Create and update concise technical documentation, handoffs, README material, and operational guidance that reflects the actual system.",
+      "layer": "capability",
+      "invocation": { "modelInvocable": true, "userInvocable": true }
+    },
+    {
+      "name": "architecture-canvas",
+      "path": ".github/skills/architecture-canvas/SKILL.md",
+      "description": "Map system boundaries, responsibilities, data flow, dependencies, and architecture hypotheses before committing to implementation structure.",
+      "layer": "capability",
+      "invocation": { "modelInvocable": true, "userInvocable": true }
+    },
+    {
+      "name": "prd-writer",
+      "path": ".github/skills/prd-writer/SKILL.md",
+      "description": "Turn a product or feature goal into a structured PRD with scope, behavior, constraints, acceptance criteria, and open decisions.",
+      "layer": "capability",
+      "invocation": { "modelInvocable": true, "userInvocable": true }
+    },
+    {
+      "name": "agent-initiative",
+      "path": ".github/skills/agent-initiative/SKILL.md",
+      "description": "Use bounded initiative to carry obvious low-risk work forward while escalating consequential decisions and respecting project decision rights.",
+      "layer": "capability",
+      "invocation": { "modelInvocable": true, "userInvocable": true }
+    },
+    {
+      "name": "oop-standards",
+      "path": ".github/skills/oop-standards.md",
+      "description": "Apply practical object-oriented design standards, composition, responsibility boundaries, interfaces, and maintainability checks when OOP is justified.",
+      "layer": "capability",
+      "invocation": { "modelInvocable": true, "userInvocable": true }
+    }
+  ]
+}
