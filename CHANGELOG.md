@@ -10,7 +10,7 @@ This file records meaningful user-facing harness changes. Git remains the source
   `description`, `whenToUse`, `metadata.harness`), so the library is valid input for
   DSH's own filesystem skill provider. Descriptions are authored as the model-facing
   routing surface instead of repeating the H1 heading.
-- Flat per-specialist `required_skills` lists are replaced by tiered composition:
+- Flat per-specialist `required_skills` lists are replaced by layered composition:
   always-on core controls, an always-visible `find-skills` discovery entry point,
   specialist skills, and capability skills bound by workspace evidence.
   `dsh/skills/capabilities.json` holds the shared vocabulary; specialist presets
@@ -57,8 +57,26 @@ This file records meaningful user-facing harness changes. Git remains the source
   data:-URL loader, which now rewrites the adapter's module-relative imports to
   absolute URLs. No assertion was changed or weakened.
 - `origin/feat/skill-architecture-v2` is a separate parallel implementation of the
-  same goal and has not been reconciled with this branch. See
-  `docs/CURRENT-STATE.md`; the route is a user decision.
+  same goal. Its best ideas were merged (see below); the rest is retained on the
+  remote for reference.
+
+### Merged from the parallel skill-architecture branch
+
+- Renamed the skill frontmatter field `tier` to `layer`, matching the layer vocabulary
+  used everywhere else. `tier` is still accepted as a legacy alias, and `layer` wins
+  when both are present, so a skill copied from the earlier spelling keeps parsing.
+- Added `dsh/skill-catalog.json`: a generated, schema-validated view of every curated
+  skill with its path, layer, description, `when_to_use`, invocation policy, tags and
+  topics. Frontmatter remains the single source of truth.
+- Added `npm run skills:catalog` to regenerate it and extended `npm run skills:verify`
+  to fail on an invalid or stale catalog. `validateCatalog()` reports every structural
+  fault in one pass, enforces the shared layer vocabulary and description bounds,
+  rejects absolute or escaping paths, and fails an entry whose file is missing instead
+  of silently dropping it.
+- Not merged: returning the whole catalog to every session with a `metadata.recommended`
+  flag. DSH renders only `name` and `description` into the model-facing catalogue, so
+  that flag never reaches the model; composition stays evidence-bound at 12-14 skills
+  with the executable find/activate loop.
 
 ### Memory context and reusable roles
 

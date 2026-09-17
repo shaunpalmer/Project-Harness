@@ -13,7 +13,7 @@ Tools:
 | `project_harness_resume` | Compact workspace memory, discovery status, active task, freshness evidence | No |
 | `project_harness_inventory` | Workspace inventory and possible memory sources | No |
 | `project_harness_select_specialist` | Specialist selection from workspace evidence | No |
-| `project_harness_skill_catalog` | The visible skill catalogue, its tiers, detected capabilities and activation state | No |
+| `project_harness_skill_catalog` | The visible skill catalogue, its layers, detected capabilities and activation state | No |
 | `project_harness_find_skills` | Search the full skill library and DSH-native project/user skills | No |
 | `project_harness_activate_skills` | Activate, deactivate or reset one skill for this workspace | `.harness/state/skills.json` only |
 
@@ -133,9 +133,14 @@ adapter between those boundaries, not a replacement for either system.
 
 Composition and discovery are data, not code. Adding a skill means adding
 `.github/skills/<name>/SKILL.md` with DSH frontmatter and binding it in
-`dsh/skills/capabilities.json` or a preset under `dsh/specialists/`; `npm run
-skills:verify` fails if any skill is unreachable, any evidence token has no
-detector, or any capability names a skill that does not exist. Additional
+`dsh/skills/capabilities.json` or a preset under `dsh/specialists/`. Then run
+`npm run skills:catalog` and `npm run skills:verify`; the gate fails if any skill is
+unreachable, any evidence token has no detector, any capability names a skill that
+does not exist, or the generated `dsh/skill-catalog.json` is invalid or stale.
+Frontmatter is the single source of truth, so a hand-edited catalog is never
+authoritative. Nothing reads the catalog at runtime: it exists for review, tooling and
+portability, and `layer` is the name for a skill's layer (`tier` still parses as a
+legacy alias). Additional
 specialists use the same provider boundary rather than copying domain instructions
 into a universal prompt.
 

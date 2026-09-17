@@ -278,3 +278,24 @@ one workspace load in another. It now scopes by the composed plan.
 implementation of the same goal, built on PR #8. The two are not reconciled and
 should not be merged together. See `docs/CURRENT-STATE.md` for the comparison and
 ADR-0005 for the reasoning behind this branch's choices.
+
+## Merged from the parallel branch (2026-09-17)
+
+Review chose "merge the best of both onto this branch". Two ideas were ported from
+`origin/feat/skill-architecture-v2`:
+
+1. **Layer vocabulary.** `tier` was renamed to `layer`, and `tier` is accepted as a
+   legacy alias with `layer` winning. This matches the vocabulary in this plan and in
+   the parallel branch, and leaves one name for the concept.
+2. **A package-owned catalog with strict validation.** `dsh/skill-catalog.json` is
+   generated from frontmatter by `npm run skills:catalog` and checked byte-fresh by
+   `npm run skills:verify`. The parallel branch hand-authored this file, which makes it
+   a second source of truth; generating it removes that drift, and validating it in CI
+   makes a stale catalog a failure rather than a silent inconsistency.
+
+Deliberately not ported is the parallel branch's composition model: it returns all 21
+catalog entries to every session and marks specialist fits with
+`metadata.recommended`. DSH renders only `name` and `description` into the model-facing
+catalogue (`packages/skill/tool-skill/src/index.ts`), so `metadata` never reaches the
+model; the practical effect is a wider catalogue with no additional routing signal.
+This branch keeps 12-14 evidence-bound skills plus the executable find/activate loop.

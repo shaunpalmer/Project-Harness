@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
   "id": "skill-architecture-v2",
-  "goal": "Replace the flat specialist skill lists with a composed, discoverable, DSH-native skill layer: verified frontmatter, tiered core/specialist/capability composition, find-activate-load discovery wired to DSH invalidation, and a provider contract reconciled with the merged session-workspace routing fix.",
+  "goal": "Replace the flat specialist skill lists with a composed, discoverable, DSH-native skill layer: verified frontmatter, layered core/specialist/capability composition, find-activate-load discovery wired to DSH invalidation, a provider contract reconciled with the merged session-workspace routing fix, and a generated, schema-validated package catalog.",
   "status": "completed",
   "alignment": [
     {
@@ -32,7 +32,7 @@
     {
       "gate": "minimum_slice",
       "answer": "YES",
-      "evidence": "Phase one plus the mandatory reconciliation with main: metadata, composition, find-activate discovery, provider correctness, session-scoped identity with fail-closed errors. Native .dsh/skills migration, new specialists and resolving the divergent branch are out of scope."
+      "evidence": "Phase one, the mandatory reconciliation with main, and the reviewed merge of the parallel branch's layer vocabulary and catalog validation. Native .dsh/skills migration and new specialists are out of scope; the parallel branch's broader-catalogue composition model was deliberately not merged."
     },
     {
       "gate": "debt_control",
@@ -42,7 +42,7 @@
     {
       "gate": "proof",
       "answer": "YES",
-      "evidence": "Node 22.23.2: 88/88 tests including the four merged PR #8 workspace-routing regression tests with no assertion weakened; skills:verify, control:verify, memory:resume and git diff --check passed. Live DSH acceptance remains a separate step."
+      "evidence": "Node 22.23.2: 94/94 tests including the four merged PR #8 workspace-routing regression tests with no assertion weakened, the catalog validator, freshness and legacy-alias tests; skills:verify, skills:catalog --check, control:verify, memory:resume and git diff --check passed. Live DSH acceptance remains a separate step."
     }
   ]
 }

@@ -22,7 +22,7 @@ The binding constraint: narrowing a catalogue is only safe if the model can stil
 
 Skill Architecture v2. `.github/skills` becomes a DSH-native skill library; composition and discovery replace the flat list.
 
-1. **DSH-native frontmatter on every skill.** `name`, `description` and `whenToUse` exactly as DSH parses them, with Project Harness composition data under DSH's sanctioned `metadata` passthrough (`metadata.harness.{tier,topics,tags,stack}`). Descriptions are authored as the routing surface: one sentence naming the capability and its trigger. No new runtime dependency; the supported YAML subset is parsed locally and enforced by `scripts/skills-verify.js`.
+1. **DSH-native frontmatter on every skill.** `name`, `description` and `whenToUse` exactly as DSH parses them, with Project Harness composition data under DSH's sanctioned `metadata` passthrough (`metadata.harness.{layer,topics,tags,stack}`). Descriptions are authored as the routing surface: one sentence naming the capability and its trigger. No new runtime dependency; the supported YAML subset is parsed locally and enforced by `scripts/skills-verify.js`.
 
 2. **Tiered composition replaces `required_skills`.** `dsh/skills/capabilities.json` owns the shared vocabulary — core controls, the discovery entry point, and capability-to-skills bindings with evidence tokens. Specialist presets select capabilities by name and add their own `specialist_skills`. Resolution is `core ∪ discovery ∪ specialist ∪ default capabilities ∪ evidence-bound capabilities ∪ activated − suppressed`.
 
@@ -96,3 +96,34 @@ than in skill frontmatter, its capability selection is manifest-driven rather th
 evidence-driven, it registers at rank 250 rather than 600, and it adds no skill search
 or activation tool. Choosing between the two is a user decision; `docs/CURRENT-STATE.md`
 records the comparison so the choice is not lost with this branch.
+
+## Addendum: merged layer vocabulary and generated catalog
+
+Two ideas from the parallel `feat/skill-architecture-v2` implementation were merged
+onto this branch after review.
+
+**Layer vocabulary.** `tier` was renamed to `layer`, matching the vocabulary already
+used in the plan and in the parallel branch. `metadata.harness.tier` is still accepted
+as a legacy alias, and `layer` wins when both are present, so a skill file copied from
+the earlier spelling — including a project-local override — keeps parsing. There is no
+second name for the concept in the code or the generated artifacts.
+
+**Generated package catalog.** `dsh/skill-catalog.json` lists every curated skill with
+its path, layer, description, `when_to_use`, invocation policy, tags and topics, under
+a declared `schema_version`. The parallel branch hand-authored this file; here it is
+**generated** from frontmatter, which stays the single source of truth. Generating it
+removes the drift the hand-authored form would introduce, and `npm run skills:verify`
+fails when the committed file and the library disagree, so a stale catalog cannot ship.
+`npm run skills:catalog` regenerates it.
+
+The validator is deliberately stricter than the parallel branch's:
+`validateCatalog()` reports every structural fault in one pass instead of throwing on
+the first, requires `layer` to be in the shared vocabulary, enforces the same
+description bounds as the frontmatter reader, rejects absolute or escaping paths, and
+requires each entry's file to exist. The parallel implementation dropped an entry whose
+file was missing with `.filter(Boolean)`, which hides a broken catalog; here a missing
+file is a failure.
+
+This is an integrity gate, not a second composition mechanism. Frontmatter and
+`capabilities.json` still decide what the package ships and what a workspace sees; the
+catalog is a verified view of the first, and nothing reads it at runtime.

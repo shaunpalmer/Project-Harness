@@ -20,10 +20,12 @@ This branch delivers Skill Architecture v2 (ADR-0005) on top of that base.
 `.github/skills` is a DSH-native skill library: every skill carries `name`,
 `description`, `whenToUse` and `metadata.harness` frontmatter, so the same files
 are valid input for DSH's own filesystem provider. The flat per-specialist
-`required_skills` lists are replaced by tiered composition — core controls, an
+`required_skills` lists are replaced by layered composition — core controls, an
 always-visible discovery entry point, specialist skills, and capability skills
 bound by workspace evidence — with `dsh/skills/capabilities.json` as the shared
-vocabulary.
+vocabulary. `dsh/skill-catalog.json` is a generated, schema-validated, freshness-checked
+view of what the package ships, and `layer` is the single name for a skill's layer
+(`tier` remains accepted as a legacy alias).
 
 The gap that made a narrow catalogue unsafe is closed: `find-skills` is always
 composed, `project_harness_find_skills` searches the whole library and DSH's
@@ -38,20 +40,24 @@ loaded into another. Skills rank at DSH's `BUNDLED_SKILL_RANK` of 600, so projec
 and user roots shadow them natively. The catalogue stays fresh through a stat poll
 and the `fs/observed` recorder.
 
-## Divergent branch
+## Divergent branch (partially merged)
 
-`origin/feat/skill-architecture-v2` (213b65c) is a **separate, parallel
-implementation of the same phase-one goal**, built on PR #8 by Shaun. It is not an
-ancestor of this branch and the two have not been reconciled.
+`origin/feat/skill-architecture-v2` (213b65c) is a separate, parallel implementation
+of the same phase-one goal, built on PR #8. On review the route chosen was to merge
+its best ideas onto this branch:
 
-It differs materially: descriptions and layer assignments live in a new
-`dsh/skill-catalog.json` manifest rather than in skill frontmatter; capability
-selection is manifest/layer-driven rather than evidence-driven; skills register at
-rank 250 rather than 600; it polls only the manifest; and it adds no skill search
-or activation tool, so its `find-skills` discovery layer is advisory rather than
-executable.
+- **merged:** an explicit layer vocabulary (`tier` renamed to `layer`), and a
+  package-owned `dsh/skill-catalog.json` with strict schema validation. The catalog is
+  generated here rather than hand-authored, and its validator is stricter.
+- **not merged:** exposing the whole 21-entry catalog to every session with a
+  `metadata.recommended` flag. DSH renders only `name` and `description`, so that flag
+  never reaches the model; the effect would be a wider catalogue with no routing signal,
+  which is the context cost this design exists to avoid. This branch keeps composition
+  at 12-14 evidence-bound skills plus the executable find/activate loop. The parallel
+  branch also edited two negative isolation assertions in the merged
+  `test/dsh-workspace-routing.test.js`; this branch keeps them.
 
-Choosing between the two is a user decision. Do not merge both.
+The remote branch is retained for reference. Do not merge it wholesale.
 
 ## Working capabilities
 
@@ -61,7 +67,8 @@ Choosing between the two is a user decision. Do not merge both.
 - Session-scoped workspace identity with reported provenance and fail-closed errors.
 - Read-only DSH resume, inventory, specialist selection, catalogue and search tools.
 - One bounded workspace write: `.harness/state/skills.json`, on activation only.
-- `npm run skills:verify` gate over metadata, bindings and reachability.
+- `npm run skills:verify` gate over metadata, bindings, reachability and catalog freshness.
+- `npm run skills:catalog` regenerates the package catalog; drift is a verification failure.
 - Eight-gate readiness, project discovery, safe project handoff and Git controls.
 
 ## Known boundaries
