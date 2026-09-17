@@ -32,7 +32,7 @@
     {
       "gate": "minimum_slice",
       "answer": "YES",
-      "evidence": "Phase one, reconciliation with main, the reviewed merge of the parallel branch's layer vocabulary and catalog validation, plus live integration and YAML-conformance verification against a real DeepSeek Harness checkout. Native .dsh/skills migration, new specialists, and an in-session live model run remain out of scope."
+      "evidence": "Phase one; reconciliation with main; the reviewed merge of the parallel branch's layer vocabulary and catalog validation; live integration and YAML-conformance verification against a real DeepSeek Harness checkout; and packaging corrected against the documented bundle contract, verified as an installed artifact. Native .dsh/skills migration, new specialists, and an in-session live model run remain out of scope."
     },
     {
       "gate": "debt_control",
@@ -42,7 +42,7 @@
     {
       "gate": "proof",
       "answer": "YES",
-      "evidence": "Node 22.23.2: 102/102 tests including the merged PR #8 regression tests, the catalog validator, and two live DeepSeek Harness probes (29 integration checks, 174 conformance checks across 39 cases); skills:verify, skills:catalog --check, control:verify, memory:resume and git diff --check passed. An in-session live model run still needs approval because it spends provider credits."
+      "evidence": "Node 22.23.2: 102/102 tests including the merged PR #8 regression tests, the catalog validator, and two live DeepSeek Harness probes (29 integration + 174 conformance checks), plus the same probes against the packed artifact installed into a throwaway DSH profile; skills:verify, skills:catalog --check, dsh:verify, control:verify, memory:resume and git diff --check passed. An in-session live model run still needs approval because it spends provider credits."
     }
   ]
 }

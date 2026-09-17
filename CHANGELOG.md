@@ -103,6 +103,24 @@ This file records meaningful user-facing harness changes. Git remains the source
 - Parse failures now carry a specific message rather than a generic malformed-frontmatter
   one, so `skills:verify` can name the unsupported construct.
 
+### Package shape corrected against the DSH bundle contract
+
+- `@deepseek-ai/schemastery` moved from `peerDependencies` to `dependencies`. It is a
+  runtime validator, and both the documented package pattern and the published
+  `dsh-github-intelligence` bundle place it there. Peer ranges are now real versions rather
+  than `*`. The `@deepseek-ai/cordis` and `@deepseek-ai/dsh-tools` peer warnings pnpm prints
+  are inherent to an out-of-tree DSH bundle, not a packaging fault.
+- Added a `files` allowlist: publication now ships the DSH bundle surface and the CLI
+  toolkit surface and drops tests, docs, planning artifacts and `dsh/probes/` — 72 files
+  instead of 146. Verified by installing the packed artifact into a throwaway DSH profile
+  and running both probes against it.
+- `dsh:verify` gained `--package-root`, which points the probes at an installed copy. A
+  source checkout can pass while the package is missing a file, so the published artifact
+  is now verifiable rather than assumed.
+- `skillWatchIntervalMs` is constrained in the schema (`.step(1).min(0)`) so invalid
+  configuration fails while the plugin loads instead of silently disabling catalogue
+  refresh.
+
 ### Memory context and reusable roles
 
 - Shared bounded CLI/DSH resume context with explicit existing-note mapping and

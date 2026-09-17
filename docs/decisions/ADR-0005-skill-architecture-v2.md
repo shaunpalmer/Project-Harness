@@ -166,3 +166,32 @@ The probes must execute inside the checkout — they import its packages, so bar
 checkout's `tsx`, and removes the copy even when the probe fails. They live in
 `dsh/probes/` rather than under `test/`, because Node's test runner treats every file
 under a `test` directory as a test.
+
+## Addendum: the published package verified as installed
+
+The conformance and registry probes run against the source checkout, which cannot catch a
+packaging fault: a `files` allowlist can omit a path the plugin reads and the checkout
+still works. The develop documentation (`docs/user/develop/basic/publish.md`) defines the
+bundle contract, and comparing this package with the published `dsh-github-intelligence`
+bundle showed two deviations from it:
+
+- `@deepseek-ai/schemastery` was declared as a peer; the documented pattern and the
+  published bundle both treat it as a runtime validator and put it in `dependencies`.
+- The peer ranges were `*` rather than real ranges.
+
+Both are corrected. The peer warnings pnpm prints for `@deepseek-ai/cordis` and
+`@deepseek-ai/dsh-tools` are not a fault: the published bundle produces the same two
+warnings, because a profile lists host bundles rather than depending on them.
+
+A `files` allowlist was added so publication ships the two real surfaces — the DSH bundle
+and the CLI toolkit — and drops tests, docs, planning artifacts and `dsh/probes/` (72 files
+instead of 146). A narrow allowlist would have broken the installed bundle, so
+`dsh:verify --package-root` exists to point the same probes at an installed copy. Against
+the packed artifact installed into a throwaway profile, all 203 checks pass, the composed
+config carries a `# == project-harness` layer, and the plugin imports with its bare
+specifiers resolved.
+
+`skillWatchIntervalMs` also gained a schema constraint (`.step(1).min(0)`), because the
+configuration guidance requires self-contained constraints to fail while the plugin loads
+rather than silently disabling catalogue refresh. Verified against the installed package:
+`-5` is rejected with `$.skillWatchIntervalMs expected number >= 0 but got -5`.

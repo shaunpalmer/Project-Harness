@@ -74,6 +74,18 @@ shadow the packaged skill of the same name (rank 600 works as intended), the pro
 catalogue satisfies `snapshot().complete`, and the find → activate → invalidate →
 republish loop works against the real registry.
 
+## Published package verified as installed
+
+`npm run dsh:verify --package-root <installed>` points the probes at an installed copy,
+which is the only way to catch a packaging fault: a `files` allowlist that omits a path the
+plugin reads still passes from a source checkout. Against the packed artifact installed into
+a throwaway DSH profile, all 203 checks pass, `dsh --dump-config` carries a
+`# == project-harness` layer, and the plugin imports with its bare specifiers resolved. The
+throwaway profile was removed afterwards; the live `web` profile was not touched.
+
+The package now declares the documented dependency roles (schemastery as a dependency, not
+a peer) and ships 72 files instead of 146.
+
 ## Working capabilities
 
 - DSH-native skill library with routing-quality descriptions and verified metadata.

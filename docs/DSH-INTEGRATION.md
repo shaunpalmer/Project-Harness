@@ -149,6 +149,45 @@ unquoted `#` comments are stripped, and block scalars, anchors, aliases, tags an
 mappings are rejected instead of silently mis-read. `skills:verify` enforces the same
 rules hermetically, and the conformance probe confirms the agreement against DSH itself.
 
+## Package shape
+
+Follow the documented bundle contract (`docs/user/develop/basic/publish.md`):
+
+| Field | Value | Why |
+| --- | --- | --- |
+| `main` | `dsh/index.js` | The plugin entry the patch row names. |
+| `dsh.bundle.patch` | `./cordis.patch.yml` | Declares this package as a bundle; without it `dsh plugin` installs it as a plain dependency and warns that it activated no layer. |
+| `peerDependencies` | `@deepseek-ai/cordis`, `@deepseek-ai/dsh-tools` | Provided by the host at runtime. |
+| `dependencies` | `@deepseek-ai/schemastery` | A runtime validator, so it is a dependency rather than a peer. |
+| `files` | bundle surface plus the toolkit surface | Both are published; tests, docs, planning artifacts and `dsh/probes/` are development-only. |
+
+No `prepare` script and no build step: the package ships plain JavaScript, so it installs
+without the build permission a git-installed TypeScript plugin would need. `pnpm` reports
+`@deepseek-ai/cordis` and `@deepseek-ai/dsh-tools` as missing peers because a profile lists
+the host bundles rather than depending on them; the published `dsh-github-intelligence`
+bundle reports the same two warnings, so this is inherent to an out-of-tree DSH bundle and
+not a packaging fault.
+
+## Verifying an installed bundle
+
+`dsh:verify` also accepts `--package-root`, which points the probes at an installed copy
+instead of this checkout. That is how the published artifact is checked, because a source
+checkout can pass while the package is missing a file:
+
+```sh
+npm pack --pack-destination /tmp/phpack
+dsh plugin --profile phcheck add /tmp/phpack/project-harness-0.4.2.tgz
+node scripts/dsh-integration-check.js --package-root "$DSH_HOME/profiles/phcheck/node_modules/project-harness"
+dsh --profile phcheck --dump-config | grep -A2 '== project-harness'
+dsh plugin --profile phcheck remove project-harness
+```
+
+`--dump-config` should show a `# == project-harness` layer, which proves the bundle patch
+composes into the profile. The probes then prove the installed package composes skills
+from its own `.github/skills`. Both were run against this branch: 29 integration checks
+and 174 conformance checks pass against the installed artifact, and the composed config
+carries the expected layer.
+
 ## Configuration
 
 | Key | Default | Purpose |
