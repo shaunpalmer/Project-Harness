@@ -180,8 +180,11 @@ try {
     pluginNamespace.apply(toolContext, { projectRoot: '', skillWatchIntervalMs: 0 });
 
     const projection = toolContext.tools.schemas().map((entry: any) => entry.name).sort();
+    // No shell service is mounted here on purpose: `shell` is requested with a nested
+    // `ctx.inject`, so an assembly without it must still register every tool rather than
+    // leaving the plugin PENDING and silently losing all six.
     check(
-      'all six tools register with the real tool runtime',
+      'all six tools register with the real tool runtime and no shell service mounted',
       projection.length === 6 && projection.includes('project_harness_find_skills') && projection.includes('project_harness_activate_skills'),
       projection.join(','),
     );

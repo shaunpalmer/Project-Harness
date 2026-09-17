@@ -14,6 +14,7 @@ import {
   specialistFor,
 } from './skills/plan.js';
 import { SKILL_STATE_PATH } from './skills/state.js';
+import { createShellGitRunner } from './skills/git.js';
 
 export const name = 'project-harness';
 export const inject = ['tools', 'skills'];
@@ -30,12 +31,42 @@ export function apply(ctx, config) {
   const holder = registerHarnessSkills(ctx, config);
 
   /**
+   * Prefer the harness shell executor for the read-only git probe.
+   *
+   * `shell` is deliberately NOT in this plugin's top-level `inject`: a service nobody
+   * provides leaves a plugin PENDING, which would take all six tools down with it. Only
+   * the probe needs it, so it is requested here and merely upgrades the runner when it
+   * appears. `ctx.inject` unloads and re-runs this callback whenever the service changes,
+   * so a hot-replaced shell is followed without restarting the tools.
+   *
+   * With no shell mounted the probe keeps `scripts/git-probe.js`'s local runner, which is
+   * scrubbed, bounded and abortable — a deployment can lose the seam, never the hygiene.
+   */
+  let shellGitRunner;
+  if (typeof ctx.inject === 'function') {
+    ctx.inject(['shell'], (shellCtx) => {
+      shellGitRunner = createShellGitRunner(shellCtx.shell);
+      return () => { shellGitRunner = undefined; };
+    });
+  }
+
+  /**
    * Select the workspace for one tool call: the calling session cwd wins, and the
    * configured root is only the agentless fallback. Selection deliberately does not
    * validate, so an explicit cwd that is missing fails closed with
    * `WORKSPACE_NOT_FOUND` instead of quietly routing at another project.
    */
   const workspaceFor = (exec) => selectWorkspace(config.projectRoot, lookupCwd(exec));
+
+  /**
+   * Refuse to start work the caller has already cancelled.
+   *
+   * The registry contains a throw as the call's error result, so a cancelled call is
+   * reported as cancelled instead of completing and returning evidence nobody wants.
+   */
+  const abortCheck = (exec) => {
+    if (exec?.signal?.aborted === true) throw exec.signal.reason;
+  };
 
   /**
    * Every tool returns one canonical JSON value rather than a pre-stringified blob, so a
@@ -54,8 +85,13 @@ export function apply(ctx, config) {
     parameters: {},
     output: reportOutput,
     async execute(_args, exec) {
+      abortCheck(exec);
       const selected = workspaceFor(exec);
-      return resumeProject(selected.path, selected.source);
+      // The only tool with child work: it forwards the runner and the caller's signal.
+      return resumeProject(selected.path, selected.source, {
+        runGit: shellGitRunner,
+        signal: exec?.signal,
+      });
     },
   }));
 
@@ -65,6 +101,7 @@ export function apply(ctx, config) {
     parameters: {},
     output: reportOutput,
     async execute(_args, exec) {
+      abortCheck(exec);
       const selected = workspaceFor(exec);
       return specialistFor(selected.path, selected.source);
     },
@@ -76,6 +113,7 @@ export function apply(ctx, config) {
     parameters: {},
     output: reportOutput,
     async execute(_args, exec) {
+      abortCheck(exec);
       const selected = workspaceFor(exec);
       return inventoryProject(selected.path, selected.source);
     },
@@ -87,6 +125,7 @@ export function apply(ctx, config) {
     parameters: {},
     output: reportOutput,
     async execute(_args, exec) {
+      abortCheck(exec);
       return skillCatalogReport(buildSkillPlan(config.projectRoot, lookupCwd(exec)));
     },
   }));
@@ -100,6 +139,7 @@ export function apply(ctx, config) {
     },
     output: reportOutput,
     async execute(args, exec) {
+      abortCheck(exec);
       const limit = Number.isInteger(args.limit) && args.limit > 0 ? Math.min(args.limit, 25) : 8;
       return findSkills(config.projectRoot, lookupCwd(exec), args.query, limit);
     },
@@ -114,6 +154,7 @@ export function apply(ctx, config) {
     },
     output: reportOutput,
     async execute(args, exec) {
+      abortCheck(exec);
       return activateSkill(config.projectRoot, lookupCwd(exec), holder, args.name, args.action);
     },
   }));

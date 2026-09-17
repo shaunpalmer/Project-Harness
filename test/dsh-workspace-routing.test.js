@@ -50,6 +50,7 @@ async function loadAdapter() {
     // modules they import resolve normally from their own locations.
     .replace("'./skills/plan.js'", JSON.stringify(pathToFileURL(fileURLToPath(new URL('../dsh/skills/plan.js', import.meta.url))).href))
     .replace("'./skills/state.js'", JSON.stringify(pathToFileURL(fileURLToPath(new URL('../dsh/skills/state.js', import.meta.url))).href))
+    .replace("'./skills/git.js'", JSON.stringify(pathToFileURL(fileURLToPath(new URL('../dsh/skills/git.js', import.meta.url))).href))
     .replace('fileURLToPath(import.meta.url)', JSON.stringify(fileURLToPath(adapter)));
 
   return import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);

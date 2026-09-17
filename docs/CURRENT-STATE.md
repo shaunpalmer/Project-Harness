@@ -3,9 +3,17 @@
 Last verified: 2026-09-17
 Verified base: 44eb167 (main after PR #6 and PR #8)
 Working branch: `feature/skill-architecture-v2` (rebased onto 44eb167 and now the retained Skill Architecture v2 line)
-Verification: Node 22.23.2; 104/104 tests including the merged `test/dsh-workspace-routing.test.js` and two live DeepSeek Harness integration probes (39 integration + 174 conformance checks), plus `skills:verify`, `skills:catalog --check`, `control:verify`, `memory:resume` and `git diff --check`.
+Verification: Node 22.23.2; 124/124 tests including the merged `test/dsh-workspace-routing.test.js` and two live DeepSeek Harness integration probes (39 integration + 174 conformance checks), plus `skills:verify`, `skills:catalog --check`, `control:verify`, `memory:resume` and `git diff --check`. Six new guards were each proven to fail when their regression was reintroduced.
 
 ## Current truth
+
+A DeepSeek Harness documentation audit found four blocking defects in the DSH bundle, all
+now fixed under ADR-0006: the `git` probe leaked the ambient environment to a child process,
+the activation write used a predictable temp file, the tools ignored `exec.signal`, and the
+git child bypassed the subprocess and sandbox seams. The probe now runs through the shell
+seam when one is mounted and falls back to an equivalent scrubbed local spawn when it is
+not. `readMemoryContext` is async as a result.
+
 
 Main now carries PR #6 (DSH quick-check docs) and PR #8
 (`fix/session-workspace-routing`). PR #8 established two contracts that this

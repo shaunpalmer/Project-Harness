@@ -45,7 +45,10 @@ test('the plugin entry keeps the namespace export shape the Loader requires', ()
 test('the DSH entry point performs no filesystem writes and starts no processes', () => {
   const adapter = read('dsh/index.js');
   assert.doesNotMatch(adapter, /execFile|spawn|process\.cwd\(\)|writeFile|renameSync|mkdirSync|rmSync/);
-  assert.doesNotMatch(adapter, /git /);
+  // The read-only git probe is delegated to skills/git.js, which runs it through the
+  // harness shell seam rather than spawning anything itself.
+  assert.doesNotMatch(adapter, /node:child_process/);
+  assert.match(adapter, /from '\.\/skills\/git\.js'/);
 });
 
 test('workspace selection is explicit, cwd-sensitive and rejects the DSH checkout', () => {
@@ -76,9 +79,13 @@ test('the skill provider follows the DSH provider contract', () => {
 
 test('the single workspace write is the activation record', () => {
   const state = read('dsh/skills/state.js');
-  assert.match(state, /\.harness', 'state'/);
+  assert.match(state, /SKILL_STATE_PATH = '\.harness\/state\/skills\.json'/);
   assert.match(state, /renameSync/);
-  assert.doesNotMatch(state, /execFile|spawn/);
+  assert.doesNotMatch(state, /execFile|spawn|node:child_process/);
+  // The temp file must be unpredictable, exclusive and owner-only.
+  assert.match(state, /randomBytes/);
+  assert.match(state, /flag: 'wx'/);
+  assert.match(state, /mode: 0o600/);
   assert.equal(
     fs.existsSync(path.join(ROOT, '.harness', 'state', 'skills.json')),
     false,
