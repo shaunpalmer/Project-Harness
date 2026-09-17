@@ -31,12 +31,21 @@
     "vcs:preflight": "node scripts/vcs-control.js preflight",
     "skills:verify": "node scripts/skills-verify.js",
     "skills:catalog": "node scripts/skills-catalog.js",
+    "dsh:verify": "node scripts/dsh-integration-check.js",
     "test": "node --test"
   },
   "engines": {
     "node": ">=20.0.0"
   },
-  "keywords": ["ai", "agent", "harness", "planning", "discovery", "skills", "version-control"],
+  "keywords": [
+    "ai",
+    "agent",
+    "harness",
+    "planning",
+    "discovery",
+    "skills",
+    "version-control"
+  ],
   "author": "Shaun Palmer",
   "license": "MIT"
 }
