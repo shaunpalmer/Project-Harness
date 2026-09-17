@@ -89,11 +89,11 @@ function execFor(cwd) {
   };
 }
 
-function skillNames(skills) {
-  return skills.map((skill) => skill.name).sort();
+function byName(skills, name) {
+  return skills.find((skill) => skill.name === name);
 }
 
-test('DSH session cwd overrides a configured Python fallback for tools and skills', async (t) => {
+test('DSH session cwd overrides a configured Python fallback for tools and recommendations', async (t) => {
   const python = pythonFixture(t);
   const wordpress = wordpressFixture(t);
   const { handlers, provider } = await harnessFor(t, python.root);
@@ -113,19 +113,17 @@ test('DSH session cwd overrides a configured Python fallback for tools and skill
   assert.equal(specialist.project_root, wordpress.root);
   assert.equal(specialist.project_root_source, 'session-cwd');
   assert.equal(specialist.evidence.plugin_header, true);
+  assert.ok(specialist.preset.skill_profile.discovery.includes('find-skills'));
 
   const skills = await provider.list({ cwd: wordpress.root });
-  const names = skillNames(skills);
-  assert.ok(names.includes('wordpress-plugin'));
-  assert.ok(names.includes('wordpress-way'));
-  assert.ok(!names.includes('scraping-pipeline'));
-
-  const wordpressPlugin = skills.find((skill) => skill.name === 'wordpress-plugin');
-  assert.ok(wordpressPlugin);
-  assert.equal(await provider.get(wordpressPlugin, { cwd: python.root }), undefined);
+  assert.ok(byName(skills, 'find-skills'));
+  assert.ok(byName(skills, 'wordpress-plugin'));
+  assert.ok(byName(skills, 'scraping-pipeline'));
+  assert.equal(byName(skills, 'wordpress-plugin').metadata.recommended, true);
+  assert.equal(byName(skills, 'scraping-pipeline').metadata.recommended, false);
 });
 
-test('Python and WordPress sessions stay isolated under one Project Harness registration', async (t) => {
+test('Python and WordPress sessions share discovery but keep specialist recommendations isolated', async (t) => {
   const python = pythonFixture(t);
   const wordpress = wordpressFixture(t);
   const { handlers, provider } = await harnessFor(t, python.root);
@@ -142,13 +140,18 @@ test('Python and WordPress sessions stay isolated under one Project Harness regi
   assert.equal(pythonAgain.specialist, 'python-prospecting');
   assert.equal(wordpressAgain.specialist, 'wordpress-coding');
 
-  const pythonSkills = skillNames(await provider.list({ cwd: python.root }));
-  const wordpressSkills = skillNames(await provider.list({ cwd: wordpress.root }));
+  const pythonSkills = await provider.list({ cwd: python.root });
+  const wordpressSkills = await provider.list({ cwd: wordpress.root });
 
-  assert.ok(pythonSkills.includes('scraping-pipeline'));
-  assert.ok(!pythonSkills.includes('wordpress-plugin'));
-  assert.ok(wordpressSkills.includes('wordpress-plugin'));
-  assert.ok(!wordpressSkills.includes('scraping-pipeline'));
+  assert.ok(byName(pythonSkills, 'find-skills'));
+  assert.ok(byName(wordpressSkills, 'find-skills'));
+  assert.ok(byName(pythonSkills, 'wordpress-plugin'));
+  assert.ok(byName(wordpressSkills, 'scraping-pipeline'));
+
+  assert.equal(byName(pythonSkills, 'scraping-pipeline').metadata.recommended, true);
+  assert.equal(byName(pythonSkills, 'wordpress-plugin').metadata.recommended, false);
+  assert.equal(byName(wordpressSkills, 'wordpress-plugin').metadata.recommended, true);
+  assert.equal(byName(wordpressSkills, 'scraping-pipeline').metadata.recommended, false);
 });
 
 test('configured projectRoot remains the agentless fallback', async (t) => {
@@ -164,13 +167,15 @@ test('configured projectRoot remains the agentless fallback', async (t) => {
   assert.equal(inventory.project_root, python.root);
   assert.equal(inventory.project_root_source, 'configured-fallback');
 
-  const skills = skillNames(await provider.list({}));
-  assert.ok(skills.includes('scraping-pipeline'));
+  const skills = await provider.list({});
+  assert.ok(byName(skills, 'find-skills'));
+  assert.ok(byName(skills, 'scraping-pipeline'));
+  assert.equal(byName(skills, 'scraping-pipeline').metadata.recommended, true);
 });
 
 test('an invalid session cwd fails closed instead of falling back to another project', async (t) => {
   const python = pythonFixture(t);
-  const { handlers } = await harnessFor(t, python.root);
+  const { handlers, provider } = await harnessFor(t, python.root);
   const missing = path.join(os.tmpdir(), `missing-project-harness-${Date.now()}`);
 
   const specialist = JSON.parse(await handlers.get('project_harness_select_specialist').execute({}, execFor(missing)));
@@ -178,4 +183,5 @@ test('an invalid session cwd fails closed instead of falling back to another pro
   assert.equal(specialist.status, 'blocked');
   assert.equal(specialist.code, 'WORKSPACE_NOT_FOUND');
   assert.equal(specialist.project_root_source, 'session-cwd');
+  assert.deepEqual(await provider.list({ cwd: missing }), []);
 });
