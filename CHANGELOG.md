@@ -4,6 +4,41 @@ This file records meaningful user-facing harness changes. Git remains the source
 
 ## Unreleased
 
+### Skill architecture v2
+
+- Every skill in `.github/skills` now carries DSH-native frontmatter (`name`,
+  `description`, `whenToUse`, `metadata.harness`), so the library is valid input for
+  DSH's own filesystem skill provider. Descriptions are authored as the model-facing
+  routing surface instead of repeating the H1 heading.
+- Flat per-specialist `required_skills` lists are replaced by tiered composition:
+  always-on core controls, an always-visible `find-skills` discovery entry point,
+  specialist skills, and capability skills bound by workspace evidence.
+  `dsh/skills/capabilities.json` holds the shared vocabulary; specialist presets
+  select capabilities by name.
+- New `project_harness_skill_catalog`, `project_harness_find_skills` and
+  `project_harness_activate_skills` tools. Find searches the whole library and
+  DSH-native project and user roots; activate records the decision in
+  `.harness/state/skills.json` and calls DSH's `control.invalidate()` so the
+  catalogue republishes.
+- The provider now resolves its workspace from `options.cwd` (nearest `.git` root,
+  with `projectRoot` as fallback), ranks skills at DSH's `BUNDLED_SKILL_RANK` of 600
+  so project and user roots shadow it natively, honours the registration-scoped
+  `control` object, and keeps the catalogue fresh through a stat poll plus the
+  `fs/observed` host-mutation recorder.
+- Invocation policy is deliberate: reference rule sets (`wordpress-way`,
+  `oop-standards`, `agent-initiative`, `guard-debugging`) are model-only.
+- Added `npm run skills:verify` and a 31-test suite over the frontmatter reader,
+  library, composition, activation and provider contract. All routing logic moved to
+  `dsh/skills/*.js` with no DSH imports, so it is tested against a stub host.
+- Removed `.github/skills/INDEX.md` and renamed `guard_debugging.md` to
+  `guard-debugging.md`; a non-skill Markdown file inside a DSH-scanned root produced
+  a per-session parse warning, and an underscore name is not valid DSH kebab-case.
+  `.github/SKILLS-INDEX.md` is now the tiered reference.
+- The adapter writes exactly one file, `.harness/state/skills.json`, and only on
+  explicit activation. Resume, inventory, specialist selection, catalogue and search
+  remain read-only.
+- ADR-0005 records the decision. No new runtime dependency.
+
 ### Memory context and reusable roles
 
 - Shared bounded CLI/DSH resume context with explicit existing-note mapping and

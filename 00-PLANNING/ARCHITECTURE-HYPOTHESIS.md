@@ -61,3 +61,31 @@ A follow-up integration step may copy/hand off these defaults and VCS controls i
 ## Approval evidence
 
 On 2026-09-09 Shaun explicitly approved the v0.4 direction: engineering defaults, automatic WordPress/scraping/automation decisions, version-control integration using authorised GitHub access, and consolidation of the duplicate WordPress Way. He authorised Athena to proceed without further routine implementation questions. Merge/release remains separately owner-controlled.
+
+## Skill architecture v2 (2026-09-17)
+
+Shaun directed a phase-one skill upgrade: normalise routing metadata, replace the
+flat `required_skills` array with core + specialist + capability composition, and
+work his find-a-skill concept into the layer rather than adding more specialist
+presets.
+
+The route follows DSH's own seams rather than inventing parallel ones. `.github/skills`
+becomes a DSH-native skill library (the same frontmatter keys DSH's filesystem
+provider parses), composition becomes data in `dsh/skills/capabilities.json` and
+`dsh/specialists/*.json`, and discovery uses `control.invalidate()` — the documented
+purpose of that control — so a found skill can be promoted into the catalogue.
+Harness skills rank at DSH's `BUNDLED_SKILL_RANK` of 600 so project and user roots
+shadow them natively; no `.dsh/skills` migration is performed, so the existing
+handoff path stays intact.
+
+Alternatives rejected: exposing all 25 skills (recreates the context bloat on-demand
+skills exist to prevent); adding many specialist presets (contradicts the
+capability-composition model in `PROJECT-TYPES.md`); importing `BUNDLED_SKILL_RANK`
+and `isSkillName` from `@deepseek-ai/dsh-skill` (an ESM named import a host version
+does not export fails at link time and would break plugin load); and a chokidar
+watcher (a stat poll plus the `fs/observed` recorder gives the same detection without
+a dependency).
+
+All logic sits in `dsh/skills/*.js` with no external imports so the provider is
+covered by real unit tests against a stub host; `dsh/index.js` is only wiring. See
+ADR-0005 and `00-PLANNING/SKILL-ARCHITECTURE-V2.md`.

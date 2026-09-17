@@ -12,7 +12,9 @@ const HANDOFF_PATHS = [
   'ENGINEERING-DEFAULTS.md',
   '.github/skills/skill-router',
   '.github/skills/complexity-brake',
+  '.github/skills/loop-controller',
   '.github/skills/project-memory',
+  '.github/skills/find-skills',
   '.github/skills/architecture-canvas',
   '.github/skills/scraping-pipeline',
   '.github/skills/wordpress-plugin',
@@ -100,7 +102,7 @@ function appendAgentHandoff(projectRoot) {
   const agentsPath = path.join(projectRoot, 'AGENTS.md');
   const current = fs.readFileSync(agentsPath, 'utf8');
   if (current.includes(AGENT_MARKER)) return 'already-present';
-  const block = `\n${AGENT_MARKER}\n\n- Read \`ENGINEERING-DEFAULTS.md\` before making routine implementation choices.\n- Use \`.github/skills/skill-router/SKILL.md\` after the system model is confirmed.\n- Confirmed WordPress work automatically binds \`.github/skills/wordpress-way.md\` and the WordPress plugin skill.\n- Confirmed scraping/ingestion work automatically binds the scraping-pipeline skill.\n- Routine engineering question budget is zero; ask only for consequential decisions under the project's decision-right contract.\n- Use \`node scripts/vcs-control.mjs\` for Git preflight, safe branches, focused checkpoints, remote verification, and authorised non-default-branch pushes.\n- Never store credentials, broadly stage the worktree, force push, push managed work directly to main/master, merge, deploy, or release without the required authority.\n`;
+  const block = `\n${AGENT_MARKER}\n\n- Read \`ENGINEERING-DEFAULTS.md\` before making routine implementation choices.\n- Use \`.github/skills/skill-router/SKILL.md\` after the system model is confirmed.\n- Use \`.github/skills/find-skills/SKILL.md\` when the visible skill catalogue lacks a capability: search the full library, then activate the match instead of writing instructions by hand.\n- Confirmed WordPress work automatically binds \`.github/skills/wordpress-way.md\` and the WordPress plugin skill.\n- Confirmed scraping/ingestion work automatically binds the scraping-pipeline skill.\n- Routine engineering question budget is zero; ask only for consequential decisions under the project's decision-right contract.\n- Use \`node scripts/vcs-control.mjs\` for Git preflight, safe branches, focused checkpoints, remote verification, and authorised non-default-branch pushes.\n- Never store credentials, broadly stage the worktree, force push, push managed work directly to main/master, merge, deploy, or release without the required authority.\n`;
   fs.appendFileSync(agentsPath, block);
   return 'appended';
 }

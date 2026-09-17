@@ -1,48 +1,48 @@
 {
   "schema_version": 2,
-  "id": "memory-context-neutral-roles",
-  "goal": "Improve resume memory, surface stale snapshots and generalise reusable user/agent roles.",
+  "id": "skill-architecture-v2",
+  "goal": "Replace the flat specialist skill lists with a composed, discoverable, DSH-native skill layer: verified frontmatter, tiered core/specialist/capability composition, find-activate-load discovery wired to DSH invalidation, and a correct provider contract.",
   "status": "completed",
   "alignment": [
     {
       "gate": "destination",
       "answer": "YES",
-      "evidence": "Feature branch feature/memory-context-neutral-roles; reusable harness only, not Prospecting."
+      "evidence": "Feature branch feature/skill-architecture-v2; Project Harness reusable harness only, no product code and no live DSH session."
     },
     {
       "gate": "evidence",
       "answer": "YES",
-      "evidence": "Inspected main d4ce50a, memory readers, DSH adapter, active operating contracts and regression tests."
+      "evidence": "Read the DSH skill subsystem doc and source (registry, tool-skill catalogue rendering, filesystem provider frontmatter, ranks, invalidation, watcher) plus the current adapter, presets and 25-skill library before editing."
     },
     {
       "gate": "system_model",
       "answer": "YES",
-      "evidence": "Existing project-local memory model retained; shared reader connects CLI and DSH without another storage layer."
+      "evidence": "00-PLANNING/SKILL-ARCHITECTURE-V2.md models the gap: fixed flat required_skills, H1-derived descriptions, no invalidation, no discovery path, config- rather than cwd-sensitive resolution."
     },
     {
       "gate": "boundaries",
       "answer": "YES",
-      "evidence": "User authorised memory and reusable-role repairs; no merge, release, live provider calls or product-data writes."
+      "evidence": "Skill layer only. One new bounded write (.harness/state/skills.json on activation). No shell, no Git mutation, no merge, release, deployment or live provider call."
     },
     {
       "gate": "ownership",
       "answer": "YES",
-      "evidence": "memory-context.js owns shared reads; project-control owns readiness; DSH owns hosting; skills own domain guidance."
+      "evidence": "DSH owns the registry, layering and catalogue rendering; dsh/skills/*.js owns composition, discovery and plan resolution; capabilities.json owns the vocabulary; each skill owns its own frontmatter."
     },
     {
       "gate": "minimum_slice",
       "answer": "YES",
-      "evidence": "One shared reader, mapping and freshness diagnostics, neutral roles, tests and reconciled current documentation."
+      "evidence": "Phase one only: normalise metadata, replace required_skills with core/specialist/capability composition, add find-activate discovery and correct the provider. Native .dsh/skills migration and new specialists are explicitly out of scope."
     },
     {
       "gate": "debt_control",
       "answer": "YES",
-      "evidence": "Node built-ins only; bounded reads; path containment; no automatic initialisation. Historical attribution preserved."
+      "evidence": "Node built-ins only, no new dependency; bounded walks and reads; path containment on reads and the single write; atomic write; stat-poll instead of a chokidar dependency; stray non-skill entry and duplicate preset filename removed."
     },
     {
       "gate": "proof",
       "answer": "YES",
-      "evidence": "Node 24.19.0: 44/44 tests passed, including five memory/adapter fixtures; control:verify, memory:resume and git diff --check passed. Live DSH verification remains separate."
+      "evidence": "Node 22.23.2: 80/80 tests including 31 new frontmatter, library, composition, activation, provider-contract and invalidation tests; skills:verify, control:verify, memory:resume and git diff --check passed. Live DSH acceptance remains a separate step."
     }
   ]
 }

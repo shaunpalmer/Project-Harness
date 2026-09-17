@@ -1,0 +1,64 @@
+id: ADR-0005
+title: Composed, discoverable DSH skill architecture
+status: accepted
+date: 2026-09-17
+
+# ADR-0005 — Composed, discoverable DSH skill architecture
+
+## Context
+
+The DSH integration registered skills correctly but used about half of what the skill architecture provides.
+
+- Each specialist preset exposed a flat `required_skills` list of 4-5 file paths, so the model-facing catalogue was a fixed, shallow slice of a 25-skill library and there was no route to the rest.
+- `skillDescription()` preferred the first H1, so DSH advertised `"SKILL: WordPress Plugin"` as the routing description. DSH renders only `name` and `description` (`packages/skill/tool-skill/src/index.ts:319-321`); `whenToUse` is stored but never rendered. The routing surface was therefore close to empty.
+- Only three of 25 skills carried frontmatter, so the library was not portable into DSH's native filesystem provider, which requires `name` and `description` and parses the exact keys `whenToUse`, `disable-model-invocation`, `user-invocable` and `metadata`.
+- The provider ignored the registration-scoped `control` object, so `control.invalidate()` was never called. DSH serves a cached catalogue without calling `list()` again (`packages/skill/skill/src/index.ts:529-531`); an added, removed or re-described skill stayed stale until restart.
+- The provider resolved the workspace from configuration and not from `options.cwd`, so it was configuration-sensitive rather than workspace-sensitive.
+- Every skill was registered `{ modelInvocable: true, userInvocable: true }`, including reference rule sets a human has no reason to invoke.
+
+The binding constraint: narrowing a catalogue is only safe if the model can still reach what was not predicted. The previous design had no such route, which is why the catalogue had to stay broad and flat.
+
+## Decision
+
+Skill Architecture v2. `.github/skills` becomes a DSH-native skill library; composition and discovery replace the flat list.
+
+1. **DSH-native frontmatter on every skill.** `name`, `description` and `whenToUse` exactly as DSH parses them, with Project Harness composition data under DSH's sanctioned `metadata` passthrough (`metadata.harness.{tier,topics,tags,stack}`). Descriptions are authored as the routing surface: one sentence naming the capability and its trigger. No new runtime dependency; the supported YAML subset is parsed locally and enforced by `scripts/skills-verify.js`.
+
+2. **Tiered composition replaces `required_skills`.** `dsh/skills/capabilities.json` owns the shared vocabulary — core controls, the discovery entry point, and capability-to-skills bindings with evidence tokens. Specialist presets select capabilities by name and add their own `specialist_skills`. Resolution is `core ∪ discovery ∪ specialist ∪ default capabilities ∪ evidence-bound capabilities ∪ activated − suppressed`.
+
+3. **Discovery closes the gap.** `find-skills` is always composed. `project_harness_find_skills` searches the entire library and DSH's native project and user roots; `project_harness_activate_skills` records the decision in `.harness/state/skills.json` and calls `control.invalidate()` so DSH republishes the catalogue; `project_harness_skill_catalog` explains what is visible and why. This is the mechanism that makes a narrow catalogue safe.
+
+4. **Provider correctness.** Capture `control` and use `invalidate()`. Resolve the workspace from `options.cwd` via the nearest `.git` ancestor, falling back to the configured `projectRoot`. Rank skills at 600, DSH's `BUNDLED_SKILL_RANK`, so project roots (100/200) and user roots (400/500) shadow the harness library for free. Return `source` and `provider` from `get()`, which DSH validates.
+
+5. **Invalidation without a watcher dependency.** A stat poll (default 2s) plus the `fs/observed` host-mutation recorder, mirroring the two mechanisms DSH's own filesystem provider uses. The poll exists because an in-`list()` fingerprint check cannot see anything while DSH is serving a cache hit.
+
+6. **Project-local overrides stay native.** No migration away from the `.github/skills` handoff. A project that wants to override a harness skill drops it in `.dsh/skills`, and `find_skills` reports the shadowing.
+
+7. **Invocation policy is deliberate.** `user-invocable: false` marks model-only reference rule sets (`wordpress-way`, `oop-standards`, `agent-initiative`, `guard-debugging`). Everything else stays available to both surfaces.
+
+All logic lives in `dsh/skills/*.js` with no external imports, so tests exercise real provider behaviour; `dsh/index.js` is only DSH wiring.
+
+## Rationale
+
+- **Descriptions are the catalogue.** DSH renders only `name` and `description`, so a description that repeats the H1 spends context without routing. This was the cheapest and largest win.
+- **Composition over enumeration.** `PROJECT-TYPES.md` already establishes that systems compose capabilities rather than fitting one label. A WordPress plugin with REST, a dashboard, persistence and browser UI should receive exactly those capabilities; a flat list cannot express that.
+- **A narrow catalogue plus discovery beats a broad catalogue.** The alternative to composition was exposing all 25 skills, which recreates the context bloat on-demand skills exist to prevent.
+- **Use DSH's mechanisms rather than reimplementing them.** Rank-based shadowing, layered scopes, `control.invalidate()` and the `fs/observed` recorder are the host's designed seams. The one thing DSH does not provide is a skill search tool, which is why `find_skills` exists.
+- **No new dependency.** Importing `BUNDLED_SKILL_RANK` and `isSkillName` from `@deepseek-ai/dsh-skill` was rejected: an ESM named import that a host version does not export fails at link time and would break plugin load on an older DSH. Both constants and the frontmatter subset are inlined with source references and covered by tests, matching the existing thin-adapter posture.
+- **Fail closed on catalogue quality.** An unroutable skill is rejected at parse time rather than advertised, and `npm run skills:verify` fails on a missing frontmatter block, a name that disagrees with its path, an unknown evidence token, or a capability referencing a skill that does not exist.
+
+## Consequences
+
+Easier:
+
+- Adding a skill is a data change: add the file with frontmatter, bind it in `capabilities.json` or a preset, run `npm run skills:verify`.
+- The same skill files are valid for DSH's native `.dsh/skills` root, so a future migration needs no rewriting.
+- Project and user skills shadow the harness library with no code, and capability evidence is testable.
+- The provider is unit-testable against a stub host, because no DSH import reaches the logic.
+
+Harder or newly constrained:
+
+- Composition is only as good as its evidence detectors; a capability with weak evidence stays activation-only by design.
+- `.harness/state/skills.json` is the first file the adapter writes. The write is bounded to that path, validated and atomic, and the three read-only tools remain read-only; `docs/DSH-INTEGRATION.md` and `test/dsh-integration.test.js` now assert the narrow write contract explicitly.
+- A stat poll runs while the plugin is loaded. It is a directory read plus a stat per skill file, `unref`ed, and disabled with `skillWatchIntervalMs: 0`.
+- `.github/skills/INDEX.md` was removed and `.github/skills/guard_debugging.md` renamed to `guard-debugging.md`, because a non-skill Markdown file inside a DSH-scanned root produces a per-session parse warning and an underscore name is not valid DSH kebab-case. `scripts/guard_debugging.js` was updated to match.
