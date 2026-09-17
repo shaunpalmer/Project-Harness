@@ -1,3 +1,15 @@
+---
+name: guard-debugging
+description: "Use when a failure or regression appears: forbids deleting or replacing source files, requires reading the file, logging a .debug-session record, then applying surgical patches that preserve architecture."
+whenToUse: "Use when the workspace contains a reproducible failure and the task is to patch the existing implementation without deleting or rewriting files."
+user-invocable: false
+metadata:
+  harness:
+    tier: reference
+    topics: [debugging, refactoring]
+    tags: [debugging, patching, regression, surgical-edit]
+    stack: []
+---
 # SKILL: In-Place Debugging & Patching Protocol
 
 ## Core Invariant

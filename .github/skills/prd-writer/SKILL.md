@@ -1,3 +1,15 @@
+---
+name: prd-writer
+description: "Use when starting, pivoting or scoping a product: turn PROJECT-INTAKE.md into PRD.md with a problem statement, user stories carrying Given/When/Then acceptance criteria, success metrics, non-goals and open questions."
+whenToUse: "Use when the workspace has intake answers but no agreed requirements and the task is to define scope, stories, metrics, and non-goals."
+user-invocable: true
+metadata:
+  harness:
+    tier: capability
+    topics: [requirements, planning, documentation]
+    tags: [prd, requirements, user-stories, acceptance-criteria, metrics]
+    stack: []
+---
 # SKILL: PRD Writer
 
 ## Purpose

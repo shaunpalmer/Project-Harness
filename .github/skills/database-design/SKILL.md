@@ -1,3 +1,15 @@
+---
+name: database-design
+description: "Use when modelling a new schema or entity: list entities and attributes, map 1:N and N:N relationships with junction tables, index each query pattern, and write numbered reversible migrations."
+whenToUse: "Use when the workspace needs a persisted data model and the task is to define entities, relationships, indexes, constraints, and reversible migrations."
+user-invocable: true
+metadata:
+  harness:
+    tier: capability
+    topics: [database, migrations, architecture]
+    tags: [database, schema, indexes, migrations, normalisation]
+    stack: []
+---
 # SKILL: Database Design
 
 ## Purpose

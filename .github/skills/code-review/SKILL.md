@@ -1,3 +1,15 @@
+---
+name: code-review
+description: "Use when reviewing a diff or PR before merge: run L1/L2/L3 checks for correctness, edge cases, secrets, injection, auth, architecture compliance and N+1 queries, and tag findings MUST/SHOULD/NIT/QUESTION."
+whenToUse: "Use when the workspace has an unmerged diff, branch, or module and the task is to review it before merge or as a pre-PR self-check."
+user-invocable: true
+metadata:
+  harness:
+    tier: capability
+    topics: [code-review, testing, architecture, refactoring]
+    tags: [code-review, security, testing, pull-request, maintainability]
+    stack: []
+---
 # SKILL: Code Review
 
 ## Purpose

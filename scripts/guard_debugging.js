@@ -47,7 +47,7 @@ function verifyDebuggingGate(targetRelativePath) {
         console.error(`\n❌ [GUARD DENIED] Wholesale modification blocked!`);
         console.error(`Reason: You are attempting to alter an existing codebase asset without an active debugging verification.`);
         console.error(`\nFix Action Required by AI:`);
-        console.error(`1. Read your operational protocol rules in: \`.github/skills/guard_debugging.md\``);
+        console.error(`1. Read your operational protocol rules in: \`.github/skills/guard-debugging.md\``);
         console.error(`2. You must first create a diagnostic file at: \`${path.relative(ROOT, sessionLogPath)}\``);
         console.error(`3. Document the exact error, the root cause, and your targeted in-place fix inside that file.`);
         console.error(`4. Once that file is populated, this gate will unlock for editing.`);

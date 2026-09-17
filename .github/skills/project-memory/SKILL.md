@@ -1,8 +1,15 @@
 ---
 name: project-memory
-description: Reconstruct, checkpoint, and reconcile durable project context across sessions, compaction, and controlled pivots.
+description: "Use at session entry, before compaction or on doc/code conflict: run memory:resume and memory:checkpoint, inspect .harness/state/active-task.json, supersede stale ADRs, and reconcile CURRENT-STATE without secrets."
+whenToUse: "Use when the workspace resumes after a gap or compaction or its documents disagree with code, and the task is resume, checkpoint, reconcile, or pivot."
+user-invocable: true
+metadata:
+  harness:
+    tier: core
+    topics: [project-memory, documentation, observability, planning]
+    tags: [memory, resume, checkpoint, adr, reconciliation]
+    stack: []
 ---
-
 # Project Memory
 
 Use this skill at session entry, before context compaction, after a meaningful verified change, or when project documents disagree with code.

@@ -1,3 +1,15 @@
+---
+name: testing-plan
+description: "Use when starting a feature, module or coverage push: define the 70/20/10 test pyramid, Given/When/Then cases for happy, empty, boundary, invalid and failure paths, integration boundaries and coverage targets per layer."
+whenToUse: "Use when the workspace is adding a feature or module and the task is to plan test cases, boundaries, data strategy, and coverage targets before writing tests."
+user-invocable: true
+metadata:
+  harness:
+    tier: capability
+    topics: [testing, planning, architecture]
+    tags: [testing, test-pyramid, coverage, e2e, integration]
+    stack: []
+---
 # SKILL: Testing Plan
 
 ## Purpose

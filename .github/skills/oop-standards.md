@@ -1,14 +1,16 @@
 ---
-
 name: oop-standards
-description: >
-Enforces maintainable object-oriented architecture, SOLID principles,
-deliberate design-pattern selection, dependency boundaries, testability,
-and project-specific PHP, WordPress, TypeScript, JavaScript, and Python
-coding standards. Use when planning, creating, reviewing, refactoring,
-or extending classes, services, repositories, adapters, factories,
-pipelines, plugins, APIs, or multi-component software.
-------------------------------------------------------
+description: "Use when designing, refactoring or reviewing classes, services, repositories or adapters: apply SOLID and the four pillars, justify each pattern, and enforce PHP/WordPress, TypeScript and Python standards."
+whenToUse: "Use when the workspace has non-trivial classes, services, or plugin structure and the task is design, refactor, or SOLID/testability review."
+user-invocable: false
+metadata:
+  harness:
+    tier: reference
+    topics: [oop-design, architecture, refactoring, testing, php, python]
+    tags: [oop, solid, design-patterns, php, typescript, python]
+    stack: [php, typescript, python]
+---
+---------------------------------------------------
 
 # OOP Standards
 

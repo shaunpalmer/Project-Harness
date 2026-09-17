@@ -1,3 +1,15 @@
+---
+name: database-selection
+description: "Use when choosing storage per data concern: classify shape, access pattern and volume, apply PostgreSQL/Redis/search/time-series/queue defaults, score operational cost and familiarity, and record the pick as an ADR."
+whenToUse: "Use when the workspace needs a store for a new data concern and the task is to justify the choice with documented trade-offs before schema design."
+user-invocable: true
+metadata:
+  harness:
+    tier: capability
+    topics: [database, architecture, stack-selection, planning]
+    tags: [database, storage, postgresql, redis, trade-offs]
+    stack: []
+---
 # SKILL: Database Selection
 
 ## Purpose

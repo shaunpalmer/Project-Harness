@@ -1,3 +1,15 @@
+---
+name: architecture-canvas
+description: "Use when turning an approved PRD into ARCHITECTURE.md: choose an architecture style, map boundaries, layers, dependency direction and fallbacks, then record ADRs, directory templates and the nine-stage data-flow canvas."
+whenToUse: "Use when the workspace has an approved PRD and the task is to define system boundaries, layers, and ADRs before implementation."
+user-invocable: true
+metadata:
+  harness:
+    tier: capability
+    topics: [architecture, planning, documentation]
+    tags: [architecture, system-design, adr, data-flow, layers]
+    stack: []
+---
 # SKILL: Architecture Canvas
 
 ## Purpose

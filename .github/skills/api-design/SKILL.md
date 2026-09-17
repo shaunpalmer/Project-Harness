@@ -1,3 +1,15 @@
+---
+name: api-design
+description: "Use when adding, versioning, or reviewing HTTP APIs: model REST resources or GraphQL/gRPC schemas, define error envelopes, auth scopes and rate limits, and emit an OpenAPI 3.x, SDL, or .proto contract."
+whenToUse: "Use when the workspace needs a new endpoint group, a breaking-change version, or an API consistency review before implementation."
+user-invocable: true
+metadata:
+  harness:
+    tier: capability
+    topics: [rest-api, http-integration, documentation, architecture]
+    tags: [api, rest, graphql, openapi, versioning]
+    stack: []
+---
 # SKILL: API Design
 
 ## Purpose

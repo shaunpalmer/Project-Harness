@@ -1,141 +1,136 @@
 ---
 name: find-skills
-description: Helps users discover and install agent skills when they ask questions like "how do I do X", "find a skill for X", "is there a skill that can...", or express interest in extending capabilities. This skill should be used when the user is looking for functionality that might exist as an installable skill.
+description: "Use when a task needs a capability the visible catalogue does not cover: search the full Project Harness library with project_harness_find_skills, check DSH-native project and user skills, then search the installable skills.sh ecosystem with npx skills find."
+whenToUse: "Use when the workspace needs a capability that may already exist as a harness or installable skill and the task is discovery, activation, or installation."
+user-invocable: true
+metadata:
+  harness:
+    tier: discovery
+    topics: [skill-discovery, cli-automation, dependency-control]
+    tags: [skills, discovery, activation, npx, ecosystem]
+    stack: []
 ---
 
-# Find Skills
+# SKILL: Find Skills
 
-This skill helps you discover and install skills from the open agent skills ecosystem.
+## Purpose
 
-## When to Use This Skill
+Find the right instructions before writing your own. The model-facing skill
+catalogue is deliberately small: Project Harness composes only the skills your
+workspace evidence justifies. This skill is the route to everything else.
 
-Use this skill when the user:
+Never hand-write guidance that an existing skill already owns, and never assume
+a capability is missing just because it is not in the current catalogue.
 
-- Asks "how do I do X" where X might be a common task with an existing skill
-- Says "find a skill for X" or "is there a skill for X"
-- Asks "can you do X" where X is a specialized capability
-- Expresses interest in extending agent capabilities
-- Wants to search for tools, templates, or workflows
-- Mentions they wish they had help with a specific domain (design, testing, deployment, etc.)
+## The discovery ladder
 
-## What is the Skills CLI?
+Work down the rungs. Stop at the first rung that answers the need.
 
-The Skills CLI (`npx skills`) is the package manager for the open agent skills ecosystem. Skills are modular packages that extend agent capabilities with specialized knowledge, workflows, and tools.
+### Rung 1 — What is already visible
 
-**Key commands:**
+Call `project_harness_skill_catalog`. It reports the composed skills, the tier
+that selected each one, the capabilities workspace evidence proved, and anything
+the workspace activated or suppressed. If the capability is already listed, stop
+and load it with the `skill` tool.
 
-- `npx skills find [query] [--owner <owner>]` - Search for skills interactively or by keyword, optionally scoped to a GitHub owner
-- `npx skills add <package>` - Install a skill from GitHub or other sources
-- `npx skills update` - Update all installed skills
+### Rung 2 — The full Project Harness library
 
-**Browse skills at:** https://skills.sh/
+Call `project_harness_find_skills` with a description of what the task needs,
+not a skill name. It searches every harness skill's name, description,
+`whenToUse`, tags, topics and stack — far more than the catalogue shows.
 
-## How to Help Users Find Skills
+```text
+project_harness_find_skills({ query: "database migrations", limit: 8 })
+```
 
-### Step 1: Understand What They Need
+Each match reports whether it is `currently_visible`. A match with
+`currently_visible: false` is real, relevant, and not yet in your catalogue.
 
-When a user asks for help with something, identify:
+### Rung 3 — Activate, then load
 
-1. The domain (e.g., React, testing, design, deployment)
-2. The specific task (e.g., writing tests, creating animations, reviewing PRs)
-3. Whether this is a common enough task that a skill likely exists
+Promote a match into the catalogue, then load it normally:
 
-### Step 2: Check the Leaderboard First
+```text
+project_harness_activate_skills({ name: "database-design", action: "activate" })
+```
 
-Before running a CLI search, check the [skills.sh leaderboard](https://skills.sh/) to see if a well-known skill already exists for the domain. The leaderboard ranks skills by total installs, surfacing the most popular and battle-tested options.
+Activation records the decision in `.harness/state/skills.json` and tells DSH to
+republish the model-facing catalogue, so the skill becomes loadable with the
+`skill` tool. Use it when the workspace genuinely needs the capability for the
+work ahead — not to preload the library "just in case".
 
-For example, top skills for web development include:
-- `vercel-labs/agent-skills` — React, Next.js, web design (100K+ installs each)
-- `anthropics/skills` — Frontend design, document processing (100K+ installs)
+Use `action: "deactivate"` to suppress a skill that evidence selected but this
+workspace does not want. Use `action: "reset"` to clear both lists.
 
-### Step 3: Search for Skills
+### Rung 4 — DSH-native project and user skills
 
-If the leaderboard doesn't cover the user's need, run the find command:
+`project_harness_find_skills` also reports `dsh_native_skills` found in
+`<project>/.dsh/skills`, `<project>/.agents/skills`, `~/.dsh/skills` and
+`~/.agents/skills`. DSH serves those roots in a nearer layer than Project
+Harness, so a same-name project skill **shadows** the harness version. If one
+exists, use it and do not overwrite or duplicate it.
+
+When a project needs a lasting local override, the right place is
+`<project>/.dsh/skills/<name>/SKILL.md` with DSH frontmatter: DSH discovers it
+natively, and `find_skills` reports it as `shadows_harness_skill: true`.
+
+### Rung 5 — The open skill ecosystem
+
+Only when rungs 1-4 have nothing. The Skills CLI (`npx skills`) is the package
+manager for the open agent skills ecosystem. Browse at https://skills.sh/.
 
 ```bash
 npx skills find [query] [--owner <owner>]
+npx skills add <package>
+npx skills update
 ```
 
-For example:
+Check the [skills.sh leaderboard](https://skills.sh/) before searching: it ranks
+by total installs, which surfaces the most battle-tested options. Well-known
+sources include `vercel-labs/agent-skills` (React, Next.js, web design) and
+`anthropics/skills` (frontend design, document processing).
 
-- User asks "how do I make my React app faster?" → `npx skills find react performance`
-- User asks "can you help me with PR reviews?" → `npx skills find pr review`
-- User asks "I need to create a changelog" → `npx skills find changelog`
+**Do not recommend a skill from search results alone.** Verify:
 
-### Step 4: Verify Quality Before Recommending
+1. **Install count** — prefer 1K+. Be cautious below 100.
+2. **Source reputation** — official sources (`vercel-labs`, `anthropics`,
+   `microsoft`) over unknown authors.
+3. **Repository stars** — treat a source repo under roughly 100 stars with
+   skepticism.
 
-**Do not recommend a skill based solely on search results.** Always verify:
-
-1. **Install count** — Prefer skills with 1K+ installs. Be cautious with anything under 100.
-2. **Source reputation** — Official sources (`vercel-labs`, `anthropics`, `microsoft`) are more trustworthy than unknown authors.
-3. **GitHub stars** — Check the source repository. A skill from a repo with <100 stars should be treated with skepticism.
-
-### Step 5: Present Options to the User
-
-When you find relevant skills, present them to the user with:
-
-1. The skill name and what it does
-2. The install count and source
-3. The install command they can run
-4. A link to learn more at skills.sh
-
-Example response:
-
-```
-I found a skill that might help! The "react-best-practices" skill provides
-React and Next.js performance optimization guidelines from Vercel Engineering.
-(185K installs)
-
-To install it:
-npx skills add vercel-labs/agent-skills@react-best-practices
-
-Learn more: https://skills.sh/vercel-labs/agent-skills/react-best-practices
-```
-
-### Step 6: Offer to Install
-
-If the user wants to proceed, you can install the skill for them:
+Present the name, what it does, the install count, the source, the install
+command and a link, then offer to install:
 
 ```bash
 npx skills add <owner/repo@skill> -g -y
 ```
 
-The `-g` flag installs globally (user-level) and `-y` skips confirmation prompts.
+`-g` installs at user level and `-y` skips confirmation. Installing a
+third-party skill is a dependency addition: run the complexity brake first and
+let the user make the call.
 
-## Common Skill Categories
+### Rung 6 — Nothing fits
 
-When searching, consider these common categories:
+Say so plainly, then do the work with general capability. If the need will
+recur, propose a new skill in the harness library rather than repeating ad-hoc
+instructions: add `.github/skills/<name>/SKILL.md` with DSH frontmatter
+(`name`, `description`, `whenToUse`, `metadata.harness.tier`) and bind it to a
+capability in `dsh/skills/capabilities.json`. Run `npm run skills:verify`.
 
-| Category        | Example Queries                          |
-| --------------- | ---------------------------------------- |
-| Web Development | react, nextjs, typescript, css, tailwind |
-| Testing         | testing, jest, playwright, e2e           |
-| DevOps          | deploy, docker, kubernetes, ci-cd        |
-| Documentation   | docs, readme, changelog, api-docs        |
-| Code Quality    | review, lint, refactor, best-practices   |
-| Design          | ui, ux, design-system, accessibility     |
-| Productivity    | workflow, automation, git                |
+## Common capability categories
 
-## Tips for Effective Searches
+| Category | Example queries |
+| --- | --- |
+| Web development | react, nextjs, typescript, css, tailwind |
+| Testing | testing, jest, playwright, e2e |
+| DevOps | deploy, docker, kubernetes, ci-cd |
+| Documentation | docs, readme, changelog, api-docs |
+| Code quality | review, lint, refactor, best-practices |
+| Design | ui, ux, design-system, accessibility |
+| Productivity | workflow, automation, git |
 
-1. **Use specific keywords**: "react testing" is better than just "testing"
-2. **Try alternative terms**: If "deploy" doesn't work, try "deployment" or "ci-cd"
-3. **Check popular sources**: Many skills come from `vercel-labs/agent-skills` or `ComposioHQ/awesome-claude-skills`
+## Final rule
 
-## When No Skills Are Found
-
-If no relevant skills exist:
-
-1. Acknowledge that no existing skill was found
-2. Offer to help with the task directly using your general capabilities
-3. Suggest the user could create their own skill with `npx skills init`
-
-Example:
-
-```
-I searched for skills related to "xyz" but didn't find any matches.
-I can still help you with this task directly! Would you like me to proceed?
-
-If this is something you do often, you could create your own skill:
-npx skills init my-xyz-skill
-```
+**Search before you write. Compose a narrow catalogue from evidence, then widen
+it deliberately with `find` and `activate`.** A skill you never found is a skill
+you paid for and did not use.

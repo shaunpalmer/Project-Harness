@@ -1,3 +1,15 @@
+---
+name: documentation
+description: "Use when a feature or repo needs docs: get README to the 10-minute local-run standard, generate API reference plus auth/errors/versioning, backfill ADRs, and write a runbook covering deploy, rollback and common errors."
+whenToUse: "Use when the workspace has shipping code and the task is to write or refresh the README, API reference, ADRs, or operational runbook."
+user-invocable: true
+metadata:
+  harness:
+    tier: capability
+    topics: [documentation, architecture, observability]
+    tags: [documentation, readme, api-docs, adr, runbook]
+    stack: []
+---
 # SKILL: Documentation
 
 ## Purpose
