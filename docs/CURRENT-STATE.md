@@ -3,7 +3,7 @@
 Last verified: 2026-09-17
 Verified commit: 44eb167 (main after PR #6 and PR #8)
 Working branch: `feature/skill-architecture-v2` (rebased onto 44eb167)
-Verification: Node 22.23.2; 102/102 tests including the merged `test/dsh-workspace-routing.test.js` and two live DeepSeek Harness integration probes, plus `skills:verify`, `skills:catalog --check`, `control:verify`, `memory:resume` and `git diff --check`.
+Verification: Node 22.23.2; 103/103 tests including the merged `test/dsh-workspace-routing.test.js` and two live DeepSeek Harness integration probes (39 integration + 174 conformance checks), plus `skills:verify`, `skills:catalog --check`, `control:verify`, `memory:resume` and `git diff --check`.
 
 ## Current truth
 
@@ -85,6 +85,17 @@ throwaway profile was removed afterwards; the live `web` profile was not touched
 
 The package now declares the documented dependency roles (schemastery as a dependency, not
 a peer) and ships 72 files instead of 146.
+
+## Tool and export contracts
+
+Following the DSH develop documentation and `docs/testing.md`, the plugin now matches two
+further contracts. Every tool returns one canonical JSON value (`{ type: 'json' }`) rather
+than a JSON string, so PTC callers get structured fields; the model-facing projection is
+unchanged because `ctx.tools.schemas()` exposes only `name`, `description` and `parameters`.
+And the namespace export shape is guarded by both a hermetic assertion and a real
+`unwrapExports` round trip, because a stray `export default apply` would make the Loader
+discard `inject` and load the plugin with no services. Both guards were proven by injecting
+the regression and watching them fail.
 
 ## Working capabilities
 

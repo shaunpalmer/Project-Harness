@@ -71,6 +71,30 @@ repository, treat that as a setup/reconciliation task rather than creating files
 automatically. If `project_harness_select_specialist` returns a specialist, use it as
 routing evidence before starting implementation.
 
+## Tool contract
+
+Each tool returns **one canonical JSON value** and declares DSH's `json` author spec
+(`{ type: 'json' }`), which normalizes to the unconstrained JSON Schema node. `render`
+owns the model-facing projection, so the model reads the same formatted text as before,
+while a programmatic caller — PTC mode reaches these as `await tools.<name>(args)` —
+receives structured fields instead of having to parse a JSON string. Returning a string
+root would be the documented anti-pattern: `docs/cookbook/adding-a-tool.md` requires a tool
+to "declare and return one canonical JSON value" and not to "make callers parse prose for
+ids and fields".
+
+The output schema never reaches the model: `ctx.tools.schemas()` projects only `name`,
+`description` and `parameters`, so structuring the canonical value cannot change what the
+model reads. The live probe asserts that projection and reads the registered definition
+back to confirm all six tools are unconstrained rather than string-rooted.
+
+The plugin entry keeps the namespace export shape (`name`/`inject`/`Config`/`apply`) with no
+default export. The cordis Loader's `unwrapExports` prefers `.default` over the namespace, so
+a stray `export default apply` would silently discard `inject` and load the plugin into a
+fiber with no services — a failure that unit coverage cannot see
+(`docs/postmortem/0001-acp-default-export-drops-inject.md`). `docs/testing.md` therefore
+requires an explicit no-default assertion plus an `unwrapExports` round trip, and the probe
+carries both, including an assertion that the regression actually breaks the round trip.
+
 ## Scope of writes
 
 Resume, inventory, specialist selection, the catalogue and search are read-only.

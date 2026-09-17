@@ -121,6 +121,23 @@ This file records meaningful user-facing harness changes. Git remains the source
   configuration fails while the plugin loads instead of silently disabling catalogue
   refresh.
 
+### Canonical tool values and Loader export guard
+
+- Every tool now returns one canonical JSON value and declares DSH's `json` author spec
+  instead of a pre-stringified string. PTC callers (`await tools.<name>(args)`) receive
+  structured fields rather than having to parse prose, which the tool-authoring reference
+  requires. The model-facing text is unchanged, and the output schema is not part of the
+  model-visible projection. Verified against the real tool runtime, which registers all six
+  tools and reads back unconstrained definitions.
+- Added the export-shape guard `docs/testing.md` requires: an assertion that the plugin
+  entry has no default export, plus a real `cordis-plugin-loader` `unwrapExports` round trip
+  proving the namespace (and therefore `inject`) survives. Proven by injecting
+  `export default apply`, watching both guards fail, and reverting. This guards the failure
+  in postmortem 0001, where a stray default export loaded a plugin with no services past
+  178 green tests.
+- The live probe now also covers the tool layer through the real registry, and its
+  peer-resolution skip no longer masks a syntax error in the plugin entry.
+
 ### Memory context and reusable roles
 
 - Shared bounded CLI/DSH resume context with explicit existing-note mapping and

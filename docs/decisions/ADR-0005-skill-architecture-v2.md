@@ -195,3 +195,25 @@ specifiers resolved.
 configuration guidance requires self-contained constraints to fail while the plugin loads
 rather than silently disabling catalogue refresh. Verified against the installed package:
 `-5` is rejected with `$.skillWatchIntervalMs expected number >= 0 but got -5`.
+
+## Addendum: canonical tool values and the Loader export guard
+
+Reading the DSH develop documentation and `docs/testing.md` surfaced two more deviations.
+
+**Tools returned JSON strings.** `output.schema` was `{ type: 'string' }` and `execute`
+returned `JSON.stringify(...)`, so PTC mode (`await tools.<name>(args)`) handed callers a
+string to parse. `docs/cookbook/adding-a-tool.md` requires one canonical JSON value instead.
+The report builders in `dsh/skills/plan.js` now return objects, and every tool declares
+`{ type: 'json' }`, which DSH normalizes to the unconstrained JSON Schema node. `render`
+still produces the identical model-facing text, and the output schema is not part of the
+model-facing projection, so the model's view is unchanged. Verified against the real tool
+runtime: all six tools register, `ctx.tools.schemas()` exposes no output schema, and each
+registered definition is unconstrained.
+
+**No export guard.** The plugin entry already exported the namespace form with no default,
+but nothing asserted it. `docs/testing.md` names this explicitly: a namespace plugin plus a
+stray `export default apply` makes the Loader's `unwrapExports` discard `inject`, so the
+plugin loads with no services — the exact failure in
+`docs/postmortem/0001-acp-default-export-drops-inject.md`, which shipped past 178 green
+tests. A hermetic assertion and a real `unwrapExports` round trip now cover it, and both
+were proven by introducing `export default apply`, watching them fail, and reverting.

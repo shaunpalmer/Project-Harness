@@ -42,7 +42,7 @@
     {
       "gate": "proof",
       "answer": "YES",
-      "evidence": "Node 22.23.2: 102/102 tests including the merged PR #8 regression tests, the catalog validator, and two live DeepSeek Harness probes (29 integration + 174 conformance checks), plus the same probes against the packed artifact installed into a throwaway DSH profile; skills:verify, skills:catalog --check, dsh:verify, control:verify, memory:resume and git diff --check passed. An in-session live model run still needs approval because it spends provider credits."
+      "evidence": "Node 22.23.2: 103/103 tests including the merged PR #8 regression tests, the catalog validator, and two live DeepSeek Harness probes (39 integration checks covering the real registry, tool runtime and Loader export contract; 174 conformance checks across 39 cases), plus the same probes against the packed artifact installed into a throwaway DSH profile; skills:verify, skills:catalog --check, dsh:verify, control:verify, memory:resume and git diff --check passed. Both new guards were proven by injecting the regression and watching them fail. An in-session live model run still needs approval because it spends provider credits."
     }
   ]
 }
