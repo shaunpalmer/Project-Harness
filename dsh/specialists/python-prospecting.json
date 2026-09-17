@@ -2,6 +2,30 @@
   "id": "python-prospecting",
   "domain": "coding",
   "stack": ["Python", "data pipelines", "web scraping"],
+  "skill_profile": {
+    "core": [
+      "project-memory",
+      "skill-router",
+      "complexity-brake",
+      "memory-consolidation",
+      "trace-eval-logging"
+    ],
+    "specialist": [
+      "scraping-pipeline"
+    ],
+    "capability": [
+      "testing-plan",
+      "code-review",
+      "api-design",
+      "database-selection",
+      "database-design",
+      "documentation",
+      "architecture-canvas"
+    ],
+    "discovery": [
+      "find-skills"
+    ]
+  },
   "required_skills": [
     ".github/skills/scraping-pipeline/SKILL.md",
     ".github/skills/testing-plan/SKILL.md",
@@ -16,5 +40,5 @@
     "memory": "project-local"
   },
   "excluded_domains": ["sales", "marketing", "seo", "hr", "tax", "administration"],
-  "routing_note": "Use this preset for Python data collection, enrichment, recovery, and prospecting pipeline work. Sending and commercial decisions remain outside the coding specialist."
+  "routing_note": "Use this preset for Python data collection, enrichment, recovery, and prospecting pipeline work. The skill profile recommends relevant layers, while the wider Project Harness skill catalog remains discoverable on demand. Sending and commercial decisions remain outside the coding specialist."
 }
