@@ -2,6 +2,31 @@
   "id": "wordpress-coding",
   "domain": "coding",
   "stack": ["PHP", "WordPress APIs"],
+  "skill_profile": {
+    "core": [
+      "project-memory",
+      "skill-router",
+      "complexity-brake",
+      "memory-consolidation"
+    ],
+    "specialist": [
+      "wordpress-plugin",
+      "wordpress-way"
+    ],
+    "capability": [
+      "testing-plan",
+      "code-review",
+      "interface-design",
+      "chrome-devtools-mcp",
+      "api-design",
+      "database-design",
+      "documentation",
+      "oop-standards"
+    ],
+    "discovery": [
+      "find-skills"
+    ]
+  },
   "required_skills": [
     ".github/skills/wordpress-way.md",
     ".github/skills/wordpress-plugin/SKILL.md",
@@ -15,5 +40,5 @@
     "memory": "project-local"
   },
   "excluded_domains": ["sales", "marketing", "seo", "analytics", "hr", "tax", "administration"],
-  "routing_note": "Use this preset for WordPress coding work only. Other business activities require a separate harness family."
+  "routing_note": "Use this preset for WordPress coding work only. The skill profile recommends relevant layers, while the wider Project Harness skill catalog remains discoverable on demand. Other business activities require a separate harness family."
 }
