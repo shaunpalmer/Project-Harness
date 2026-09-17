@@ -17,7 +17,12 @@
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { Context } from '@deepseek-ai/cordis';
+import Loader from '@deepseek-ai/cordis-plugin-loader';
+import SystemPrompt from '@deepseek-ai/dsh-system-prompt';
+import ToolRuntime from '@deepseek-ai/dsh-tools';
+import AgentRegistry from '@deepseek-ai/dsh-agent';
 import SkillRegistry from '@deepseek-ai/dsh-skill';
 import * as SkillFileSystem from '@deepseek-ai/dsh-skill-filesystem';
 
@@ -93,6 +98,130 @@ try {
   const holder = registerHarnessSkills(ctx, { projectRoot: '', skillWatchIntervalMs: 0 });
   check('provider registration exposes invalidate()', typeof holder.invalidate === 'function');
 
+  // --- plugin entry shape ---------------------------------------------------
+  // The cordis Loader normalizes a plugin module with `unwrapExports`, which prefers
+  // `.default` over the namespace. A stray `export default apply` would therefore discard
+  // `inject`, and the plugin would load into a fiber with no services. docs/testing.md
+  // requires an explicit `'default' in module` assertion plus an unwrapExports round trip,
+  // because a Loader smoke alone stays green when this regresses.
+  let pluginNamespace;
+  try {
+    pluginNamespace = await import(pathToFileURL(join(packageRoot, 'dsh', 'index.js')).href);
+  } catch (error) {
+    pluginNamespace = undefined;
+    // Only a missing peer is a legitimate skip: the source checkout has no node_modules
+    // beside it, so `@deepseek-ai/*` cannot resolve. Any other failure — a syntax error, an
+    // export mistake, a bad top-level import — must be red, because it is exactly the
+    // load-time breakage this section exists to catch.
+    const missingPeer = error?.code === 'ERR_MODULE_NOT_FOUND' && /@deepseek-ai\//u.test(String(error?.message));
+    check(
+      missingPeer
+        ? 'plugin entry importable (skipped: peer dependencies are not installed beside packageRoot)'
+        : 'plugin entry importable',
+      missingPeer,
+      missingPeer
+        ? `run with --package-root pointing at an installed package to include this check: ${error.message}`
+        : String(error?.stack ?? error),
+    );
+  }
+
+  if (pluginNamespace !== undefined) {
+    check('plugin entry has no default export', !('default' in pluginNamespace), Object.keys(pluginNamespace).join(','));
+    check(
+      'plugin entry exports the namespace form',
+      typeof pluginNamespace.name === 'string'
+        && Array.isArray(pluginNamespace.inject)
+        && typeof pluginNamespace.apply === 'function'
+        && pluginNamespace.Config !== undefined,
+      Object.keys(pluginNamespace).join(','),
+    );
+
+    const unwrapped = Loader.prototype.unwrapExports(pluginNamespace);
+    check(
+      'unwrapExports preserves the namespace plugin',
+      unwrapped !== null && typeof unwrapped === 'object'
+        && unwrapped.name === 'project-harness'
+        && Array.isArray(unwrapped.inject)
+        && typeof unwrapped.apply === 'function',
+      typeof unwrapped === 'function' ? 'unwrapped to a bare function' : Object.keys(unwrapped ?? {}).join(','),
+    );
+    check(
+      'unwrapExports preserves the declared injection',
+      Array.isArray(unwrapped?.inject) && unwrapped.inject.includes('tools') && unwrapped.inject.includes('skills'),
+      JSON.stringify(unwrapped?.inject),
+    );
+
+    // Prove the guard is not vacuous: a default export must actually break it.
+    const withDefault = { ...pluginNamespace, default: pluginNamespace.apply };
+    const broken = Loader.prototype.unwrapExports(withDefault);
+    check(
+      'a default export would drop inject (the regression this guards)',
+      typeof broken?.inject === 'undefined' && typeof broken === 'function',
+      typeof broken === 'function' ? 'unwrapped to the bare apply function, losing inject' : 'premise did not hold',
+    );
+  }
+
+  // --- tool layer through the real registry ---------------------------------
+  // The provider is covered above; the six tools are only ever exercised against a stub
+  // `defineTool` elsewhere, so this registers them with the real tool runtime and reads
+  // back what the registry materializes.
+  if (pluginNamespace !== undefined) {
+    const toolContext = new Context();
+    await toolContext.plugin(SystemPrompt);
+    await toolContext.plugin(ToolRuntime);
+    await toolContext.plugin(AgentRegistry);
+    await toolContext.plugin(SkillRegistry);
+    await toolContext.plugin(SkillFileSystem, {
+      dshHome: join(home, '.dsh'),
+      agentsHome: join(home, '.agents'),
+      watch: false,
+    });
+
+    pluginNamespace.apply(toolContext, { projectRoot: '', skillWatchIntervalMs: 0 });
+
+    const projection = toolContext.tools.schemas().map((entry: any) => entry.name).sort();
+    check(
+      'all six tools register with the real tool runtime',
+      projection.length === 6 && projection.includes('project_harness_find_skills') && projection.includes('project_harness_activate_skills'),
+      projection.join(','),
+    );
+
+    // The model-facing projection carries name, description and parameters only; an output
+    // schema never reaches the model, which is why the canonical value can be structured
+    // without changing what the model reads.
+    const first = toolContext.tools.schemas()[0];
+    check(
+      'the model-facing projection exposes no output schema',
+      first !== undefined && !Object.hasOwn(first, 'output') && Object.hasOwn(first, 'parameters'),
+      Object.keys(first ?? {}).join(','),
+    );
+
+    // A tool returning one canonical JSON value declares DSH's `json` author spec, which
+    // normalizes to the unconstrained JSON Schema node. A string root would force a
+    // programmatic caller to parse prose out of the result.
+    const stringRooted = [];
+    const missing = [];
+    for (const name of projection) {
+      const definition: any = toolContext.tools.get(name);
+      if (definition === undefined) {
+        missing.push(name);
+        continue;
+      }
+      const schema = definition.output?.schema;
+      const unconstrained = schema !== undefined && typeof schema === 'object' && !Object.hasOwn(schema, 'type');
+      if (!unconstrained) stringRooted.push(`${name}=${JSON.stringify(schema)}`);
+    }
+
+    check('every tool definition is readable from the registry', missing.length === 0, missing.join(','));
+    check(
+      'every tool returns one unconstrained JSON canonical value',
+      stringRooted.length === 0,
+      stringRooted.join(',') || 'all six are unconstrained',
+    );
+
+    await toolContext.fiber.dispose();
+  }
+
   const namesFor = async (cwd) => (await ctx.skills.list({ cwd })).map((entry) => entry.name);
 
   // --- composition ----------------------------------------------------------
@@ -138,10 +267,13 @@ try {
 
   // --- the find -> activate -> republish round trip -------------------------
   const before = (await ctx.skills.list({ cwd: py })).length;
-  const found = JSON.parse(buildSkillPlan('', py) && JSON.stringify({ ok: true }));
-  check('plan builds for the Python workspace', found.ok === true);
+  // The report builders return canonical objects, so a programmatic caller reads fields
+  // directly instead of parsing a string.
+  const pythonPlan = buildSkillPlan('', py);
+  check('plan builds for the Python workspace as an object', typeof pythonPlan === 'object' && Array.isArray(pythonPlan.entries));
+  check('plan entries carry their library record', pythonPlan.entries.every((entry) => typeof entry.library?.description === 'string'));
 
-  const activation = JSON.parse(activateSkill('', py, holder, 'interface-design', 'activate'));
+  const activation = activateSkill('', py, holder, 'interface-design', 'activate');
   check('activation succeeds', activation.status === 'updated', activation.status);
   check('activation writes only the workspace state file', activation.activation_file === '.harness/state/skills.json', activation.activation_file);
 
@@ -154,7 +286,7 @@ try {
   check('the activated skill loads', (await ctx.skills.get('interface-design', { cwd: py })) !== undefined);
 
   // --- suppression ----------------------------------------------------------
-  const suppression = JSON.parse(activateSkill('', py, holder, 'scraping-pipeline', 'deactivate'));
+  const suppression = activateSkill('', py, holder, 'scraping-pipeline', 'deactivate');
   check('deactivation succeeds', suppression.status === 'updated', suppression.status);
   await new Promise((resolve) => { setTimeout(resolve, 30); });
   const suppressedNames = await namesFor(py);

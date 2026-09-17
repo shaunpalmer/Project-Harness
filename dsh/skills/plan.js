@@ -192,20 +192,20 @@ export function containsFileExtension(root, extension) {
 export function resumeProject(projectRoot, projectRootSource = 'configured-fallback') {
   const resolution = resolveProjectRoot(projectRoot);
   if (!resolution.ok) {
-    return JSON.stringify({
+    return {
       status: 'blocked',
       code: resolution.code,
       message: resolution.message,
       project_root_source: projectRootSource,
       writes_performed: false,
-    }, null, 2);
+    };
   }
 
   const { root } = resolution;
   const task = readJson(root, '.harness/state/active-task.json');
   const memory = readMemoryContext(root);
 
-  return JSON.stringify({
+  return {
     ...memory,
     project_root: root,
     project_root_source: projectRootSource,
@@ -215,7 +215,7 @@ export function resumeProject(projectRoot, projectRootSource = 'configured-fallb
       system_model: markerStatus(root, '00-PLANNING/SYSTEM-MODEL.md', 'MODEL_STATUS: CONFIRMED'),
       architecture_hypothesis: markerStatus(root, '00-PLANNING/ARCHITECTURE-HYPOTHESIS.md', 'HYPOTHESIS_STATUS: ACCEPTED'),
     },
-  }, null, 2);
+  };
 }
 
 export function specialistFor(projectRoot, projectRootSource = 'configured-fallback') {
@@ -310,13 +310,13 @@ export function specialistFor(projectRoot, projectRootSource = 'configured-fallb
 export function inventoryProject(projectRoot, projectRootSource = 'configured-fallback') {
   const resolution = resolveProjectRoot(projectRoot);
   if (!resolution.ok) {
-    return JSON.stringify({
+    return {
       status: 'blocked',
       code: resolution.code,
       message: resolution.message,
       project_root_source: projectRootSource,
       writes_performed: false,
-    }, null, 2);
+    };
   }
 
   const { root } = resolution;
@@ -335,7 +335,7 @@ export function inventoryProject(projectRoot, projectRootSource = 'configured-fa
     '.agents/skills',
   ];
 
-  return JSON.stringify({
+  return {
     project_root: root,
     project_root_source: projectRootSource,
     top_level: fs.readdirSync(root).sort(),
@@ -344,7 +344,7 @@ export function inventoryProject(projectRoot, projectRootSource = 'configured-fa
       present: fs.existsSync(path.join(root, relativePath)),
     })),
     writes_performed: false,
-  }, null, 2);
+  };
 }
 
 function emptyPlan(vocabulary, code, reason, source) {
@@ -634,21 +634,21 @@ function scheduleInvalidate(control, delay = 0) {
  * Render the composed plan for `project_harness_skill_catalog`.
  *
  * @param {object} plan Composed plan.
- * @returns {string} JSON report.
+ * @returns {object} Report.
  */
-export function renderSkillPlan(plan) {
+export function skillCatalogReport(plan) {
   if (plan.workspace === null) {
-    return JSON.stringify({
+    return {
       status: 'blocked',
       code: plan.unavailableCode,
       message: plan.unavailable,
       project_root_source: plan.workspaceSource,
       visible_skills: [],
       writes_performed: false,
-    }, null, 2);
+    };
   }
 
-  return JSON.stringify({
+  return {
     project_root: plan.workspace,
     project_root_source: plan.workspaceSource,
     specialist: plan.specialist,
@@ -672,7 +672,7 @@ export function renderSkillPlan(plan) {
     ...(plan.stateProblems.length > 0 ? { activation_problems: plan.stateProblems } : {}),
     ...(plan.unknownReferences.length > 0 ? { unknown_skill_references: plan.unknownReferences } : {}),
     writes_performed: false,
-  }, null, 2);
+  };
 }
 
 /**
@@ -682,7 +682,7 @@ export function renderSkillPlan(plan) {
  * @param {string | undefined} cwd Caller cwd supplied by DSH.
  * @param {string} query Free-text need.
  * @param {number} limit Maximum matches.
- * @returns {string} JSON report.
+ * @returns {object} Report.
  */
 export function findSkills(configuredRoot, cwd, query, limit = 8) {
   const plan = buildSkillPlan(configuredRoot, cwd);
@@ -694,7 +694,7 @@ export function findSkills(configuredRoot, cwd, query, limit = 8) {
   const activated = new Set(plan.activated);
   const suppressed = new Set(plan.suppressed);
 
-  return JSON.stringify({
+  return {
     query,
     project_root: plan.workspace,
     library_skills: librarySkills.length,
@@ -723,7 +723,7 @@ export function findSkills(configuredRoot, cwd, query, limit = 8) {
       ? 'No harness skill matched. Widen the query, check dsh_native_skills, or search the installable ecosystem with the find-skills skill (npx skills find <query>).'
       : 'Call project_harness_activate_skills with a name whose currently_visible is false, then load it with the skill tool.',
     writes_performed: false,
-  }, null, 2);
+  };
 }
 
 /**
@@ -734,18 +734,18 @@ export function findSkills(configuredRoot, cwd, query, limit = 8) {
  * @param {object} holder Provider holder whose `invalidate()` republishes the catalogue.
  * @param {string | undefined} rawName Skill name.
  * @param {string | undefined} rawAction One of activate, deactivate, reset.
- * @returns {string} JSON report.
+ * @returns {object} Report.
  */
 export function activateSkill(configuredRoot, cwd, holder, rawName, rawAction) {
   const resolved = resolveWorkspace(configuredRoot, cwd);
   if (!resolved.ok) {
-    return JSON.stringify({
+    return {
       status: 'blocked',
       code: resolved.code,
       message: resolved.message,
       project_root_source: resolved.source,
       writes_performed: false,
-    }, null, 2);
+    };
   }
 
   const root = resolved.root;
@@ -755,11 +755,11 @@ export function activateSkill(configuredRoot, cwd, holder, rawName, rawAction) {
     : 'activate';
 
   if (!['activate', 'deactivate', 'reset'].includes(mode)) {
-    return JSON.stringify({
+    return {
       status: 'blocked',
       message: `Unknown action "${mode}". Use "activate", "deactivate" or "reset".`,
       writes_performed: false,
-    }, null, 2);
+    };
   }
 
   const state = readSkillState(root);
@@ -771,21 +771,21 @@ export function activateSkill(configuredRoot, cwd, holder, rawName, rawAction) {
     suppressed = [];
   } else {
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(name)) {
-      return JSON.stringify({
+      return {
         status: 'blocked',
         message: 'A kebab-case skill name is required. Use project_harness_find_skills to find one.',
         writes_performed: false,
-      }, null, 2);
+      };
     }
 
     const library = discoverLibrary({ packageRoot: PACKAGE_ROOT, workspaceRoot: root });
     if (!library.skills.has(name)) {
-      return JSON.stringify({
+      return {
         status: 'blocked',
         message: `No Project Harness skill named "${name}" exists in this workspace or the installed package.`,
         available_skill_count: library.skills.size,
         writes_performed: false,
-      }, null, 2);
+      };
     }
 
     if (mode === 'activate') {
@@ -799,13 +799,13 @@ export function activateSkill(configuredRoot, cwd, holder, rawName, rawAction) {
 
   const written = writeSkillState(root, { activated, suppressed });
   if (!written.ok) {
-    return JSON.stringify({ status: 'blocked', message: written.message, writes_performed: false }, null, 2);
+    return { status: 'blocked', message: written.message, writes_performed: false };
   }
 
   holder?.invalidate?.();
   const plan = buildSkillPlan(configuredRoot, cwd);
 
-  return JSON.stringify({
+  return {
     status: 'updated',
     action: mode,
     skill: name === '' ? null : name,
@@ -815,5 +815,5 @@ export function activateSkill(configuredRoot, cwd, holder, rawName, rawAction) {
     visible_skills: plan.entries.map((entry) => `${entry.name} (${entry.layer})`),
     note: 'DSH republishes the model-facing skill catalogue after this change; load the skill with the skill tool.',
     writes_performed: true,
-  }, null, 2);
+  };
 }

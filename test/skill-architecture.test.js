@@ -35,7 +35,7 @@ import {
   registerHarnessSkills,
   resolveProjectRoot,
   inventoryProject,
-  renderSkillPlan,
+  skillCatalogReport,
   resumeProject,
   specialistFor,
   resolveWorkspace,
@@ -466,9 +466,9 @@ test('find_skills reaches the whole library and activation makes a found skill v
   });
 
   try {
-    const before = JSON.parse(buildSkillPlan('', workspace).entries.length);
+    const before = buildSkillPlan('', workspace).entries.length;
 
-    const found = JSON.parse(findSkills('', workspace, 'wordpress plugin hooks', 5));
+    const found = findSkills('', workspace, 'wordpress plugin hooks', 5);
     const match = found.matches.find((entry) => entry.name === 'wordpress-plugin');
     assert.ok(match, 'find_skills must reach a skill the composition did not select');
     assert.equal(match.currently_visible, false);
@@ -476,7 +476,7 @@ test('find_skills reaches the whole library and activation makes a found skill v
     assert.match(found.guidance, /project_harness_activate_skills/);
 
     const holder = { invalidations: 0, invalidate() { this.invalidations += 1; } };
-    const activated = JSON.parse(activateSkill('', workspace, holder, 'wordpress-plugin', 'activate'));
+    const activated = activateSkill('', workspace, holder, 'wordpress-plugin', 'activate');
     assert.equal(activated.status, 'updated');
     assert.equal(holder.invalidations, 1, 'activation must invalidate the DSH catalogue');
     assert.ok(activated.activated_skills.includes('wordpress-plugin'));
@@ -486,7 +486,7 @@ test('find_skills reaches the whole library and activation makes a found skill v
     assert.equal(entry.layer, 'activated');
     assert.ok(plan.entries.length > before);
 
-    const suppressed = JSON.parse(activateSkill('', workspace, holder, 'wordpress-plugin', 'deactivate'));
+    const suppressed = activateSkill('', workspace, holder, 'wordpress-plugin', 'deactivate');
     assert.equal(suppressed.status, 'updated');
     assert.ok(suppressed.suppressed_skills.includes('wordpress-plugin'));
     assert.equal(buildSkillPlan('', workspace).entries.some((candidate) => candidate.name === 'wordpress-plugin'), false);
@@ -500,15 +500,15 @@ test('activation refuses an unknown skill, a bad action and a non-kebab name', (
   const holder = { invalidations: 0, invalidate() { this.invalidations += 1; } };
 
   try {
-    const unknown = JSON.parse(activateSkill('', workspace, holder, 'not-a-real-skill', 'activate'));
+    const unknown = activateSkill('', workspace, holder, 'not-a-real-skill', 'activate');
     assert.equal(unknown.status, 'blocked');
     assert.match(unknown.message, /No Project Harness skill named/);
 
-    const badAction = JSON.parse(activateSkill('', workspace, holder, 'code-review', 'explode'));
+    const badAction = activateSkill('', workspace, holder, 'code-review', 'explode');
     assert.equal(badAction.status, 'blocked');
     assert.match(badAction.message, /Unknown action/);
 
-    const badName = JSON.parse(activateSkill('', workspace, holder, 'Not Kebab', 'activate'));
+    const badName = activateSkill('', workspace, holder, 'Not Kebab', 'activate');
     assert.equal(badName.status, 'blocked');
     assert.match(badName.message, /kebab-case/);
 
@@ -773,12 +773,12 @@ test('an invalid session cwd fails closed rather than falling back to another pr
     assert.equal(specialist.code, 'WORKSPACE_NOT_FOUND');
     assert.equal(specialist.project_root_source, 'session-cwd');
 
-    const inventory = JSON.parse(inventoryProject(missing, 'session-cwd'));
+    const inventory = inventoryProject(missing, 'session-cwd');
     assert.equal(inventory.status, 'blocked');
     assert.equal(inventory.code, 'WORKSPACE_NOT_FOUND');
     assert.equal(inventory.project_root_source, 'session-cwd');
 
-    const resume = JSON.parse(resumeProject(missing, 'session-cwd'));
+    const resume = resumeProject(missing, 'session-cwd');
     assert.equal(resume.status, 'blocked');
     assert.equal(resume.code, 'WORKSPACE_NOT_FOUND');
     assert.equal(resume.project_root_source, 'session-cwd');
@@ -794,7 +794,7 @@ test('tool reports name the resolved workspace and its provenance', () => {
   const workspace = makeWorkspace({ 'requirements.txt': 'requests\n', 'scraper.py': 'print(1)\n' });
 
   try {
-    const inventory = JSON.parse(inventoryProject(workspace, 'configured-fallback'));
+    const inventory = inventoryProject(workspace, 'configured-fallback');
     assert.equal(inventory.project_root, workspace);
     assert.equal(inventory.project_root_source, 'configured-fallback');
 
@@ -803,17 +803,17 @@ test('tool reports name the resolved workspace and its provenance', () => {
     assert.equal(specialist.project_root, workspace);
     assert.equal(specialist.project_root_source, 'configured-fallback');
 
-    const catalog = JSON.parse(renderSkillPlan(buildSkillPlan('', workspace)));
+    const catalog = skillCatalogReport(buildSkillPlan('', workspace));
     assert.equal(catalog.project_root, workspace);
     assert.equal(catalog.project_root_source, 'session-cwd');
 
-    const blocked = JSON.parse(renderSkillPlan(buildSkillPlan('', path.join(os.tmpdir(), 'project-harness-none'))));
+    const blocked = skillCatalogReport(buildSkillPlan('', path.join(os.tmpdir(), 'project-harness-none')));
     assert.equal(blocked.status, 'blocked');
     assert.equal(blocked.code, 'WORKSPACE_NOT_FOUND');
     assert.equal(blocked.project_root_source, 'session-cwd');
 
     // With no cwd at all, the configured root is the labelled fallback.
-    const fallback = JSON.parse(renderSkillPlan(buildSkillPlan(workspace)));
+    const fallback = skillCatalogReport(buildSkillPlan(workspace));
     assert.equal(fallback.project_root, workspace);
     assert.equal(fallback.project_root_source, 'configured-fallback');
   } finally {

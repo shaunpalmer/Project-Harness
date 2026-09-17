@@ -119,24 +119,24 @@ test('DSH registers every handler and resume uses mapped context (host API stubs
     'project_harness_skill_catalog',
   ]);
 
-  const result = JSON.parse(await handlers.get('project_harness_resume').execute());
+  const result = await handlers.get('project_harness_resume').execute();
   assert.equal(result.current_state, 'Existing project');
   assert.equal(result.next_action, 'Review changes');
   assert.equal(result.harness_files_present, true);
   assert.equal(result.current_state_available, true);
   assert.equal(result.writes_performed, false);
-  const inventory = JSON.parse(await handlers.get('project_harness_inventory').execute());
+  const inventory = await handlers.get('project_harness_inventory').execute();
   assert.equal(inventory.writes_performed, false);
-  const specialist = JSON.parse(await handlers.get('project_harness_select_specialist').execute());
+  const specialist = await handlers.get('project_harness_select_specialist').execute();
   assert.equal(specialist.writes_performed, false);
 
-  const catalog = JSON.parse(await handlers.get('project_harness_skill_catalog').execute({}, { agent: { session: { header: { cwd: root } } } }));
+  const catalog = await handlers.get('project_harness_skill_catalog').execute({}, { agent: { session: { header: { cwd: root } } } });
   assert.equal(catalog.writes_performed, false);
   assert.equal(catalog.project_root, root);
   assert.ok(catalog.visible_skills.some((entry) => entry.name === 'complexity-brake'));
   assert.equal(fs.existsSync(path.join(root, '.harness', 'state', 'skills.json')), false);
 
-  const found = JSON.parse(await handlers.get('project_harness_find_skills').execute({ query: 'scraping pipeline' }, { agent: { session: { header: { cwd: root } } } }));
+  const found = await handlers.get('project_harness_find_skills').execute({ query: 'scraping pipeline' }, { agent: { session: { header: { cwd: root } } } });
   assert.ok(found.matches.some((entry) => entry.name === 'scraping-pipeline'));
   assert.equal(found.writes_performed, false);
 

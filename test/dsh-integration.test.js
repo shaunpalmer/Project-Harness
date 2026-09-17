@@ -29,6 +29,19 @@ test('the DSH entry point is a thin shell over the testable skill modules', () =
   assert.match(adapter, /read-only/);
 });
 
+test('the plugin entry keeps the namespace export shape the Loader requires', () => {
+  const adapter = read('dsh/index.js');
+
+  // The cordis Loader's `unwrapExports` prefers `.default` over the module namespace, so a
+  // stray `export default apply` silently discards `inject` and the plugin loads with no
+  // services. docs/testing.md requires this assertion next to a Loader round trip; the live
+  // probe performs the real `unwrapExports` call.
+  assert.doesNotMatch(adapter, /export\s+default\b/);
+  for (const exported of ['name', 'inject', 'Config', 'apply']) {
+    assert.match(adapter, new RegExp(`export (?:const|function) ${exported}\\b`), `dsh/index.js must export ${exported} as a named export`);
+  }
+});
+
 test('the DSH entry point performs no filesystem writes and starts no processes', () => {
   const adapter = read('dsh/index.js');
   assert.doesNotMatch(adapter, /execFile|spawn|process\.cwd\(\)|writeFile|renameSync|mkdirSync|rmSync/);

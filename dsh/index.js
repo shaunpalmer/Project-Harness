@@ -8,7 +8,7 @@ import {
   inventoryProject,
   lookupCwd,
   registerHarnessSkills,
-  renderSkillPlan,
+  skillCatalogReport,
   resumeProject,
   selectWorkspace,
   specialistFor,
@@ -37,16 +37,22 @@ export function apply(ctx, config) {
    */
   const workspaceFor = (exec) => selectWorkspace(config.projectRoot, lookupCwd(exec));
 
-  const stringOutput = {
-    schema: { type: 'string' },
-    render: (_args, value) => [{ type: 'text', text: value }],
+  /**
+   * Every tool returns one canonical JSON value rather than a pre-stringified blob, so a
+   * programmatic caller (PTC mode reaches these as `await tools.<name>(args)`) receives
+   * structured fields instead of having to parse prose. The model sees the same text,
+   * because `render` owns the model-facing projection.
+   */
+  const reportOutput = {
+    schema: { type: 'json' },
+    render: (_args, value) => [{ type: 'text', text: JSON.stringify(value, null, 2) }],
   };
 
   ctx.tools.register(defineTool({
     name: 'project_harness_resume',
     description: 'Resume a Project Harness workspace by reading its compact memory and discovery status. This is read-only.',
     parameters: {},
-    output: stringOutput,
+    output: reportOutput,
     async execute(_args, exec) {
       const selected = workspaceFor(exec);
       return resumeProject(selected.path, selected.source);
@@ -57,10 +63,10 @@ export function apply(ctx, config) {
     name: 'project_harness_select_specialist',
     description: 'Select a Project Harness specialist from workspace evidence. Currently routes WordPress and Python prospecting projects.',
     parameters: {},
-    output: stringOutput,
+    output: reportOutput,
     async execute(_args, exec) {
       const selected = workspaceFor(exec);
-      return JSON.stringify(specialistFor(selected.path, selected.source), null, 2);
+      return specialistFor(selected.path, selected.source);
     },
   }));
 
@@ -68,7 +74,7 @@ export function apply(ctx, config) {
     name: 'project_harness_inventory',
     description: 'Inventory an existing Project Harness workspace and identify possible memory sources. This is read-only and never initializes or modifies files.',
     parameters: {},
-    output: stringOutput,
+    output: reportOutput,
     async execute(_args, exec) {
       const selected = workspaceFor(exec);
       return inventoryProject(selected.path, selected.source);
@@ -79,9 +85,9 @@ export function apply(ctx, config) {
     name: 'project_harness_skill_catalog',
     description: 'Show the composed Project Harness skill catalogue for the selected workspace: which skills the model can currently see, which layer composed each one, which capabilities workspace evidence proved, and which skills the workspace has activated or suppressed. Read-only.',
     parameters: {},
-    output: stringOutput,
+    output: reportOutput,
     async execute(_args, exec) {
-      return renderSkillPlan(buildSkillPlan(config.projectRoot, lookupCwd(exec)));
+      return skillCatalogReport(buildSkillPlan(config.projectRoot, lookupCwd(exec)));
     },
   }));
 
@@ -92,7 +98,7 @@ export function apply(ctx, config) {
       query: { type: 'string', required: true, description: 'What the task needs, for example "database migrations" or "browser debugging".' },
       limit: { type: 'number', description: 'Maximum matches to return. Defaults to 8.' },
     },
-    output: stringOutput,
+    output: reportOutput,
     async execute(args, exec) {
       const limit = Number.isInteger(args.limit) && args.limit > 0 ? Math.min(args.limit, 25) : 8;
       return findSkills(config.projectRoot, lookupCwd(exec), args.query, limit);
@@ -106,7 +112,7 @@ export function apply(ctx, config) {
       name: { type: 'string', description: 'Exact kebab-case skill name from project_harness_find_skills. Omit for a reset.' },
       action: { type: 'string', description: 'One of activate, deactivate or reset. Defaults to activate.' },
     },
-    output: stringOutput,
+    output: reportOutput,
     async execute(args, exec) {
       return activateSkill(config.projectRoot, lookupCwd(exec), holder, args.name, args.action);
     },
