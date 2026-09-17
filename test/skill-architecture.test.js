@@ -1047,3 +1047,49 @@ test('the parser reports a precise reason instead of a generic malformed message
   const reason = frontmatterReason('description: |');
   assert.ok(reason !== undefined && reason.startsWith('sample: '), reason);
 });
+
+// ---------------------------------------------------------------------------
+// Native layer reconciliation
+//
+// A project or user skill in `.dsh/skills` wins over this provider at the DSH registry
+// layer, so it is the description the model actually reads. The reports must agree with
+// the catalogue DSH renders rather than contradict it.
+// ---------------------------------------------------------------------------
+
+test('a shadowed skill reports the nearer layer description, not the harness one', () => {
+  const workspace = makeWorkspace({
+    'composer.json': JSON.stringify({ require: { 'wordpress/wordpress': '*' } }),
+    'src/Schema.php': '<?php global $wpdb; dbDelta($sql);',
+    '.dsh/skills/database-design/SKILL.md': skillFixture('database-design', 'PROJECT LOCAL OVERRIDE description that is long enough to parse.'),
+    '.dsh/skills/project-only-skill/SKILL.md': skillFixture('project-only-skill', 'A project-local skill this package does not ship at all.'),
+  });
+
+  try {
+    const catalog = skillCatalogReport(buildSkillPlan('', workspace));
+    const shadowed = catalog.visible_skills.find((entry) => entry.name === 'database-design');
+
+    assert.ok(shadowed, 'the shadowed skill must still be visible');
+    assert.equal(shadowed.description, 'PROJECT LOCAL OVERRIDE description that is long enough to parse.');
+    assert.equal(shadowed.shadowed_by_native, true);
+    assert.equal(shadowed.native_source, 'project-dsh');
+    assert.match(shadowed.harness_description, /schema|entity/i, 'the harness description is still reported for comparison');
+
+    // An unshadowed entry keeps the harness description and no native marker.
+    const plain = catalog.visible_skills.find((entry) => entry.name === 'complexity-brake');
+    assert.equal(plain.shadowed_by_native, undefined);
+    assert.match(plain.description, /minimum-code ladder/);
+
+    const found = findSkills('', workspace, 'database migrations', 5);
+    const match = found.matches.find((entry) => entry.name === 'database-design');
+    assert.equal(match.description, 'PROJECT LOCAL OVERRIDE description that is long enough to parse.');
+    assert.equal(match.origin, 'project-dsh');
+
+    // A native-only skill is searchable even though this package ships nothing of that name.
+    const nativeOnly = findSkills('', workspace, 'project only skill', 5);
+    const projectOnly = nativeOnly.matches.find((entry) => entry.name === 'project-only-skill');
+    assert.ok(projectOnly, `expected the native-only skill to be searchable: ${nativeOnly.matches.map((entry) => entry.name).join(',')}`);
+    assert.equal(projectOnly.native_only, true);
+  } finally {
+    removeWorkspace(workspace);
+  }
+});

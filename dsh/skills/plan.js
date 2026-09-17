@@ -413,10 +413,20 @@ export function buildSkillPlan(configuredRoot, cwd) {
     available: new Set(library.skills.keys()),
   });
 
+  // A project or user skill in `.dsh/skills` wins over this provider at the DSH registry
+  // layer. Composition still selects the harness entry, but the description the model
+  // actually reads comes from the nearer copy, so record it and let the reports say which
+  // layer is speaking instead of contradicting the catalogue DSH renders.
+  const nativeByName = new Map(discoverNativeSkills(root).map((entry) => [entry.name, entry]));
+
   const suppressed = new Set(state.suppressed);
   const entries = composed.entries
     .filter((entry) => !suppressed.has(entry.name))
-    .map((entry) => ({ ...entry, library: library.skills.get(entry.name) }));
+    .map((entry) => ({
+      ...entry,
+      library: library.skills.get(entry.name),
+      ...(nativeByName.has(entry.name) ? { native: nativeByName.get(entry.name) } : {}),
+    }));
 
   return {
     workspace: root,
@@ -660,7 +670,13 @@ export function skillCatalogReport(plan) {
       reason: entry.reason,
       model_invocable: entry.library.invocation.modelInvocable,
       user_invocable: entry.library.invocation.userInvocable,
-      description: entry.library.description,
+      description: entry.native?.description ?? entry.library.description,
+      ...(entry.native === undefined ? {} : {
+        shadowed_by_native: true,
+        native_source: entry.native.source,
+        native_description: entry.native.description,
+        harness_description: entry.library.description,
+      }),
     })),
     library_skills: plan.librarySize,
     activated_skills: plan.activated,
@@ -687,10 +703,46 @@ export function skillCatalogReport(plan) {
 export function findSkills(configuredRoot, cwd, query, limit = 8) {
   const plan = buildSkillPlan(configuredRoot, cwd);
   const librarySkills = [...plan.library.values()];
-  const matches = searchSkills(librarySkills, query, { limit });
   const native = discoverNativeSkills(plan.workspace ?? undefined);
 
-  const visible = new Set(plan.entries.map((entry) => entry.name));
+  // Search the union of the shipped library and the nearer DSH-native layer, with exactly
+  // one corpus entry per name. A native override REPLACES the library entry rather than
+  // joining it, because a duplicate would let the superseded library copy win the sort and
+  // report a description DSH will never publish.
+  const nativeByName = new Map(native.map((entry) => [entry.name, entry]));
+
+  const corpus = librarySkills.map((entry) => {
+    const override = nativeByName.get(entry.name);
+    if (override === undefined) return entry;
+    return {
+      ...entry,
+      description: override.description,
+      ...(override.whenToUse === undefined ? {} : { whenToUse: override.whenToUse }),
+      origin: override.source,
+      shadowedByNative: true,
+    };
+  });
+
+  for (const entry of native) {
+    if (plan.library.has(entry.name)) continue;
+    corpus.push({
+      name: entry.name,
+      description: entry.description,
+      ...(entry.whenToUse === undefined ? {} : { whenToUse: entry.whenToUse }),
+      harness: { layer: 'project-local', tags: [], topics: [], stack: [] },
+      origin: entry.source,
+      nativeOnly: true,
+    });
+  }
+
+  const matches = searchSkills(corpus, query, { limit });
+
+  // A native-only skill is visible in the model's catalogue even though this package did
+  // not compose it, because DSH's own provider serves it.
+  const visible = new Set([
+    ...plan.entries.map((entry) => entry.name),
+    ...native.map((entry) => entry.name),
+  ]);
   const activated = new Set(plan.activated);
   const suppressed = new Set(plan.suppressed);
 
@@ -706,7 +758,10 @@ export function findSkills(configuredRoot, cwd, query, limit = 8) {
       tags: entry.harness.tags,
       score,
       matched_on: matched,
+      origin: entry.origin ?? 'project-harness',
       currently_visible: visible.has(entry.name),
+      ...(entry.shadowedByNative === true ? { shadowed_by_native: true } : {}),
+      ...(entry.nativeOnly === true ? { native_only: true, activate_with: 'not required; DSH serves this skill from a nearer layer' } : {}),
       ...(suppressed.has(entry.name) ? { suppressed: true } : {}),
       ...(activated.has(entry.name) ? { activated: true } : {}),
     })),
@@ -720,8 +775,8 @@ export function findSkills(configuredRoot, cwd, query, limit = 8) {
       })),
     } : {}),
     guidance: matches.length === 0
-      ? 'No harness skill matched. Widen the query, check dsh_native_skills, or search the installable ecosystem with the find-skills skill (npx skills find <query>).'
-      : 'Call project_harness_activate_skills with a name whose currently_visible is false, then load it with the skill tool.',
+      ? 'Nothing matched. Widen the query, or search the installable ecosystem with the find-skills skill (npx skills find <query>).'
+      : 'Call project_harness_activate_skills with a name whose currently_visible is false and native_only is absent, then load it with the skill tool.',
     writes_performed: false,
   };
 }
