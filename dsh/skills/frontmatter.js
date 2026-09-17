@@ -36,7 +36,7 @@ const LEGACY_INVOCATION_KEYS = new Map([
   ['userInvocable', 'user-invocable'],
 ]);
 
-const TIERS = new Set(['core', 'discovery', 'specialist', 'capability', 'reference']);
+const LAYERS = new Set(['core', 'discovery', 'specialist', 'capability', 'reference']);
 
 /**
  * Minimum routing-description length.
@@ -186,10 +186,10 @@ export function readInvocation(data, subject) {
  *
  * @param {Record<string, unknown>} data Frontmatter keys.
  * @param {string} subject Name used in error messages.
- * @returns {{ tier: string, topics: string[], tags: string[], stack: string[] } | string} Metadata, or an error message.
+ * @returns {{ layer: string, topics: string[], tags: string[], stack: string[] } | string} Metadata, or an error message.
  */
 function readHarnessMetadata(data, subject) {
-  const empty = { tier: 'capability', topics: [], tags: [], stack: [] };
+  const empty = { layer: 'capability', topics: [], tags: [], stack: [] };
   if (data.metadata === undefined || data.metadata === null) return empty;
   if (!isPlainObject(data.metadata)) {
     return `${subject}: "metadata" must be a mapping`;
@@ -201,9 +201,12 @@ function readHarnessMetadata(data, subject) {
     return `${subject}: "metadata.harness" must be a mapping`;
   }
 
-  const tier = harness.tier === undefined ? 'capability' : harness.tier;
-  if (typeof tier !== 'string' || !TIERS.has(tier)) {
-    return `${subject}: metadata.harness.tier must be one of ${[...TIERS].join(', ')}`;
+  // `tier` was the earlier spelling of `layer`; accept it so a skill copied from an
+  // older branch, or a project-local override written against it, still parses.
+  const declared = harness.layer ?? harness.tier;
+  const layer = declared === undefined ? 'capability' : declared;
+  if (typeof layer !== 'string' || !LAYERS.has(layer)) {
+    return `${subject}: metadata.harness.layer must be one of ${[...LAYERS].join(', ')}`;
   }
 
   const topics = stringArray(harness.topics, `${subject}: metadata.harness.topics`);
@@ -215,7 +218,7 @@ function readHarnessMetadata(data, subject) {
   const stack = stringArray(harness.stack, `${subject}: metadata.harness.stack`);
   if (typeof stack === 'string') return stack;
 
-  return { tier, topics, tags, stack };
+  return { layer, topics, tags, stack };
 }
 
 function parseBlock(blockLines) {

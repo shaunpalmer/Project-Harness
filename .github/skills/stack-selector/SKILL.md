@@ -5,7 +5,7 @@ whenToUse: "Use when the workspace has no confirmed stack and the task is to cho
 user-invocable: true
 metadata:
   harness:
-    tier: capability
+    layer: capability
     topics: [stack-selection, architecture, planning]
     tags: [stack, language-selection, frameworks, python, typescript]
     stack: []

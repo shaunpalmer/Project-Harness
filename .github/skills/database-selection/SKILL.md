@@ -5,7 +5,7 @@ whenToUse: "Use when the workspace needs a store for a new data concern and the 
 user-invocable: true
 metadata:
   harness:
-    tier: capability
+    layer: capability
     topics: [database, architecture, stack-selection, planning]
     tags: [database, storage, postgresql, redis, trade-offs]
     stack: []

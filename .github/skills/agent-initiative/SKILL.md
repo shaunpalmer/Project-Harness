@@ -5,7 +5,7 @@ whenToUse: "Use when the workspace leaves decisions open and the task is blocked
 user-invocable: false
 metadata:
   harness:
-    tier: reference
+    layer: reference
     topics: [debugging, refactoring, planning]
     tags: [autonomy, assumptions, debugging, repair-in-place, question-budget]
     stack: []

@@ -5,7 +5,7 @@ whenToUse: "Use when the workspace has an unmerged diff, branch, or module and t
 user-invocable: true
 metadata:
   harness:
-    tier: capability
+    layer: capability
     topics: [code-review, testing, architecture, refactoring]
     tags: [code-review, security, testing, pull-request, maintainability]
     stack: []

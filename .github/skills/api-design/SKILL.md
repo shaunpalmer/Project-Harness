@@ -5,7 +5,7 @@ whenToUse: "Use when the workspace needs a new endpoint group, a breaking-change
 user-invocable: true
 metadata:
   harness:
-    tier: capability
+    layer: capability
     topics: [rest-api, http-integration, documentation, architecture]
     tags: [api, rest, graphql, openapi, versioning]
     stack: []

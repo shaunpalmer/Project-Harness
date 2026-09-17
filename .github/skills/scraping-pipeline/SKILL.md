@@ -5,7 +5,7 @@ whenToUse: "Use when the workspace ingests or scrapes external sources and the t
 user-invocable: true
 metadata:
   harness:
-    tier: specialist
+    layer: specialist
     topics: [scraping, parsing, background-jobs, http-integration, browser-automation, observability]
     tags: [scraping, ingestion, dedupe, rate-limits, idempotency]
     stack: [python]

@@ -460,7 +460,7 @@ export function toCandidate(entry) {
     path: filePath,
     resourceBase: { kind: 'directory', path: path.dirname(filePath) },
     metadata: {
-      tier: entry.tier,
+      layer: entry.layer,
       reason: entry.reason,
       ...(entry.capability === undefined ? {} : { capability: entry.capability }),
       harness: entry.library.harness,
@@ -656,7 +656,7 @@ export function renderSkillPlan(plan) {
     detected_capabilities: plan.detected,
     visible_skills: plan.entries.map((entry) => ({
       name: entry.name,
-      tier: entry.tier,
+      layer: entry.layer,
       reason: entry.reason,
       model_invocable: entry.library.invocation.modelInvocable,
       user_invocable: entry.library.invocation.userInvocable,
@@ -702,7 +702,7 @@ export function findSkills(configuredRoot, cwd, query, limit = 8) {
       name: entry.name,
       description: entry.description,
       ...(entry.whenToUse === undefined ? {} : { whenToUse: entry.whenToUse }),
-      tier: entry.harness.tier,
+      layer: entry.harness.layer,
       tags: entry.harness.tags,
       score,
       matched_on: matched,
@@ -812,7 +812,7 @@ export function activateSkill(configuredRoot, cwd, holder, rawName, rawAction) {
     activation_file: path.relative(root, written.path).split(path.sep).join('/'),
     activated_skills: plan.activated,
     suppressed_skills: plan.suppressed,
-    visible_skills: plan.entries.map((entry) => `${entry.name} (${entry.tier})`),
+    visible_skills: plan.entries.map((entry) => `${entry.name} (${entry.layer})`),
     note: 'DSH republishes the model-facing skill catalogue after this change; load the skill with the skill tool.',
     writes_performed: true,
   }, null, 2);

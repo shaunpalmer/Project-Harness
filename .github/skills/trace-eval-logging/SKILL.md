@@ -5,7 +5,7 @@ whenToUse: "Use when the workspace runs iterative loops or long sessions and the
 user-invocable: true
 metadata:
   harness:
-    tier: capability
+    layer: capability
     topics: [observability, documentation, project-memory]
     tags: [tracing, eval, logging, observability, notes]
     stack: []

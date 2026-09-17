@@ -5,7 +5,7 @@ whenToUse: "Use when the workspace is about to gain a new file, class, dependenc
 user-invocable: true
 metadata:
   harness:
-    tier: core
+    layer: core
     topics: [dependency-control, architecture, refactoring, planning]
     tags: [over-engineering, dependencies, yagni, debt, simplicity]
     stack: []

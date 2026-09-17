@@ -5,7 +5,7 @@ whenToUse: "Use when the workspace contains a reproducible failure and the task 
 user-invocable: false
 metadata:
   harness:
-    tier: reference
+    layer: reference
     topics: [debugging, refactoring]
     tags: [debugging, patching, regression, surgical-edit]
     stack: []

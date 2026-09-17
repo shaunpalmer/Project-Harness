@@ -5,7 +5,7 @@ whenToUse: "Use when the workspace task is non-trivial and the task needs a boun
 user-invocable: true
 metadata:
   harness:
-    tier: core
+    layer: core
     topics: [planning, testing, observability, debugging]
     tags: [loop, self-review, verification, pacing, escalation]
     stack: []

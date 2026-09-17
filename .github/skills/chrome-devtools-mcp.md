@@ -5,7 +5,7 @@ whenToUse: "Use when the workspace contains browser-rendered UI and the task inv
 user-invocable: true
 metadata:
   harness:
-    tier: capability
+    layer: capability
     topics: [browser-automation, frontend-ui, debugging, testing, observability]
     tags: [browser, devtools, frontend, accessibility, performance]
     stack: []

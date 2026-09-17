@@ -5,7 +5,7 @@ whenToUse: "Use when the workspace is adding a feature or module and the task is
 user-invocable: true
 metadata:
   harness:
-    tier: capability
+    layer: capability
     topics: [testing, planning, architecture]
     tags: [testing, test-pyramid, coverage, e2e, integration]
     stack: []

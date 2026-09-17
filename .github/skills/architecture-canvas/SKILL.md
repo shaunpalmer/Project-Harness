@@ -5,7 +5,7 @@ whenToUse: "Use when the workspace has an approved PRD and the task is to define
 user-invocable: true
 metadata:
   harness:
-    tier: capability
+    layer: capability
     topics: [architecture, planning, documentation]
     tags: [architecture, system-design, adr, data-flow, layers]
     stack: []

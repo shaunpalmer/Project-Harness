@@ -5,7 +5,7 @@ whenToUse: "Use when the workspace has a confirmed system model and the task is 
 user-invocable: true
 metadata:
   harness:
-    tier: core
+    layer: core
     topics: [skill-discovery, planning, architecture]
     tags: [skills, routing, planning, capabilities, bindings]
     stack: []

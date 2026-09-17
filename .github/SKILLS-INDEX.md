@@ -4,8 +4,10 @@ Project Harness skill library, composed for DeepSeek Harness (DSH).
 
 This file is a human reference. The model never sees it: DSH renders only each skill's
 `name` and `description`, and Project Harness composes which of them are visible from
-workspace evidence. The machine-readable truth lives in the skill frontmatter and in
-`dsh/skills/capabilities.json`; run `npm run skills:verify` after any change.
+workspace evidence. The machine-readable truth lives in the skill frontmatter, in
+`dsh/skills/capabilities.json` for composition, and in the generated
+`dsh/skill-catalog.json` for what the package ships; run `npm run skills:catalog` then
+`npm run skills:verify` after any change.
 
 ## How composition works
 
@@ -109,9 +111,10 @@ These are found with `project_harness_find_skills` and then activated:
 1. Add `.github/skills/<name>/SKILL.md` with DSH frontmatter: `name`, `description`
    (the routing surface — one sentence naming the capability and its trigger),
    `whenToUse`, optional `user-invocable: false` for a model-only rule set, and
-   `metadata.harness` with `tier`, `topics`, `tags`, `stack`.
+   `metadata.harness` with `layer`, `topics`, `tags`, `stack`.
 2. Bind it in `dsh/skills/capabilities.json` under the capability it serves, or add it
    to a preset's `specialist_skills` in `dsh/specialists/`.
-3. Run `npm run skills:verify`.
+3. Run `npm run skills:catalog` to regenerate `dsh/skill-catalog.json` (the
+   generated catalog is verified fresh), then `npm run skills:verify`.
 
 **Skills in library:** 25. **Last verified:** 2026-09-17.

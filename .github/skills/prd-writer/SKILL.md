@@ -5,7 +5,7 @@ whenToUse: "Use when the workspace has intake answers but no agreed requirements
 user-invocable: true
 metadata:
   harness:
-    tier: capability
+    layer: capability
     topics: [requirements, planning, documentation]
     tags: [prd, requirements, user-stories, acceptance-criteria, metrics]
     stack: []

@@ -5,7 +5,7 @@ whenToUse: "Use when the workspace integrates a swappable provider or multi-impl
 user-invocable: true
 metadata:
   harness:
-    tier: capability
+    layer: capability
     topics: [architecture, oop-design, testing, refactoring]
     tags: [adapter, envelope, factory, interfaces, contracts]
     stack: []

@@ -5,7 +5,7 @@ whenToUse: "Use when the workspace note log has accumulated raw entries and the 
 user-invocable: true
 metadata:
   harness:
-    tier: capability
+    layer: capability
     topics: [project-memory, documentation]
     tags: [memory, notes, consolidation, context, anti-patterns]
     stack: []

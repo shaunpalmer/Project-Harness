@@ -5,7 +5,7 @@ whenToUse: "Use when the workspace targets a WordPress runtime and the task is a
 user-invocable: false
 metadata:
   harness:
-    tier: specialist
+    layer: specialist
     topics: [wordpress-runtime, php, rest-api, admin-ui, database, testing]
     tags: [wordpress, php, wpcs, security, rest-api]
     stack: [php, wordpress]

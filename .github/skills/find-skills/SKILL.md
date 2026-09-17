@@ -5,7 +5,7 @@ whenToUse: "Use when the workspace needs a capability that may already exist as 
 user-invocable: true
 metadata:
   harness:
-    tier: discovery
+    layer: discovery
     topics: [skill-discovery, cli-automation, dependency-control]
     tags: [skills, discovery, activation, npx, ecosystem]
     stack: []

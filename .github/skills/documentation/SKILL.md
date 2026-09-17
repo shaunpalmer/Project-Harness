@@ -5,7 +5,7 @@ whenToUse: "Use when the workspace has shipping code and the task is to write or
 user-invocable: true
 metadata:
   harness:
-    tier: capability
+    layer: capability
     topics: [documentation, architecture, observability]
     tags: [documentation, readme, api-docs, adr, runbook]
     stack: []

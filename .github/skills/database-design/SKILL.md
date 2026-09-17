@@ -5,7 +5,7 @@ whenToUse: "Use when the workspace needs a persisted data model and the task is 
 user-invocable: true
 metadata:
   harness:
-    tier: capability
+    layer: capability
     topics: [database, migrations, architecture]
     tags: [database, schema, indexes, migrations, normalisation]
     stack: []

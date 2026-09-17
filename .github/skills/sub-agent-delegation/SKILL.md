@@ -5,7 +5,7 @@ whenToUse: "Use when the workspace task splits into independent parallel workstr
 user-invocable: true
 metadata:
   harness:
-    tier: capability
+    layer: capability
     topics: [agent-delegation, observability, code-review, planning]
     tags: [sub-agents, delegation, concurrency, verification]
     stack: []

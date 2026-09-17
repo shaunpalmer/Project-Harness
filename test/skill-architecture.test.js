@@ -19,6 +19,13 @@ import {
 } from '../dsh/skills/composition.js';
 import { readSkillState, writeSkillState } from '../dsh/skills/state.js';
 import {
+  SKILL_LAYERS,
+  buildCatalog,
+  readCatalog,
+  serializeCatalog,
+  validateCatalog,
+} from '../dsh/skills/catalog.js';
+import {
   HARNESS_SKILL_RANK,
   activateSkill,
   buildSkillPlan,
@@ -34,7 +41,7 @@ import {
   resolveWorkspace,
   selectWorkspace,
 } from '../dsh/skills/plan.js';
-import { verifySkillLibrary } from '../scripts/skills-verify.js';
+import { verifyCatalog, verifySkillLibrary } from '../scripts/skills-verify.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -99,7 +106,7 @@ description: "${description}"
 whenToUse: "Use when the test needs ${name}."
 ${extra}metadata:
   harness:
-    tier: capability
+    layer: capability
     tags: [${name}]
     topics: [testing]
 ---
@@ -120,7 +127,7 @@ whenToUse: "Use when the workspace needs a sample."
 user-invocable: false
 metadata:
   harness:
-    tier: reference
+    layer: reference
     topics:
       - alpha
       - beta
@@ -137,7 +144,7 @@ Body text.
   assert.equal(parsed.skill.name, 'sample-skill');
   assert.equal(parsed.skill.whenToUse, 'Use when the workspace needs a sample.');
   assert.deepEqual(parsed.skill.invocation, { modelInvocable: true, userInvocable: false });
-  assert.equal(parsed.skill.harness.tier, 'reference');
+  assert.equal(parsed.skill.harness.layer, 'reference');
   assert.deepEqual(parsed.skill.harness.topics, ['alpha', 'beta']);
   assert.deepEqual(parsed.skill.harness.tags, ['one', 'two']);
   assert.deepEqual(parsed.skill.harness.stack, ['php']);
@@ -177,7 +184,7 @@ test('frontmatter reader rejects malformed, misnamed and unroutable skills', () 
     ['---\nname: Sample Skill\ndescription: "A description long enough for the verifier to accept it."\n---\nBody.\n', /invalid skill name/],
     ['---\nname: sample\ndescription: "SKILL: Sample Skill That Is Quite Long Indeed"\n---\nBody.\n', /routing, not repeat the H1/],
     ['---\nname: sample\ndescription: "short"\n---\nBody.\n', /cannot route the model/],
-    ['---\nname: sample\ndescription: "A description long enough for the verifier to accept it."\nmetadata:\n  harness:\n    tier: nonsense\n---\nBody.\n', /tier must be one of/],
+    ['---\nname: sample\ndescription: "A description long enough for the verifier to accept it."\nmetadata:\n  harness:\n    layer: nonsense\n---\nBody.\n', /layer must be one of/],
   ];
 
   for (const [raw, pattern] of cases) {
@@ -214,7 +221,7 @@ test('the shipped library is DSH-valid and every skill carries routing metadata'
     assert.ok(entry.description.length >= 40, `${entry.name} needs a routing description`);
     assert.ok(!entry.description.startsWith('SKILL:'), `${entry.name} describes its heading, not its routing`);
     assert.ok(entry.whenToUse !== undefined, `${entry.name} needs whenToUse`);
-    assert.ok(['core', 'discovery', 'specialist', 'capability', 'reference'].includes(entry.harness.tier));
+    assert.ok(['core', 'discovery', 'specialist', 'capability', 'reference'].includes(entry.harness.layer));
   }
 });
 
@@ -301,18 +308,18 @@ test('the WordPress specialist composes core, specialist and evidence-bound capa
     'tests/SchemaTest.php': '<?php echo 1;',
   }));
 
-  const tiers = new Map(plan.entries.map((entry) => [entry.name, entry.tier]));
+  const layers = new Map(plan.entries.map((entry) => [entry.name, entry.layer]));
   assert.equal(plan.specialist, 'wordpress-coding');
-  assert.equal(tiers.get('wordpress-plugin'), 'specialist');
-  assert.equal(tiers.get('wordpress-way'), 'specialist');
-  assert.equal(tiers.get('database-design'), 'capability');
-  assert.equal(tiers.get('api-design'), 'capability');
-  assert.equal(tiers.get('interface-design'), 'capability');
+  assert.equal(layers.get('wordpress-plugin'), 'specialist');
+  assert.equal(layers.get('wordpress-way'), 'specialist');
+  assert.equal(layers.get('database-design'), 'capability');
+  assert.equal(layers.get('api-design'), 'capability');
+  assert.equal(layers.get('interface-design'), 'capability');
   assert.ok(plan.detected.includes('database'));
   assert.ok(plan.detected.includes('api'));
 
   // A WordPress workspace must not receive Python pipeline guidance.
-  assert.equal(tiers.has('scraping-pipeline'), false);
+  assert.equal(layers.has('scraping-pipeline'), false);
   assert.ok(plan.entries.length <= 16, `catalogue too wide: ${plan.entries.length} skills`);
 });
 
@@ -323,15 +330,15 @@ test('the Python prospecting specialist composes scraping, testing and logging',
     'tests/test_places.py': 'def test_one(): assert True\n',
   }));
 
-  const tiers = new Map(plan.entries.map((entry) => [entry.name, entry.tier]));
+  const layers = new Map(plan.entries.map((entry) => [entry.name, entry.layer]));
   assert.equal(plan.specialist, 'python-prospecting');
-  assert.equal(tiers.get('scraping-pipeline'), 'specialist');
-  assert.equal(tiers.get('testing-plan'), 'capability');
-  assert.equal(tiers.get('trace-eval-logging'), 'capability');
+  assert.equal(layers.get('scraping-pipeline'), 'specialist');
+  assert.equal(layers.get('testing-plan'), 'capability');
+  assert.equal(layers.get('trace-eval-logging'), 'capability');
 
   // WordPress-only guidance must be absent.
-  assert.equal(tiers.has('wordpress-plugin'), false);
-  assert.equal(tiers.has('wordpress-way'), false);
+  assert.equal(layers.has('wordpress-plugin'), false);
+  assert.equal(layers.has('wordpress-way'), false);
 });
 
 test('a workspace with no specialist still composes the generic capability scope', () => {
@@ -476,7 +483,7 @@ test('find_skills reaches the whole library and activation makes a found skill v
 
     const plan = buildSkillPlan('', workspace);
     const entry = plan.entries.find((candidate) => candidate.name === 'wordpress-plugin');
-    assert.equal(entry.tier, 'activated');
+    assert.equal(entry.layer, 'activated');
     assert.ok(plan.entries.length > before);
 
     const suppressed = JSON.parse(activateSkill('', workspace, holder, 'wordpress-plugin', 'deactivate'));
@@ -837,5 +844,141 @@ test('the provider refuses a candidate the current workspace would not offer', a
   } finally {
     removeWorkspace(wordpress);
     removeWorkspace(python);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Generated package catalog (dsh/skill-catalog.json)
+// ---------------------------------------------------------------------------
+
+test('the layer vocabulary is the single name for a skill layer, with tier accepted as legacy', () => {
+  const modern = readSkillMetadata(skillFixture('modern-skill', 'A description long enough for the verifier to accept it.'), 'modern-skill');
+  assert.equal(modern.ok, true, modern.ok ? '' : modern.reason);
+  assert.equal(modern.skill.harness.layer, 'capability');
+
+  const legacy = readSkillMetadata(
+    '---\nname: legacy-skill\ndescription: "A description long enough for the verifier to accept it."\nmetadata:\n  harness:\n    tier: reference\n---\nBody.\n',
+    'legacy-skill',
+  );
+  assert.equal(legacy.ok, true, legacy.ok ? '' : legacy.reason);
+  assert.equal(legacy.skill.harness.layer, 'reference');
+
+  const both = readSkillMetadata(
+    '---\nname: both-skill\ndescription: "A description long enough for the verifier to accept it."\nmetadata:\n  harness:\n    layer: core\n    tier: reference\n---\nBody.\n',
+    'both-skill',
+  );
+  assert.equal(both.ok, true, both.ok ? '' : both.reason);
+  assert.equal(both.skill.harness.layer, 'core', 'layer must win over the legacy alias');
+});
+
+test('the shipped catalog is valid, fresh and matches the library', () => {
+  const library = discoverLibrary({ packageRoot: ROOT });
+  const committed = readCatalog(ROOT);
+  assert.equal(committed.ok, true, committed.problems.join('\n'));
+
+  assert.equal(serializeCatalog(buildCatalog(library, ROOT)), committed.text, 'catalog is stale; run npm run skills:catalog');
+
+  assert.equal(committed.entries.length, library.skills.size);
+  for (const entry of committed.entries) {
+    assert.equal(isSkillName(entry.name), true);
+    assert.equal(SKILL_LAYERS.includes(entry.layer), true, `${entry.name} has layer ${entry.layer}`);
+    assert.ok(fs.existsSync(path.join(ROOT, entry.path)), `${entry.name} path must exist`);
+    assert.equal(typeof entry.invocation.modelInvocable, 'boolean');
+    assert.equal(typeof entry.invocation.userInvocable, 'boolean');
+  }
+
+  const gate = verifyCatalog(ROOT, library);
+  assert.deepEqual(gate.failures, []);
+});
+
+test('catalog generation is stable and byte-identical on regeneration', () => {
+  const library = discoverLibrary({ packageRoot: ROOT });
+  const first = serializeCatalog(buildCatalog(library, ROOT));
+  const second = serializeCatalog(buildCatalog(library, ROOT));
+  assert.equal(first, second);
+  assert.match(first, /"schema_version": 1/);
+  assert.ok(first.endsWith('\n'));
+});
+
+test('the catalog validator reports every structural fault instead of throwing', () => {
+  const good = {
+    schema_version: 1,
+    generated_from: 'test',
+    skills: [{
+      name: 'sample-skill',
+      path: '.github/skills/sample-skill/SKILL.md',
+      layer: 'capability',
+      description: 'A description long enough for the validator to accept it.',
+      invocation: { modelInvocable: true, userInvocable: true },
+      tags: ['one'],
+      topics: ['two'],
+    }],
+  };
+
+  assert.deepEqual(validateCatalog(good).problems, []);
+
+  const faults = [
+    [null, /must be a JSON object/],
+    [{ ...good, schema_version: 2 }, /schema_version must be 1/],
+    [{ ...good, generated_from: '' }, /generated_from must be a non-empty string/],
+    [{ ...good, skills: 'nope' }, /skills must be an array/],
+    [{ ...good, extra: true }, /unexpected key "extra"/],
+    [{ ...good, skills: [{ ...good.skills[0], name: 'Not Kebab' }] }, /invalid skill name/],
+    [{ ...good, skills: [good.skills[0], good.skills[0]] }, /duplicate skill name/],
+    [{ ...good, skills: [{ ...good.skills[0], layer: 'nonsense' }] }, /invalid layer/],
+    [{ ...good, skills: [{ ...good.skills[0], description: '' }] }, /missing a description/],
+    [{ ...good, skills: [{ ...good.skills[0], description: 'short' }] }, /description must be 40-500/],
+    [{ ...good, skills: [{ ...good.skills[0], path: '/etc/passwd' }] }, /path must be package-relative/],
+    [{ ...good, skills: [{ ...good.skills[0], path: '../outside.md' }] }, /path must be package-relative/],
+    [{ ...good, skills: [{ ...good.skills[0], invocation: { modelInvocable: 'yes', userInvocable: true } }] }, /modelInvocable must be a boolean/],
+    [{ ...good, skills: [{ ...good.skills[0], invocation: undefined }] }, /missing an invocation policy/],
+    [{ ...good, skills: [{ ...good.skills[0], tags: 'one' }] }, /tags must be an array/],
+    [{ ...good, skills: [{ ...good.skills[0], topics: [''] }] }, /topics must contain non-empty strings/],
+    [{ ...good, skills: [{ ...good.skills[0], path: '.github/skills/absent/SKILL.md' }] }, /does not exist in the package/],
+  ];
+
+  for (const [catalog, pattern] of faults) {
+    const result = validateCatalog(catalog, { packageRoot: ROOT });
+    assert.equal(result.ok, false, `expected a failure for ${pattern}`);
+    assert.match(result.problems.join('\n'), pattern);
+  }
+});
+
+test('the catalog gate fails a stale file instead of tolerating drift', () => {
+  // A library that differs from what is committed must be reported as stale, not
+  // silently accepted: the file would tell a reader something untrue about the package.
+  const stale = {
+    skills: new Map([['ghost-skill', {
+      name: 'ghost-skill',
+      filePath: path.join(ROOT, '.github', 'skills', 'code-review', 'SKILL.md'),
+      description: 'A description long enough for the validator to accept it.',
+      harness: { layer: 'capability', tags: [], topics: [] },
+      invocation: { modelInvocable: true, userInvocable: true },
+    }]]),
+  };
+
+  const gate = verifyCatalog(ROOT, stale);
+  assert.equal(gate.ok, false);
+  assert.match(gate.failures.join('\n'), /stale/);
+
+  const library = discoverLibrary({ packageRoot: ROOT });
+  assert.equal(verifyCatalog(ROOT, library, false).ok, true, 'freshness is skipped for workspace verification');
+});
+
+test('readCatalog fails closed when the file is missing or malformed', () => {
+  const workspace = makeWorkspace({});
+
+  try {
+    const missing = readCatalog(workspace);
+    assert.equal(missing.ok, false);
+    assert.match(missing.problems.join('\n'), /missing or unreadable/);
+
+    fs.mkdirSync(path.join(workspace, 'dsh'), { recursive: true });
+    fs.writeFileSync(path.join(workspace, 'dsh', 'skill-catalog.json'), '{ not json');
+    const malformed = readCatalog(workspace);
+    assert.equal(malformed.ok, false);
+    assert.match(malformed.problems.join('\n'), /not valid JSON/);
+  } finally {
+    removeWorkspace(workspace);
   }
 });

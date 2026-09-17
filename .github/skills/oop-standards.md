@@ -5,7 +5,7 @@ whenToUse: "Use when the workspace has non-trivial classes, services, or plugin 
 user-invocable: false
 metadata:
   harness:
-    tier: reference
+    layer: reference
     topics: [oop-design, architecture, refactoring, testing, php, python]
     tags: [oop, solid, design-patterns, php, typescript, python]
     stack: [php, typescript, python]

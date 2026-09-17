@@ -74,7 +74,7 @@ export function apply(ctx, config) {
 
   ctx.tools.register(defineTool({
     name: 'project_harness_skill_catalog',
-    description: 'Show the composed Project Harness skill catalogue for the selected workspace: which skills the model can currently see, which tier composed each one, which capabilities workspace evidence proved, and which skills the workspace has activated or suppressed. Read-only.',
+    description: 'Show the composed Project Harness skill catalogue for the selected workspace: which skills the model can currently see, which layer composed each one, which capabilities workspace evidence proved, and which skills the workspace has activated or suppressed. Read-only.',
     parameters: {},
     output: stringOutput,
     async execute(_args, exec) {

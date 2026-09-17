@@ -5,7 +5,7 @@ whenToUse: "Use when the workspace resumes after a gap or compaction or its docu
 user-invocable: true
 metadata:
   harness:
-    tier: core
+    layer: core
     topics: [project-memory, documentation, observability, planning]
     tags: [memory, resume, checkpoint, adr, reconciliation]
     stack: []

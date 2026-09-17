@@ -246,7 +246,7 @@ function readJson(filePath) {
 /**
  * Compose the visible skill set for one workspace.
  *
- * Later sources never replace an earlier one: a skill keeps the first tier and
+ * Later sources never replace an earlier one: a skill keeps the first layer and
  * reason that claimed it, so a core skill referenced by a capability stays core.
  *
  * @param {object} input Composition inputs.
@@ -256,7 +256,7 @@ function readJson(filePath) {
  * @param {string[]} [input.detected] Capabilities proven by workspace evidence.
  * @param {string[]} [input.activated] Skills activated explicitly in this workspace.
  * @param {Set<string> | undefined} [input.available] Library skill names; unknown names are skipped.
- * @returns {{ entries: {name: string, tier: string, reason: string, capability?: string}[], unknown: string[] }} Composed plan.
+ * @returns {{ entries: {name: string, layer: string, reason: string, capability?: string}[], unknown: string[] }} Composed plan.
  */
 export function composeSkillPlan(input) {
   const vocabulary = input.vocabulary ?? { core_skills: [], discovery_skills: [], capabilities: {} };
@@ -265,14 +265,14 @@ export function composeSkillPlan(input) {
   const entries = new Map();
   const unknown = [];
 
-  const add = (name, tier, reason, capability) => {
+  const add = (name, layer, reason, capability) => {
     if (typeof name !== 'string' || name === '') return;
     if (available !== undefined && !available.has(name)) {
       if (!unknown.includes(name)) unknown.push(name);
       return;
     }
     if (entries.has(name)) return;
-    entries.set(name, { name, tier, reason, ...(capability === undefined ? {} : { capability }) });
+    entries.set(name, { name, layer, reason, ...(capability === undefined ? {} : { capability }) });
   };
 
   for (const name of vocabulary.core_skills ?? []) {
