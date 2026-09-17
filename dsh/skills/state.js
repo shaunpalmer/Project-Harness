@@ -17,6 +17,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { randomBytes } from 'node:crypto';
 import { isSkillName } from './frontmatter.js';
 import { isInside, readFileBounded } from './scan.js';
 
@@ -84,7 +85,32 @@ function readNames(value, field, problems) {
 }
 
 /**
- * Write the workspace activation record atomically.
+ * Resolve a workspace root to its canonical path.
+ *
+ * Containment tested against a raw path can be defeated by a symlinked workspace; the
+ * documented canon is filesystem resolution first, lexical second
+ * (`docs/subsystems/workspace.md`). Falls back to the lexical path when the directory
+ * does not exist yet, so the caller still reports its own "not a directory" error.
+ *
+ * @param {string} projectRoot Workspace root as supplied.
+ * @returns {string} Canonical absolute root.
+ */
+function canonicalRoot(projectRoot) {
+  const resolved = path.resolve(projectRoot);
+  try {
+    return fs.realpathSync(resolved);
+  } catch {
+    return resolved;
+  }
+}
+
+/**
+ * Write the workspace activation record atomically and privately.
+ *
+ * The write follows the defensive rules for temp files: a private directory, a random
+ * name, and an exclusive owner-only create. A predictable name in a shared directory
+ * invites a symlink race, and a temp file left behind after a failed rename leaks the
+ * previous content.
  *
  * @param {string} projectRoot Absolute workspace root.
  * @param {{ activated: string[], suppressed: string[] }} state Names to persist.
@@ -96,12 +122,19 @@ export function writeSkillState(projectRoot, state, now = new Date().toISOString
     return { ok: false, message: 'A workspace root is required before skill activation can be recorded.' };
   }
 
-  const root = path.resolve(projectRoot);
+  const root = canonicalRoot(projectRoot);
   if (!fs.existsSync(root) || !fs.statSync(root).isDirectory()) {
     return { ok: false, message: `Workspace does not exist or is not a directory: ${root}` };
   }
 
-  const directory = path.join(root, '.harness', 'state');
+  const harnessDirectory = path.join(root, '.harness');
+  // Refuse before creating anything: a symlinked `.harness` would put the mkdir itself
+  // outside the workspace, so the escape has to be caught before the directory exists.
+  if (fs.existsSync(harnessDirectory) && !isInside(root, fs.realpathSync(harnessDirectory))) {
+    return { ok: false, message: `Refusing to write outside the workspace: ${harnessDirectory}` };
+  }
+
+  const directory = path.join(harnessDirectory, 'state');
   const filePath = path.join(directory, 'skills.json');
   if (!isInside(root, filePath)) {
     return { ok: false, message: `Refusing to write outside the workspace: ${filePath}` };
@@ -116,12 +149,31 @@ export function writeSkillState(projectRoot, state, now = new Date().toISOString
     updated: now,
   };
 
+  let temporary;
   try {
-    fs.mkdirSync(directory, { recursive: true });
-    const temporary = `${filePath}.${process.pid}.tmp`;
-    fs.writeFileSync(temporary, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+    fs.mkdirSync(directory, { recursive: true, mode: 0o700 });
+
+    // Re-check after creation: a symlinked state directory may have been created rather
+    // than rejected by the pre-check above.
+    if (!isInside(root, fs.realpathSync(directory))) {
+      return { ok: false, message: `Refusing to write outside the workspace: ${directory}` };
+    }
+
+    temporary = `${filePath}.${randomBytes(6).toString('hex')}.tmp`;
+    fs.writeFileSync(temporary, `${JSON.stringify(payload, null, 2)}\n`, {
+      encoding: 'utf8',
+      // 'wx' fails rather than following an existing path, so a planted symlink cannot
+      // redirect the write; 0o600 keeps the record owner-only.
+      flag: 'wx',
+      mode: 0o600,
+    });
     fs.renameSync(temporary, filePath);
   } catch (error) {
+    if (temporary !== undefined) {
+      try {
+        fs.unlinkSync(temporary);
+      } catch { /* The rename already consumed it, or it was never created. */ }
+    }
     return { ok: false, message: `Could not record skill activation: ${error.message}` };
   }
 

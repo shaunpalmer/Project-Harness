@@ -757,7 +757,7 @@ test('a session cwd owns project identity and reports its provenance', () => {
   }
 });
 
-test('an invalid session cwd fails closed rather than falling back to another project', () => {
+test('an invalid session cwd fails closed rather than falling back to another project', async () => {
   const configured = makeWorkspace({ 'README.md': '# fallback\n' });
   const missing = path.join(os.tmpdir(), `project-harness-missing-${Date.now()}`);
 
@@ -778,7 +778,7 @@ test('an invalid session cwd fails closed rather than falling back to another pr
     assert.equal(inventory.code, 'WORKSPACE_NOT_FOUND');
     assert.equal(inventory.project_root_source, 'session-cwd');
 
-    const resume = resumeProject(missing, 'session-cwd');
+    const resume = await resumeProject(missing, 'session-cwd');
     assert.equal(resume.status, 'blocked');
     assert.equal(resume.code, 'WORKSPACE_NOT_FOUND');
     assert.equal(resume.project_root_source, 'session-cwd');
@@ -1091,5 +1091,77 @@ test('a shadowed skill reports the nearer layer description, not the harness one
     assert.equal(projectOnly.native_only, true);
   } finally {
     removeWorkspace(workspace);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Activation-write hardening
+//
+// The write is the only file this plugin touches in a user's workspace. A predictable
+// temp name in a shared directory invites a symlink race, and a temp file left behind
+// after a failed rename leaks the previous record.
+// ---------------------------------------------------------------------------
+
+test('the activation write leaves no temp file behind when the rename fails', () => {
+  const workspace = makeWorkspace({});
+  const stateDirectory = path.join(workspace, '.harness', 'state');
+
+  try {
+    // A directory at the destination makes the final rename fail after the temp file
+    // has been created, which is the exact window the cleanup must cover.
+    fs.mkdirSync(path.join(stateDirectory, 'skills.json'), { recursive: true });
+
+    const result = writeSkillState(workspace, { activated: ['code-review'], suppressed: [] });
+    assert.equal(result.ok, false);
+    assert.match(result.message, /Could not record skill activation/);
+
+    const leftovers = fs.readdirSync(stateDirectory).filter((name) => name.endsWith('.tmp'));
+    assert.deepEqual(leftovers, [], 'a failed write must not leave a temp file');
+  } finally {
+    removeWorkspace(workspace);
+  }
+});
+
+test('the activation record is written owner-only with an unpredictable temp name', () => {
+  const workspace = makeWorkspace({});
+
+  try {
+    const result = writeSkillState(workspace, { activated: ['code-review'], suppressed: [] });
+    assert.equal(result.ok, true);
+
+    const stateDirectory = path.join(workspace, '.harness', 'state');
+    const entries = fs.readdirSync(stateDirectory);
+    assert.deepEqual(entries, ['skills.json'], 'only the record itself survives');
+    assert.ok(!entries.some((name) => name.includes(String(process.pid))), 'the temp name must not be pid-derived');
+
+    if (process.platform !== 'win32') {
+      // POSIX modes are inert on Windows, so this is asserted only where it means something.
+      assert.equal(fs.statSync(result.path).mode & 0o777, 0o600, 'the record must be owner-only');
+      assert.equal(fs.statSync(stateDirectory).mode & 0o777, 0o700, 'the state directory must be private');
+    }
+  } finally {
+    removeWorkspace(workspace);
+  }
+});
+
+test('a symlinked .harness directory is refused instead of writing outside the workspace', () => {
+  const workspace = makeWorkspace({});
+  const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'project-harness-outside-'));
+
+  try {
+    // `.harness` is a symlink out of the workspace: the lexical containment check passes,
+    // so only filesystem resolution can catch it.
+    fs.symlinkSync(outside, path.join(workspace, '.harness'));
+
+    const result = writeSkillState(workspace, { activated: ['code-review'], suppressed: [] });
+    assert.equal(result.ok, false);
+    assert.match(result.message, /Refusing to write outside the workspace/);
+    // Nothing at all may be created outside: the refusal has to happen before the
+    // recursive mkdir, not only before the rename.
+    assert.equal(fs.existsSync(path.join(outside, 'state')), false, 'no directory may be created through the symlink');
+    assert.equal(fs.existsSync(path.join(outside, 'state', 'skills.json')), false);
+  } finally {
+    removeWorkspace(workspace);
+    fs.rmSync(outside, { recursive: true, force: true });
   }
 });
