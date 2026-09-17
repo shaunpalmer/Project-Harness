@@ -73,6 +73,78 @@
       ]
     },
     {
+      "name": "browser-auth-session",
+      "path": ".github/skills/browser-auth-session/SKILL.md",
+      "layer": "capability",
+      "description": "Use when browser work depends on an authenticated session: establish or reuse approved login state, protect credentials, handle MFA/CAPTCHA handoff, verify the signed-in identity, and keep site/session boundaries explicit.",
+      "when_to_use": "Use when a browser task requires logging in, reusing cookies/session state, switching accounts, or continuing authenticated admin/social/directory work.",
+      "invocation": {
+        "modelInvocable": true,
+        "userInvocable": true
+      },
+      "tags": [
+        "browser",
+        "login",
+        "session",
+        "authentication",
+        "security"
+      ],
+      "topics": [
+        "browser-automation",
+        "authentication",
+        "session-state",
+        "web-operations"
+      ]
+    },
+    {
+      "name": "browser-form-operator",
+      "path": ".github/skills/browser-form-operator/SKILL.md",
+      "layer": "capability",
+      "description": "Use when a browser task must inspect and fill web forms safely: snapshot the page, map labels to known values, fill/select/check/upload, verify the resulting state, and separate preparation from consequential submission.",
+      "when_to_use": "Use when the task involves repetitive browser form entry, account/profile updates, directory forms, admin portals, uploads, checkboxes, selects, or multi-step web forms.",
+      "invocation": {
+        "modelInvocable": true,
+        "userInvocable": true
+      },
+      "tags": [
+        "browser",
+        "forms",
+        "playwright",
+        "automation",
+        "verification"
+      ],
+      "topics": [
+        "browser-automation",
+        "form-filling",
+        "web-operations",
+        "verification"
+      ]
+    },
+    {
+      "name": "browser-research",
+      "path": ".github/skills/browser-research/SKILL.md",
+      "layer": "capability",
+      "description": "Use when research needs live browser exploration rather than static search alone: inspect rendered pages, follow relevant links, compare sources, capture evidence URLs, and stop when the research question is answered rather than browsing endlessly.",
+      "when_to_use": "Use when the task requires browser-assisted research across live websites, directories, rendered pages, authenticated sources, or link structures that search snippets cannot answer reliably.",
+      "invocation": {
+        "modelInvocable": true,
+        "userInvocable": true
+      },
+      "tags": [
+        "browser",
+        "research",
+        "discovery",
+        "evidence",
+        "playwright"
+      ],
+      "topics": [
+        "browser-automation",
+        "research",
+        "source-discovery",
+        "evidence"
+      ]
+    },
+    {
       "name": "chrome-devtools-mcp",
       "path": ".github/skills/chrome-devtools-mcp.md",
       "layer": "capability",
@@ -427,6 +499,54 @@
         "http-integration",
         "browser-automation",
         "observability"
+      ]
+    },
+    {
+      "name": "seo-directory-qualifier",
+      "path": ".github/skills/seo-directory-qualifier/SKILL.md",
+      "layer": "capability",
+      "description": "Use when evaluating directory/citation opportunities before submission: score local and industry relevance, trust, listing quality, duplicate risk, crawlability and likely SEO/business value, then separate worthwhile targets from noise.",
+      "when_to_use": "Use when a business has a large list of directories, citation sites, chambers, associations, community listings or backlink opportunities and needs a prioritized submission queue rather than blanket submission.",
+      "invocation": {
+        "modelInvocable": true,
+        "userInvocable": true
+      },
+      "tags": [
+        "seo",
+        "citations",
+        "directories",
+        "backlinks",
+        "local-seo"
+      ],
+      "topics": [
+        "seo",
+        "local-search",
+        "directory-submission",
+        "source-qualification"
+      ]
+    },
+    {
+      "name": "seo-directory-submission",
+      "path": ".github/skills/seo-directory-submission/SKILL.md",
+      "layer": "capability",
+      "description": "Use when submitting or updating a business on an approved directory: load the canonical business profile, detect existing listings, map fields without guessing, use the browser form operator, verify the result, and record durable submission evidence.",
+      "when_to_use": "Use when an approved business directory/citation target is ready for claim, update, or new listing submission and the task must preserve NAP/category consistency and a durable result ledger.",
+      "invocation": {
+        "modelInvocable": true,
+        "userInvocable": true
+      },
+      "tags": [
+        "seo",
+        "citations",
+        "directories",
+        "forms",
+        "local-seo"
+      ],
+      "topics": [
+        "seo",
+        "local-search",
+        "directory-submission",
+        "browser-automation"
       ]
     },
     {
