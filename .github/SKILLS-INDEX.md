@@ -46,7 +46,7 @@ rank 100-500.
 
 No specialist skills of its own; it supplies the base capability scope.
 
-Capabilities in scope: `testing`, `database`, `api`, `ui`, `browser`, `oop`, `scraping`, `planning`, `docs`.
+Capabilities in scope: `testing`, `database`, `api`, `ui`, `browser`, `seo`, `oop`, `scraping`, `planning`, `docs`.
 Always composed: `testing`.
 
 ### `wordpress-coding`
@@ -76,7 +76,8 @@ Always composed: `testing`, `logging`.
 | `database` | `database-selection`, `database-design` | `persistence-surface` |
 | `api` | `api-design` | `api-surface` |
 | `ui` | `interface-design` | `presentation-surface` |
-| `browser` | `chrome-devtools-mcp` | `browser-dependency` |
+| `browser` | `chrome-devtools-mcp`, `browser-form-operator`, `browser-auth-session`, `browser-research` | `browser-dependency` |
+| `seo` | `seo-directory-qualifier`, `seo-directory-submission` | activation or preset default only |
 | `oop` | `oop-standards` | `class-declarations` |
 | `scraping` | `scraping-pipeline` | `scraper-sources` |
 | `logging` | `trace-eval-logging` | activation or preset default only |
@@ -88,6 +89,19 @@ Always composed: `testing`, `logging`.
 | `initiative` | `agent-initiative` | activation or preset default only |
 | `debugging` | `guard-debugging` | activation or preset default only |
 
+### Browser operations split
+
+The browser capability deliberately separates mechanics from business intent:
+
+| Skill | Responsibility |
+| --- | --- |
+| `browser-form-operator` | Inspect, map, fill/select/check/upload, re-inspect and verify forms; separate preparation from consequential submission. |
+| `browser-auth-session` | Establish/reuse approved authenticated state without persisting credentials or bypassing MFA/CAPTCHA. |
+| `browser-research` | Explore rendered pages, follow high-yield structures, preserve evidence and distinguish search discovery from browser verification. |
+| `chrome-devtools-mcp` | Front-end debugging, console/network inspection, accessibility and performance verification. |
+
+The SEO skills consume these mechanics rather than duplicating browser instructions. `seo-directory-qualifier` decides whether a listing opportunity is worth doing; `seo-directory-submission` owns claim/update/create semantics, business-profile consistency and durable submission evidence.
+
 ## Reference rule sets (model-only, never human-invocable)
 
 | Skill | What it does |
@@ -98,12 +112,14 @@ Always composed: `testing`, `logging`.
 
 ## Reachable only through find + activate
 
-These are found with `project_harness_find_skills` and then activated:
+These are found with `project_harness_find_skills` and then activated when they are not composed by evidence/preset:
 
 - `agent-initiative` — Use when blocked or unsure: walk the initiative ladder, infer from project files and defaults, record reversible assumptions, defer non-blocking decisions, and patch bugs in place rather than rewriting files.
 - `code-review` — Use when reviewing a diff or PR before merge: run L1/L2/L3 checks for correctness, edge cases, secrets, injection, auth, architecture compliance and N+1 queries, and tag findings MUST/SHOULD/NIT/QUESTION.
 - `guard-debugging` — Use when a failure or regression appears: forbids deleting or replacing source files, requires reading the file, logging a .debug-session record, then applying surgical patches that preserve architecture.
 - `memory-consolidation` — Use when AI-NOTES.md grows past roughly 200 lines or a phase ends: extract decisions, reusable patterns and anti-patterns, promote them into accepted ADRs and notes, and archive raw entries to cut context bloat.
+- `seo-directory-qualifier` — Use when a large directory/citation inventory needs to be ranked before any submission work.
+- `seo-directory-submission` — Use when an approved listing target is ready for claim, update or new submission through the normal site workflow.
 - `sub-agent-delegation` — Use when a task benefits from parallel or specialized sub-agents: define each role, scope, inputs and success criteria, keep a master trace, cap concurrency at three, and integrate only after verified reports.
 
 ## Adding a skill
@@ -117,4 +133,4 @@ These are found with `project_harness_find_skills` and then activated:
 3. Run `npm run skills:catalog` to regenerate `dsh/skill-catalog.json` (the
    generated catalog is verified fresh), then `npm run skills:verify`.
 
-**Skills in library:** 25. **Last verified:** 2026-09-17.
+**Skills in library:** 30. **Last verified baseline:** 2026-09-17. This branch adds five skills and requires catalog regeneration/verification before merge.
