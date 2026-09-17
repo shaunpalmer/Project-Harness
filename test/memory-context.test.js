@@ -98,7 +98,11 @@ test('DSH registers all three handlers and resume uses mapped context (host API 
     .replace('fileURLToPath(import.meta.url)', JSON.stringify(fileURLToPath(adapter)));
   const { apply } = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
   const handlers = new Map();
-  const ctx = { tools: { register: (tool) => handlers.set(tool.name, tool) }, skills: { register: () => {} } };
+  const ctx = {
+    effect: (register) => register(),
+    tools: { register: (tool) => handlers.set(tool.name, tool) },
+    skills: { registerProvider: () => () => {} },
+  };
   apply(ctx, { projectRoot: root });
   assert.deepEqual([...handlers.keys()].sort(), ['project_harness_inventory', 'project_harness_resume', 'project_harness_select_specialist']);
   const result = JSON.parse(await handlers.get('project_harness_resume').execute());

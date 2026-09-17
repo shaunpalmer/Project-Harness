@@ -65,18 +65,18 @@ function containsFileExtension(root, extension) {
 }
 
 /**
- * Resolve and validate the workspace selected for Project Harness.
+ * Resolve and validate one Project Harness workspace candidate.
  *
- * @param {string} configuredRoot Workspace path supplied by DSH configuration.
+ * @param {string} projectRoot Workspace path selected for this operation.
  * @returns {{ ok: true, root: string } | { ok: false, code: string, message: string }} Resolution result.
  */
-function resolveProjectRoot(configuredRoot) {
-  const value = configuredRoot.trim();
+function resolveProjectRoot(projectRoot) {
+  const value = String(projectRoot ?? '').trim();
   if (!value) {
     return {
       ok: false,
       code: 'WORKSPACE_NOT_CONFIGURED',
-      message: 'Set PROJECT_HARNESS_ROOT or projectRoot before using Project Harness tools.',
+      message: 'No DSH session workspace or configured Project Harness fallback is available.',
     };
   }
 
@@ -102,10 +102,46 @@ function resolveProjectRoot(configuredRoot) {
   return { ok: true, root };
 }
 
-function resumeProject(projectRoot) {
+/**
+ * Select the workspace Project Harness should use for one DSH operation.
+ * A calling session owns project identity; configured projectRoot is only the
+ * fallback for agentless/CLI-style calls.
+ *
+ * @param {string | undefined} sessionCwd Calling DSH session workspace.
+ * @param {string | undefined} configuredRoot Configured fallback workspace.
+ * @returns {{ projectRoot: string, source: 'session-cwd' | 'configured-fallback' }} Selection.
+ */
+function selectProjectRoot(sessionCwd, configuredRoot) {
+  if (typeof sessionCwd === 'string' && sessionCwd.trim()) {
+    return { projectRoot: sessionCwd, source: 'session-cwd' };
+  }
+
+  return {
+    projectRoot: String(configuredRoot ?? ''),
+    source: 'configured-fallback',
+  };
+}
+
+/**
+ * Resolve project identity from the DSH tool execution context.
+ *
+ * @param {object | undefined} exec DSH tool execution context.
+ * @param {string | undefined} configuredRoot Configured fallback workspace.
+ * @returns {{ projectRoot: string, source: 'session-cwd' | 'configured-fallback' }} Selection.
+ */
+function selectProjectRootForExecution(exec, configuredRoot) {
+  return selectProjectRoot(exec?.agent?.session?.header?.cwd, configuredRoot);
+}
+
+function resumeProject(projectRoot, projectRootSource = 'configured-fallback') {
   const resolution = resolveProjectRoot(projectRoot);
   if (!resolution.ok) {
-    return JSON.stringify({ status: 'blocked', code: resolution.code, message: resolution.message }, null, 2);
+    return JSON.stringify({
+      status: 'blocked',
+      code: resolution.code,
+      message: resolution.message,
+      project_root_source: projectRootSource,
+    }, null, 2);
   }
 
   const { root } = resolution;
@@ -115,6 +151,7 @@ function resumeProject(projectRoot) {
   return JSON.stringify({
     ...memory,
     project_root: root,
+    project_root_source: projectRootSource,
     harness_files_present: Boolean(task || memory.current_state_available || memory.north_star_available),
     active_task: task,
     discovery: {
@@ -124,7 +161,7 @@ function resumeProject(projectRoot) {
   }, null, 2);
 }
 
-function specialistFor(projectRoot) {
+function specialistFor(projectRoot, projectRootSource = 'configured-fallback') {
   const resolution = resolveProjectRoot(projectRoot);
   if (!resolution.ok) {
     return {
@@ -134,6 +171,7 @@ function specialistFor(projectRoot) {
       status: 'blocked',
       code: resolution.code,
       message: resolution.message,
+      project_root_source: projectRootSource,
       writes_performed: false,
     };
   }
@@ -174,6 +212,8 @@ function specialistFor(projectRoot) {
         wordpress_config_or_dependency: hasWordPressConfig || hasWordPressDependency,
         wordpress_directory: hasWordPressDirectory,
       },
+      project_root: root,
+      project_root_source: projectRootSource,
       preset,
       writes_performed: false,
     };
@@ -190,6 +230,8 @@ function specialistFor(projectRoot) {
         python_project_marker: hasPythonProjectMarker,
         prospecting_shape: hasProspectingShape,
       },
+      project_root: root,
+      project_root_source: projectRootSource,
       preset,
       writes_performed: false,
     };
@@ -199,15 +241,22 @@ function specialistFor(projectRoot) {
     specialist: null,
     confidence: 'none',
     evidence: {},
+    project_root: root,
+    project_root_source: projectRootSource,
     message: 'No installed Project Harness specialist matched this workspace yet.',
     writes_performed: false,
   };
 }
 
-function inventoryProject(projectRoot) {
+function inventoryProject(projectRoot, projectRootSource = 'configured-fallback') {
   const resolution = resolveProjectRoot(projectRoot);
   if (!resolution.ok) {
-    return JSON.stringify({ status: 'blocked', code: resolution.code, message: resolution.message }, null, 2);
+    return JSON.stringify({
+      status: 'blocked',
+      code: resolution.code,
+      message: resolution.message,
+      project_root_source: projectRootSource,
+    }, null, 2);
   }
 
   const { root } = resolution;
@@ -225,6 +274,7 @@ function inventoryProject(projectRoot) {
 
   return JSON.stringify({
     project_root: root,
+    project_root_source: projectRootSource,
     top_level: fs.readdirSync(root).sort(),
     memory_candidates: candidates.map((relativePath) => ({
       path: relativePath,
@@ -293,18 +343,17 @@ function resolveSkill(projectRoot, relativePath) {
 }
 
 /**
- * Register the selected specialist's skills through DSH's native registry.
- * The catalogue exposes summaries; the full Markdown is read only when the
- * model invokes a skill by name.
+ * Build the specialist skill catalogue for one workspace.
  *
- * @param {import('@deepseek-ai/cordis').Context} ctx DSH plugin context.
  * @param {string} projectRoot Selected workspace root.
- * @returns {void}
+ * @param {'session-cwd' | 'configured-fallback'} projectRootSource Root provenance.
+ * @returns {Array<object>} DSH skill candidates for the selected specialist.
  */
-function registerSpecialistSkills(ctx, projectRoot) {
-  const specialist = specialistFor(projectRoot);
+function specialistSkills(projectRoot, projectRootSource) {
+  const specialist = specialistFor(projectRoot, projectRootSource);
   const requiredSkills = specialist.preset?.required_skills ?? [];
-  const skills = requiredSkills
+
+  return requiredSkills
     .map((relativePath) => {
       const resolved = resolveSkill(projectRoot, relativePath);
       if (!resolved) return null;
@@ -323,20 +372,43 @@ function registerSpecialistSkills(ctx, projectRoot) {
       };
     })
     .filter(Boolean);
+}
 
-  if (skills.length === 0) return;
-
+/**
+ * Register a cwd-sensitive Project Harness skill provider. DSH supplies the
+ * active session workspace in SkillLookupOptions.cwd; configured projectRoot
+ * remains only the agentless fallback.
+ *
+ * @param {import('@deepseek-ai/cordis').Context} ctx DSH plugin context.
+ * @param {string} configuredRoot Configured fallback workspace root.
+ * @returns {void}
+ */
+function registerSpecialistSkills(ctx, configuredRoot) {
   ctx.effect(() => ctx.skills.registerProvider(() => ({
     name: 'project-harness',
-    async list() {
-      return skills;
+    async list(options = {}) {
+      const selected = selectProjectRoot(options.cwd, configuredRoot);
+      return specialistSkills(selected.projectRoot, selected.source);
     },
-    async get(candidate) {
-      const resolved = resolveSkill(projectRoot, candidate.locator);
+    async get(candidate, options = {}) {
+      const selected = selectProjectRoot(options.cwd, configuredRoot);
+      const specialist = specialistFor(selected.projectRoot, selected.source);
+      const allowedSkills = new Set(specialist.preset?.required_skills ?? []);
+
+      if (typeof candidate.locator !== 'string' || !allowedSkills.has(candidate.locator)) {
+        return undefined;
+      }
+
+      const resolved = resolveSkill(selected.projectRoot, candidate.locator);
       if (!resolved) return undefined;
+
+      const name = skillNameFromPath(candidate.locator);
+      if (name !== candidate.name) return undefined;
 
       return {
         ...candidate,
+        description: skillDescription(resolved.content, name),
+        whenToUse: `Use for ${specialist.specialist} work in the selected workspace.`,
         content: resolved.content,
         path: resolved.filePath,
         resourceBase: { kind: 'directory', path: path.dirname(resolved.filePath) },
@@ -356,8 +428,9 @@ export function apply(ctx, config) {
       schema: { type: 'string' },
       render: (_args, value) => [{ type: 'text', text: value }],
     },
-    async execute() {
-      return resumeProject(config.projectRoot);
+    async execute(_args, exec) {
+      const selected = selectProjectRootForExecution(exec, config.projectRoot);
+      return resumeProject(selected.projectRoot, selected.source);
     },
   }));
 
@@ -369,8 +442,9 @@ export function apply(ctx, config) {
       schema: { type: 'string' },
       render: (_args, value) => [{ type: 'text', text: value }],
     },
-    async execute() {
-      return JSON.stringify(specialistFor(config.projectRoot), null, 2);
+    async execute(_args, exec) {
+      const selected = selectProjectRootForExecution(exec, config.projectRoot);
+      return JSON.stringify(specialistFor(selected.projectRoot, selected.source), null, 2);
     },
   }));
 
@@ -382,8 +456,9 @@ export function apply(ctx, config) {
       schema: { type: 'string' },
       render: (_args, value) => [{ type: 'text', text: value }],
     },
-    async execute() {
-      return inventoryProject(config.projectRoot);
+    async execute(_args, exec) {
+      const selected = selectProjectRootForExecution(exec, config.projectRoot);
+      return inventoryProject(selected.projectRoot, selected.source);
     },
   }));
 }
