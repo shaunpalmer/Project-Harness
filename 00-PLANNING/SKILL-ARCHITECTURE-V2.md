@@ -244,3 +244,37 @@ becomes thin wiring, which is the only part that needs a live DSH host.
   `.harness/state/skills.json`, which the harness already owns.
 - `scripts/optimize-skills.js` (NVIDIA/OpenAI nightly skill rewriting) stays out
   of scope and is not on any execution path.
+
+## Reconciliation with main (PR #6 and PR #8)
+
+This branch was originally cut from 925ce01. Main has since advanced with PR #6
+(DSH quick-check docs) and PR #8 (`fix/session-workspace-routing`), and this branch
+has been rebased onto 44eb167.
+
+PR #8 independently fixed the same workspace-sensitivity gap from the other
+direction: it made the tools follow `exec.agent.session.header.cwd` and gave the
+provider `options.cwd`. Its contract is now part of main, and this branch satisfies
+it rather than duplicating it:
+
+| PR #8 contract | How this branch satisfies it |
+|---|---|
+| `project_root` + `project_root_source` on tool output | `selectWorkspace()` returns provenance; resume, inventory, specialist and catalogue all report it |
+| An invalid session cwd fails closed with `WORKSPACE_NOT_FOUND` | `resolveWorkspace()` validates the selection; there is no silent fallback to `projectRoot` |
+| `get()` refuses a candidate outside the current workspace | `get()` rebuilds the plan and requires the candidate's name and locator to be in it |
+| `test/dsh-workspace-routing.test.js` | Passes with no assertion changed; only its `data:`-URL loader gained two relative-import rewrites, because this branch's adapter delegates to `dsh/skills/plan.js` |
+
+Three earlier decisions in this plan were confirmed by PR #8 and kept: session cwd
+wins over configuration, the provider is the right boundary for workspace
+sensitivity, and the configured root is a fallback rather than the primary source of
+identity.
+
+One earlier decision was corrected by PR #8's regression test: this branch had
+`get()` accept any candidate inside a library root, which let a skill resolved for
+one workspace load in another. It now scopes by the composed plan.
+
+## Divergent implementation
+
+`origin/feat/skill-architecture-v2` (213b65c) is a separate phase-one
+implementation of the same goal, built on PR #8. The two are not reconciled and
+should not be merged together. See `docs/CURRENT-STATE.md` for the comparison and
+ADR-0005 for the reasoning behind this branch's choices.

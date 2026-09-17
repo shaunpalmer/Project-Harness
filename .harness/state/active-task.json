@@ -1,38 +1,38 @@
 {
   "schema_version": 2,
   "id": "skill-architecture-v2",
-  "goal": "Replace the flat specialist skill lists with a composed, discoverable, DSH-native skill layer: verified frontmatter, tiered core/specialist/capability composition, find-activate-load discovery wired to DSH invalidation, and a correct provider contract.",
+  "goal": "Replace the flat specialist skill lists with a composed, discoverable, DSH-native skill layer: verified frontmatter, tiered core/specialist/capability composition, find-activate-load discovery wired to DSH invalidation, and a provider contract reconciled with the merged session-workspace routing fix.",
   "status": "completed",
   "alignment": [
     {
       "gate": "destination",
       "answer": "YES",
-      "evidence": "Feature branch feature/skill-architecture-v2; Project Harness reusable harness only, no product code and no live DSH session."
+      "evidence": "Feature branch feature/skill-architecture-v2 rebased onto main 44eb167; Project Harness reusable harness only, no product code and no live DSH session."
     },
     {
       "gate": "evidence",
       "answer": "YES",
-      "evidence": "Read the DSH skill subsystem doc and source (registry, tool-skill catalogue rendering, filesystem provider frontmatter, ranks, invalidation, watcher) plus the current adapter, presets and 25-skill library before editing."
+      "evidence": "Read the DSH skill subsystem doc and source (registry, tool-skill catalogue rendering, filesystem provider frontmatter, ranks, invalidation, watcher) plus PR #6, PR #8, the merged test/dsh-workspace-routing.test.js and the divergent origin/feat/skill-architecture-v2 before reconciling."
     },
     {
       "gate": "system_model",
       "answer": "YES",
-      "evidence": "00-PLANNING/SKILL-ARCHITECTURE-V2.md models the gap: fixed flat required_skills, H1-derived descriptions, no invalidation, no discovery path, config- rather than cwd-sensitive resolution."
+      "evidence": "00-PLANNING/SKILL-ARCHITECTURE-V2.md models the gap, the composition design, and the reconciliation table mapping each merged PR #8 contract onto this implementation."
     },
     {
       "gate": "boundaries",
       "answer": "YES",
-      "evidence": "Skill layer only. One new bounded write (.harness/state/skills.json on activation). No shell, no Git mutation, no merge, release, deployment or live provider call."
+      "evidence": "Skill layer and adapter only. One bounded write (.harness/state/skills.json on activation). No shell, no Git mutation, no merge, release, deployment or live provider call. The divergent remote branch was left untouched."
     },
     {
       "gate": "ownership",
       "answer": "YES",
-      "evidence": "DSH owns the registry, layering and catalogue rendering; dsh/skills/*.js owns composition, discovery and plan resolution; capabilities.json owns the vocabulary; each skill owns its own frontmatter."
+      "evidence": "DSH owns the registry, layering and catalogue rendering; dsh/skills/*.js owns composition, discovery and workspace resolution; capabilities.json owns the vocabulary; each skill owns its own frontmatter."
     },
     {
       "gate": "minimum_slice",
       "answer": "YES",
-      "evidence": "Phase one only: normalise metadata, replace required_skills with core/specialist/capability composition, add find-activate discovery and correct the provider. Native .dsh/skills migration and new specialists are explicitly out of scope."
+      "evidence": "Phase one plus the mandatory reconciliation with main: metadata, composition, find-activate discovery, provider correctness, session-scoped identity with fail-closed errors. Native .dsh/skills migration, new specialists and resolving the divergent branch are out of scope."
     },
     {
       "gate": "debt_control",
@@ -42,7 +42,7 @@
     {
       "gate": "proof",
       "answer": "YES",
-      "evidence": "Node 22.23.2: 80/80 tests including 31 new frontmatter, library, composition, activation, provider-contract and invalidation tests; skills:verify, control:verify, memory:resume and git diff --check passed. Live DSH acceptance remains a separate step."
+      "evidence": "Node 22.23.2: 88/88 tests including the four merged PR #8 workspace-routing regression tests with no assertion weakened; skills:verify, control:verify, memory:resume and git diff --check passed. Live DSH acceptance remains a separate step."
     }
   ]
 }

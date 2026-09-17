@@ -39,6 +39,27 @@ This file records meaningful user-facing harness changes. Git remains the source
   remain read-only.
 - ADR-0005 records the decision. No new runtime dependency.
 
+### Skill architecture v2 reconciliation with PR #6 and PR #8
+
+- Rebased onto main after PR #6 (DSH quick-check docs) and PR #8
+  (`fix/session-workspace-routing`). The quick-check section and README pointer from
+  PR #6 are preserved and extended with `project_harness_skill_catalog`.
+- Adopted PR #8's session-workspace contract: every project-control tool now reports
+  `project_root` and `project_root_source` (`session-cwd` or
+  `configured-fallback`).
+- An explicit session cwd that is missing or invalid now **fails closed** with
+  `WORKSPACE_NOT_FOUND`. The previous fallback silently routed an operation at the
+  configured project, which PR #8 correctly rejects.
+- `provider.get()` is now workspace-scoped: a candidate the current workspace would
+  not have offered is refused, so a skill resolved for one session cannot be loaded
+  into another.
+- The merged `test/dsh-workspace-routing.test.js` passes unmodified apart from its
+  data:-URL loader, which now rewrites the adapter's module-relative imports to
+  absolute URLs. No assertion was changed or weakened.
+- `origin/feat/skill-architecture-v2` is a separate parallel implementation of the
+  same goal and has not been reconciled with this branch. See
+  `docs/CURRENT-STATE.md`; the route is a user decision.
+
 ### Memory context and reusable roles
 
 - Shared bounded CLI/DSH resume context with explicit existing-note mapping and

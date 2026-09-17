@@ -62,3 +62,37 @@ Harder or newly constrained:
 - `.harness/state/skills.json` is the first file the adapter writes. The write is bounded to that path, validated and atomic, and the three read-only tools remain read-only; `docs/DSH-INTEGRATION.md` and `test/dsh-integration.test.js` now assert the narrow write contract explicitly.
 - A stat poll runs while the plugin is loaded. It is a directory read plus a stat per skill file, `unref`ed, and disabled with `skillWatchIntervalMs: 0`.
 - `.github/skills/INDEX.md` was removed and `.github/skills/guard_debugging.md` renamed to `guard-debugging.md`, because a non-skill Markdown file inside a DSH-scanned root produces a per-session parse warning and an underscore name is not valid DSH kebab-case. `scripts/guard_debugging.js` was updated to match.
+
+## Addendum: reconciled with PR #8
+
+This ADR was written against 925ce01. Before review, main advanced through PR #6 (DSH
+quick-check docs) and PR #8 (`fix/session-workspace-routing`), and this branch was
+rebased onto 44eb167.
+
+PR #8 reached the same conclusion about workspace sensitivity independently, and its
+contract now governs main. This branch adopts it rather than restating it:
+
+- `project_root` and `project_root_source` (`session-cwd` / `configured-fallback`)
+  are reported by the project-control tools.
+- An explicit session cwd that is missing or invalid fails closed with
+  `WORKSPACE_NOT_FOUND`. This branch previously fell back to the configured root,
+  which PR #8's regression test correctly rejects: a session that names a project
+  must not be silently routed at a different one.
+- `provider.get()` is scoped to the composed plan for the current workspace, so a
+  candidate one workspace would not have offered cannot be loaded in another. This
+  ADR originally scoped `get()` only by library-root containment, which was too
+  permissive; the merged test found it.
+
+`test/dsh-workspace-routing.test.js` passes with no assertion changed. Its
+`data:`-URL loader gained two rewrites for the adapter's module-relative imports,
+because this decision moved the routing logic into `dsh/skills/plan.js`. That is a
+change to the test's module loader, not to the behaviour it asserts.
+
+One further fact belongs in the record: `origin/feat/skill-architecture-v2` contains
+a separate parallel implementation of this same phase-one goal, built on PR #8. It is
+not an ancestor of this branch and the two were deliberately not merged. Its
+descriptions and layer assignments live in a `dsh/skill-catalog.json` manifest rather
+than in skill frontmatter, its capability selection is manifest-driven rather than
+evidence-driven, it registers at rank 250 rather than 600, and it adds no skill search
+or activation tool. Choosing between the two is a user decision; `docs/CURRENT-STATE.md`
+records the comparison so the choice is not lost with this branch.
