@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const AGENT_MARKER = '## Harness v0.4 operating handoff';
+const LOCAL_RUNTIME_EXCLUDES = ['.harness/state/skills.json'];
 
 const HANDOFF_PATHS = [
   'ENGINEERING-DEFAULTS.md',
@@ -129,6 +130,32 @@ function ensureLocalGit(projectRoot) {
   return JSON.parse(runNode(vcsScript, ['init', '--cwd', projectRoot, '--branch', 'work/bootstrap'], projectRoot));
 }
 
+/**
+ * Keep transient skill activation state local to the developer checkout.
+ *
+ * `.harness/state/skills.json` records what was activated for a local session; it
+ * is not architecture or product source. Using `.git/info/exclude` avoids
+ * rewriting a project's tracked `.gitignore` while keeping `git status` clean.
+ *
+ * @param {string} projectRoot Initialized Git workspace.
+ * @returns {{ action: 'updated' | 'already-present', entries: string[] }} Exclude result.
+ */
+function ensureLocalRuntimeExcludes(projectRoot) {
+  const excludePath = path.join(projectRoot, '.git', 'info', 'exclude');
+  fs.mkdirSync(path.dirname(excludePath), { recursive: true });
+  const current = fs.existsSync(excludePath) ? fs.readFileSync(excludePath, 'utf8') : '';
+  const lines = new Set(current.split(/\r?\n/).map((line) => line.trim()).filter(Boolean));
+  const missing = LOCAL_RUNTIME_EXCLUDES.filter((entry) => !lines.has(entry));
+
+  if (missing.length === 0) {
+    return { action: 'already-present', entries: LOCAL_RUNTIME_EXCLUDES };
+  }
+
+  const prefix = current.length > 0 && !current.endsWith('\n') ? '\n' : '';
+  fs.appendFileSync(excludePath, `${prefix}${missing.join('\n')}\n`);
+  return { action: 'updated', entries: missing };
+}
+
 function harnessHead() {
   const result = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' });
   return result.status === 0 ? result.stdout.trim() : 'unavailable';
@@ -147,6 +174,7 @@ function writeHandoffRecord(projectRoot, copiedPaths) {
       skill_root: '.github/skills',
       vcs_controller: 'scripts/vcs-control.mjs',
       agent_contract: 'AGENTS.md',
+      runtime_skill_state: '.harness/state/skills.json (local Git exclude)',
     },
   };
   fs.writeFileSync(recordPath, `${JSON.stringify(record, null, 2)}\n`, { flag: 'wx' });
@@ -165,6 +193,7 @@ function main() {
   copyVcsController(copied, unchanged);
   const agents = appendAgentHandoff(destinationRoot);
   const git = ensureLocalGit(destinationRoot);
+  const runtimeStateExclude = ensureLocalRuntimeExcludes(destinationRoot);
   const record = writeHandoffRecord(destinationRoot, copied);
   console.log(JSON.stringify({
     project_root: destinationRoot,
@@ -172,6 +201,7 @@ function main() {
     unchanged,
     agent_contract: agents,
     git,
+    runtime_state_exclude: runtimeStateExclude,
     handoff: record,
     next_action: 'Open the generated project workspace. Complete/confirm its system model, apply the copied engineering defaults and deterministic skill bindings, then work on a safe non-default Git branch.',
   }, null, 2));
