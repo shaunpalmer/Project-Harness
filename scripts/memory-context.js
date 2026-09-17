@@ -1,9 +1,57 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { execFileSync } from 'node:child_process';
+import { GIT_PROBE_COMMANDS, abortedBy, createLocalGitRunner, throwIfAborted } from './git-probe.js';
 
-/** Read-only, bounded project memory shared by the CLI and DSH adapter. */
-export function readMemoryContext(projectRoot) {
+/** The CLI's runner. The DSH path injects a seam-backed one instead. */
+const defaultGitRunner = createLocalGitRunner();
+
+/**
+ * Answer the three freshness questions, or report that git could not.
+ *
+ * A missing repository, a nonzero exit, a timeout and a truncated stream are all
+ * "no evidence" and degrade to a warning. Cancellation is different: the caller asked
+ * to stop, so it is rethrown rather than dressed up as a successful empty result.
+ *
+ * @param {string} root Canonical workspace root.
+ * @param {{ runGit?: Function, signal?: AbortSignal }} options Injected runner and caller signal.
+ * @returns {Promise<{ head: string | null, dirty: boolean | null, warning?: string }>} Facts or a warning.
+ */
+async function collectGitFacts(root, options = {}) {
+  const runGit = options.runGit ?? defaultGitRunner;
+  const { signal } = options;
+  const facts = { head: null, dirty: null };
+
+  try {
+    throwIfAborted(signal);
+    const toplevel = await runGit(GIT_PROBE_COMMANDS.toplevel, { cwd: root, signal });
+    throwIfAborted(signal);
+    // Only a checkout whose root is the workspace itself yields comparable evidence.
+    // `root` is already canonical, and git may report a symlinked worktree, so compare
+    // canonical forms rather than raw strings.
+    if (fs.realpathSync(toplevel) !== root) return facts;
+
+    facts.head = await runGit(GIT_PROBE_COMMANDS.head, { cwd: root, signal });
+    throwIfAborted(signal);
+    facts.dirty = Boolean(await runGit(GIT_PROBE_COMMANDS.status, { cwd: root, signal }));
+  } catch (error) {
+    if (abortedBy(signal, error)) {
+      // Surface why the caller stopped, not whatever the child happened to report.
+      throw signal?.aborted === true && signal.reason instanceof Error ? signal.reason : error;
+    }
+    facts.warning = 'Git freshness evidence unavailable.';
+  }
+
+  return facts;
+}
+
+/**
+ * Read-only, bounded project memory shared by the CLI and DSH adapter.
+ *
+ * @param {string} projectRoot Workspace root.
+ * @param {{ runGit?: Function, signal?: AbortSignal }} [options] Injected git runner and caller signal.
+ * @returns {Promise<object>} Compact memory context.
+ */
+export async function readMemoryContext(projectRoot, options = {}) {
   const root = fs.realpathSync(projectRoot);
   const warnings = [];
   const sources = {};
@@ -82,16 +130,9 @@ export function readMemoryContext(projectRoot) {
     }
   } catch { /* Missing decisions are valid for an existing project. */ }
   const verifiedCommit = current.match(/^Verified commit:\s*([a-f0-9]{40})\s*$/mi)?.[1] ?? null;
-  let head = null;
-  let dirty = null;
-  try {
-    const git = (args) => execFileSync('git', args, { cwd: root, encoding: 'utf8', timeout: 2000,
-      maxBuffer: 65536, stdio: ['ignore', 'pipe', 'ignore'], env: { ...process.env, GIT_OPTIONAL_LOCKS: '0' } }).trim();
-    if (fs.realpathSync(git(['rev-parse', '--show-toplevel'])) === root) {
-      head = git(['rev-parse', 'HEAD']);
-      dirty = Boolean(git(['status', '--porcelain', '--untracked-files=normal']));
-    }
-  } catch { warnings.push('Git freshness evidence unavailable.'); }
+  const gitFacts = await collectGitFacts(root, options);
+  if (gitFacts.warning !== undefined) warnings.push(gitFacts.warning);
+  const { head, dirty } = gitFacts;
   const freshness = {
     status: !current ? 'missing' : !verifiedCommit ? 'unverified' : !head || dirty === null ? 'unknown'
       : verifiedCommit !== head || dirty ? 'review-needed' : 'matches-snapshot',

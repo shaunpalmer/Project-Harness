@@ -2,9 +2,9 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { readMemoryContext } from './memory-context.js';
+import { GIT_PROBE_COMMANDS, createLocalGitRunner } from './git-probe.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const TASK_SCHEMA_VERSION = 2;
@@ -71,19 +71,25 @@ function hasExactLine(content, marker) {
   return content.split(/\r?\n/).some((line) => line.trim() === marker);
 }
 
-function runGit(args) {
+/**
+ * The CLI's git probe. Shares the scrubbed, bounded, abortable runner with the DSH
+ * tools so neither path can leak the ambient environment to a child process.
+ */
+const cliGitRunner = createLocalGitRunner();
+
+async function runGit(args) {
   try {
-    return execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim();
+    return await cliGitRunner(args, { cwd: ROOT });
   } catch {
     return 'unavailable';
   }
 }
 
-function gitFacts() {
+async function gitFacts() {
   return {
-    branch: runGit(['branch', '--show-current']),
-    head: runGit(['rev-parse', '--short', 'HEAD']),
-    status: runGit(['status', '--short']) || 'clean',
+    branch: await runGit(GIT_PROBE_COMMANDS.branch),
+    head: await runGit(GIT_PROBE_COMMANDS.shortHead),
+    status: (await runGit(GIT_PROBE_COMMANDS.shortStatus)) || 'clean',
   };
 }
 
@@ -99,16 +105,16 @@ function extractHeadingBody(markdown, heading) {
   return body.join('\n').trim();
 }
 
-function resume() {
+async function resume() {
   const task = readJson('.harness/state/active-task.json', false);
   console.log(JSON.stringify({
-    ...readMemoryContext(ROOT),
+    ...await readMemoryContext(ROOT),
     active_task: task,
     discovery: DISCOVERY_ARTIFACTS.map((artifact) => ({
       path: artifact.path,
       status: hasExactLine(readText(artifact.path, false), artifact.marker) ? 'confirmed' : 'draft-or-missing',
     })),
-    git: gitFacts(),
+    git: await gitFacts(),
   }, null, 2));
 }
 
@@ -205,7 +211,7 @@ function verify() {
   console.log('Project-control verification passed.');
 }
 
-function checkpoint(args) {
+async function checkpoint(args) {
   if (!args.summary || typeof args.summary !== 'string') throw new Error('checkpoint requires --summary "what changed and why"');
   const dir = path.join(ROOT, '.harness', 'state', 'checkpoints');
   fs.mkdirSync(dir, { recursive: true });
@@ -216,7 +222,7 @@ function checkpoint(args) {
     summary: args.summary,
     next_action: args.next ?? null,
     verification: args.verification ?? null,
-    git: gitFacts(),
+    git: await gitFacts(),
   };
   const relativePath = path.join('.harness', 'state', 'checkpoints', `${timestamp.replaceAll(':', '-')}.json`);
   fs.writeFileSync(path.join(ROOT, relativePath), `${JSON.stringify(record, null, 2)}\n`, { flag: 'wx' });
@@ -370,21 +376,19 @@ function usage() {
   console.log('Usage: node scripts/project-control.js <resume|verify|checkpoint|decision|destination> [options]');
 }
 
-function main() {
+async function main() {
   const args = parseArgs(process.argv.slice(2));
   const command = args._[0];
   if (!command) return usage();
-  if (command === 'resume') return resume();
+  if (command === 'resume') return await resume();
   if (command === 'verify') return verify();
-  if (command === 'checkpoint') return checkpoint(args);
+  if (command === 'checkpoint') return await checkpoint(args);
   if (command === 'decision') return decision(args);
   if (command === 'destination') return destination(args);
   throw new Error(`Unknown command: ${command}`);
 }
 
-try {
-  main();
-} catch (error) {
+main().catch((error) => {
   console.error(`Project control failed: ${error.message}`);
   process.exitCode = 1;
-}
+});

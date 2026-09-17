@@ -189,7 +189,15 @@ export function containsFileExtension(root, extension) {
   return containsExtension(root, extension);
 }
 
-export function resumeProject(projectRoot, projectRootSource = 'configured-fallback') {
+/**
+ * Read one workspace's compact memory.
+ *
+ * @param {string} projectRoot Selected workspace root.
+ * @param {string} projectRootSource Provenance of that root.
+ * @param {{ runGit?: Function, signal?: AbortSignal }} [options] Injected git runner and the caller's abort signal.
+ * @returns {Promise<object>} Resume report.
+ */
+export async function resumeProject(projectRoot, projectRootSource = 'configured-fallback', options = {}) {
   const resolution = resolveProjectRoot(projectRoot);
   if (!resolution.ok) {
     return {
@@ -203,7 +211,7 @@ export function resumeProject(projectRoot, projectRootSource = 'configured-fallb
 
   const { root } = resolution;
   const task = readJson(root, '.harness/state/active-task.json');
-  const memory = readMemoryContext(root);
+  const memory = await readMemoryContext(root, options);
 
   return {
     ...memory,
