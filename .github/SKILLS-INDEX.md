@@ -1,41 +1,120 @@
 # Skills Index
 
-This is the master reference for all available skills in this AI harness.  
-Load skills **only** when they are relevant to the project type or current task.
+Project Harness skill library, composed for DeepSeek Harness (DSH).
 
-## Core Control Skills (Always Consider)
+This file is a human reference. The model never sees it: DSH renders only each skill's
+`name` and `description`, and Project Harness composes which of them are visible from
+workspace evidence. The machine-readable truth lives in the skill frontmatter, in
+`dsh/skills/capabilities.json` for composition, and in the generated
+`dsh/skill-catalog.json` for what the package ships; run `npm run skills:catalog` then
+`npm run skills:verify` after any change.
 
-| Skill                        | Purpose | Load When |
-|-----------------------------|--------|----------|
-| `complexity-brake`          | Prevents unnecessary complexity | Before adding files, classes, dependencies, or abstractions |
-| `loop-controller`           | Enforces Plan → Execute → Verify → Adapt cycles | During all implementation and troubleshooting |
-| `trace-eval-logging`        | Maintains execution traces and evaluations | Every major task or loop iteration |
-| `memory-consolidation`      | Summarizes learnings and prevents context bloat | End of phases or when notes grow large |
-| `chrome-devtools-mcp`       | Live browser inspection, debugging, and verification | Any front-end, UI, CSS, or JavaScript work |
+## How composition works
 
-## Domain-Specific Skills
+```
+visible = core ∪ discovery
+        ∪ specialist_skills                 (when a specialist matches)
+        ∪ default_capabilities    → skills  (when a specialist matches)
+        ∪ evidence-bound capabilities → skills
+        ∪ activated skills                   (.harness/state/skills.json)
+        − suppressed skills                  (.harness/state/skills.json)
+```
 
-| Skill                        | Purpose | Load When |
-|-----------------------------|--------|----------|
-| `wordpress-plugin`          | WordPress-specific patterns and best practices | WordPress plugin or theme projects |
-| `scraping-pipeline`         | Data scraping, pipelines, and export handling | Scraping or automation pipelines |
-| `api-design`                | API contracts, versioning, error handling | Projects with backend APIs |
-| `interface-design`          | UI/UX patterns and component contracts | Front-end or dashboard work |
-| `database-selection`        | Database choice reasoning by project type | Any project needing persistent storage |
-| `database-design`           | Schema design and migration patterns | When defining data models |
-| `prd-writer`                | Structured PRD generation | Planning phase |
-| `architecture-canvas`       | Architecture diagrams and templates | Architecture planning |
-| `stack-selector`            | Tech stack justification | TECH-SPEC phase |
-| `code-review`               | Systematic code review checklist | After code is written |
-| `testing-plan`              | Test strategy and coverage | Before implementation |
-| `documentation`             | Documentation standards | Documentation tasks |
+`find-skills` is always visible and is the route to everything not composed.
+DSH layers the catalogue: a skill in `<project>/.dsh/skills` or `~/.dsh/skills` shadows
+the harness version of the same name, because harness skills rank 600 and those roots
+rank 100-500.
 
-## How to Use Skills
+## Core controls (always composed)
 
-- Check this index + `AGENTS.md` + `PROJECT-TYPES.md` before loading.
-- Use the **Smart Skills Injector** (`scripts/inject-skills-note.js`) to generate contextual reminders.
-- Only load what you need — do not preload everything.
+| Skill | What it does | Bound by |
+| --- | --- | --- |
+| `complexity-brake` | Use before adding files, classes, dependencies, tables or build tooling: climb the minimum-code ladder, reuse existing project and platform APIs, and mark shaun-debt with an explicit upgrade trigger. | — |
+| `loop-controller` | Use when running a significant task: plan success criteria, execute the smallest safe increment, verify with tests or Chrome DevTools MCP, score Success/Partial/Failure, and escalate after three failed attempts. | — |
+| `project-memory` | Use at session entry, before compaction or on doc/code conflict: run memory:resume and memory:checkpoint, inspect .harness/state/active-task.json, supersede stale ADRs, and reconcile CURRENT-STATE without secrets. | — |
+| `skill-router` | Use when choosing which skills to load: read the system model, engineering defaults and active phase, extract capabilities, apply deterministic bindings, exclude irrelevant skills, and emit a Skill Load Plan. | — |
 
-**Last Updated:** ${new Date().toISOString().split('T')[0]}
+## Discovery (always composed)
 
-## main/.github/skills/INDEX.md
+| Skill | What it does | Bound by |
+| --- | --- | --- |
+| `find-skills` | Use when a task needs a capability the visible catalogue does not cover: search the full Project Harness library with project_harness_find_skills, check DSH-native project and user skills, then search the installable skills.sh ecosystem with npx skills find. | — |
+
+## Specialists (composed when the workspace matches)
+
+### `generic`
+
+No specialist skills of its own; it supplies the base capability scope.
+
+Capabilities in scope: `testing`, `database`, `api`, `ui`, `browser`, `oop`, `scraping`, `planning`, `docs`.
+Always composed: `testing`.
+
+### `wordpress-coding`
+
+| Skill | What it does |
+| --- | --- |
+| `wordpress-plugin` | Use when building or reviewing a WordPress plugin: keep the root file thin, register hooks and activation/deactivation, use $wpdb->prepare and dbDelta, register_rest_route, and enqueue scoped assets. |
+| `wordpress-way` | Use when writing WordPress PHP: apply WPCS naming, prefer core APIs such as WP_Query and the Options/Transients APIs, sanitise input, escape output, verify nonces and capabilities, and prepare $wpdb SQL. |
+
+Capabilities in scope: `database`, `api`, `ui`, `browser`, `testing`, `oop`, `docs`, `planning`.
+Always composed: `testing`.
+
+### `python-prospecting`
+
+| Skill | What it does |
+| --- | --- |
+| `scraping-pipeline` | Use when the system acquires data from websites or APIs: map acquire/parse/validate/dedupe/enrich/load stages, prefer official APIs, guard rate limits and paid calls, and prove idempotent reruns end to end. |
+
+Capabilities in scope: `api`, `database`, `testing`, `logging`, `browser`, `oop`, `docs`, `planning`.
+Always composed: `testing`, `logging`.
+
+## Capabilities (composed when workspace evidence proves them)
+
+| Capability | Skills | Evidence that binds it |
+| --- | --- | --- |
+| `testing` | `testing-plan` | `tests-present` |
+| `database` | `database-selection`, `database-design` | `persistence-surface` |
+| `api` | `api-design` | `api-surface` |
+| `ui` | `interface-design` | `presentation-surface` |
+| `browser` | `chrome-devtools-mcp` | `browser-dependency` |
+| `oop` | `oop-standards` | `class-declarations` |
+| `scraping` | `scraping-pipeline` | `scraper-sources` |
+| `logging` | `trace-eval-logging` | activation or preset default only |
+| `planning` | `prd-writer`, `architecture-canvas`, `stack-selector` | `planning-artifacts` |
+| `review` | `code-review` | activation or preset default only |
+| `docs` | `documentation` | `docs-present` |
+| `memory` | `memory-consolidation` | activation or preset default only |
+| `delegation` | `sub-agent-delegation` | activation or preset default only |
+| `initiative` | `agent-initiative` | activation or preset default only |
+| `debugging` | `guard-debugging` | activation or preset default only |
+
+## Reference rule sets (model-only, never human-invocable)
+
+| Skill | What it does |
+| --- | --- |
+| `agent-initiative` | Use when blocked or unsure: walk the initiative ladder, infer from project files and defaults, record reversible assumptions, defer non-blocking decisions, and patch bugs in place rather than rewriting files. |
+| `guard-debugging` | Use when a failure or regression appears: forbids deleting or replacing source files, requires reading the file, logging a .debug-session record, then applying surgical patches that preserve architecture. |
+| `oop-standards` | Use when designing, refactoring or reviewing classes, services, repositories or adapters: apply SOLID and the four pillars, justify each pattern, and enforce PHP/WordPress, TypeScript and Python standards. |
+
+## Reachable only through find + activate
+
+These are found with `project_harness_find_skills` and then activated:
+
+- `agent-initiative` — Use when blocked or unsure: walk the initiative ladder, infer from project files and defaults, record reversible assumptions, defer non-blocking decisions, and patch bugs in place rather than rewriting files.
+- `code-review` — Use when reviewing a diff or PR before merge: run L1/L2/L3 checks for correctness, edge cases, secrets, injection, auth, architecture compliance and N+1 queries, and tag findings MUST/SHOULD/NIT/QUESTION.
+- `guard-debugging` — Use when a failure or regression appears: forbids deleting or replacing source files, requires reading the file, logging a .debug-session record, then applying surgical patches that preserve architecture.
+- `memory-consolidation` — Use when AI-NOTES.md grows past roughly 200 lines or a phase ends: extract decisions, reusable patterns and anti-patterns, promote them into accepted ADRs and notes, and archive raw entries to cut context bloat.
+- `sub-agent-delegation` — Use when a task benefits from parallel or specialized sub-agents: define each role, scope, inputs and success criteria, keep a master trace, cap concurrency at three, and integrate only after verified reports.
+
+## Adding a skill
+
+1. Add `.github/skills/<name>/SKILL.md` with DSH frontmatter: `name`, `description`
+   (the routing surface — one sentence naming the capability and its trigger),
+   `whenToUse`, optional `user-invocable: false` for a model-only rule set, and
+   `metadata.harness` with `layer`, `topics`, `tags`, `stack`.
+2. Bind it in `dsh/skills/capabilities.json` under the capability it serves, or add it
+   to a preset's `specialist_skills` in `dsh/specialists/`.
+3. Run `npm run skills:catalog` to regenerate `dsh/skill-catalog.json` (the
+   generated catalog is verified fresh), then `npm run skills:verify`.
+
+**Skills in library:** 25. **Last verified:** 2026-09-17.

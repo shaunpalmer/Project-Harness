@@ -7,12 +7,15 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const AGENT_MARKER = '## Harness v0.4 operating handoff';
+const LOCAL_RUNTIME_EXCLUDES = ['.harness/state/skills.json'];
 
 const HANDOFF_PATHS = [
   'ENGINEERING-DEFAULTS.md',
   '.github/skills/skill-router',
   '.github/skills/complexity-brake',
+  '.github/skills/loop-controller',
   '.github/skills/project-memory',
+  '.github/skills/find-skills',
   '.github/skills/architecture-canvas',
   '.github/skills/scraping-pipeline',
   '.github/skills/wordpress-plugin',
@@ -100,7 +103,7 @@ function appendAgentHandoff(projectRoot) {
   const agentsPath = path.join(projectRoot, 'AGENTS.md');
   const current = fs.readFileSync(agentsPath, 'utf8');
   if (current.includes(AGENT_MARKER)) return 'already-present';
-  const block = `\n${AGENT_MARKER}\n\n- Read \`ENGINEERING-DEFAULTS.md\` before making routine implementation choices.\n- Use \`.github/skills/skill-router/SKILL.md\` after the system model is confirmed.\n- Confirmed WordPress work automatically binds \`.github/skills/wordpress-way.md\` and the WordPress plugin skill.\n- Confirmed scraping/ingestion work automatically binds the scraping-pipeline skill.\n- Routine engineering question budget is zero; ask only for consequential decisions under the project's decision-right contract.\n- Use \`node scripts/vcs-control.mjs\` for Git preflight, safe branches, focused checkpoints, remote verification, and authorised non-default-branch pushes.\n- Never store credentials, broadly stage the worktree, force push, push managed work directly to main/master, merge, deploy, or release without the required authority.\n`;
+  const block = `\n${AGENT_MARKER}\n\n- Read \`ENGINEERING-DEFAULTS.md\` before making routine implementation choices.\n- Use \`.github/skills/skill-router/SKILL.md\` after the system model is confirmed.\n- Use \`.github/skills/find-skills/SKILL.md\` when the visible skill catalogue lacks a capability: search the full library, then activate the match instead of writing instructions by hand.\n- Confirmed WordPress work automatically binds \`.github/skills/wordpress-way.md\` and the WordPress plugin skill.\n- Confirmed scraping/ingestion work automatically binds the scraping-pipeline skill.\n- Routine engineering question budget is zero; ask only for consequential decisions under the project's decision-right contract.\n- Use \`node scripts/vcs-control.mjs\` for Git preflight, safe branches, focused checkpoints, remote verification, and authorised non-default-branch pushes.\n- Never store credentials, broadly stage the worktree, force push, push managed work directly to main/master, merge, deploy, or release without the required authority.\n`;
   fs.appendFileSync(agentsPath, block);
   return 'appended';
 }
@@ -127,6 +130,32 @@ function ensureLocalGit(projectRoot) {
   return JSON.parse(runNode(vcsScript, ['init', '--cwd', projectRoot, '--branch', 'work/bootstrap'], projectRoot));
 }
 
+/**
+ * Keep transient skill activation state local to the developer checkout.
+ *
+ * `.harness/state/skills.json` records what was activated for a local session; it
+ * is not architecture or product source. Using `.git/info/exclude` avoids
+ * rewriting a project's tracked `.gitignore` while keeping `git status` clean.
+ *
+ * @param {string} projectRoot Initialized Git workspace.
+ * @returns {{ action: 'updated' | 'already-present', entries: string[] }} Exclude result.
+ */
+function ensureLocalRuntimeExcludes(projectRoot) {
+  const excludePath = path.join(projectRoot, '.git', 'info', 'exclude');
+  fs.mkdirSync(path.dirname(excludePath), { recursive: true });
+  const current = fs.existsSync(excludePath) ? fs.readFileSync(excludePath, 'utf8') : '';
+  const lines = new Set(current.split(/\r?\n/).map((line) => line.trim()).filter(Boolean));
+  const missing = LOCAL_RUNTIME_EXCLUDES.filter((entry) => !lines.has(entry));
+
+  if (missing.length === 0) {
+    return { action: 'already-present', entries: LOCAL_RUNTIME_EXCLUDES };
+  }
+
+  const prefix = current.length > 0 && !current.endsWith('\n') ? '\n' : '';
+  fs.appendFileSync(excludePath, `${prefix}${missing.join('\n')}\n`);
+  return { action: 'updated', entries: missing };
+}
+
 function harnessHead() {
   const result = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' });
   return result.status === 0 ? result.stdout.trim() : 'unavailable';
@@ -145,6 +174,7 @@ function writeHandoffRecord(projectRoot, copiedPaths) {
       skill_root: '.github/skills',
       vcs_controller: 'scripts/vcs-control.mjs',
       agent_contract: 'AGENTS.md',
+      runtime_skill_state: '.harness/state/skills.json (local Git exclude)',
     },
   };
   fs.writeFileSync(recordPath, `${JSON.stringify(record, null, 2)}\n`, { flag: 'wx' });
@@ -163,6 +193,7 @@ function main() {
   copyVcsController(copied, unchanged);
   const agents = appendAgentHandoff(destinationRoot);
   const git = ensureLocalGit(destinationRoot);
+  const runtimeStateExclude = ensureLocalRuntimeExcludes(destinationRoot);
   const record = writeHandoffRecord(destinationRoot, copied);
   console.log(JSON.stringify({
     project_root: destinationRoot,
@@ -170,6 +201,7 @@ function main() {
     unchanged,
     agent_contract: agents,
     git,
+    runtime_state_exclude: runtimeStateExclude,
     handoff: record,
     next_action: 'Open the generated project workspace. Complete/confirm its system model, apply the copied engineering defaults and deterministic skill bindings, then work on a safe non-default Git branch.',
   }, null, 2));

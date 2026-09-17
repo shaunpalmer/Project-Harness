@@ -1,3 +1,15 @@
+---
+name: stack-selector
+description: "Use when picking a language or framework: walk the decision tree from project type to PHP/WordPress, Python FastAPI/Flask/Playwright, or TypeScript with Vite/Prisma, and record the trade-off in TECH-SPEC.md."
+whenToUse: "Use when the workspace has no confirmed stack and the task is to choose a language, framework, or database tier with a documented trade-off."
+user-invocable: true
+metadata:
+  harness:
+    layer: capability
+    topics: [stack-selection, architecture, planning]
+    tags: [stack, language-selection, frameworks, python, typescript]
+    stack: []
+---
 # SKILL: Stack Selector
 
 ## Purpose

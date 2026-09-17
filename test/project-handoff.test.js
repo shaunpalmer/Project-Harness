@@ -54,6 +54,12 @@ test('handoff copies engineering defaults, required skills, VCS control, and bin
   assert.equal(output.agent_contract, 'appended');
   assert.match(fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8'), /Harness v0\.4 operating handoff/);
   assert.equal(output.git.branch, 'work/bootstrap');
+  assert.equal(output.runtime_state_exclude.action, 'updated');
+  assert.deepEqual(output.runtime_state_exclude.entries, ['.harness/state/skills.json']);
+  assert.match(
+    fs.readFileSync(path.join(project, '.git', 'info', 'exclude'), 'utf8'),
+    /^\.harness\/state\/skills\.json$/m,
+  );
   const branch = spawnSync('git', ['branch', '--show-current'], { cwd: project, encoding: 'utf8' });
   assert.equal(branch.status, 0, branch.stderr);
   assert.equal(branch.stdout.trim(), 'work/bootstrap');
@@ -70,6 +76,9 @@ test('handoff is idempotent when installed files are unchanged', (t) => {
   assert.ok(output.unchanged.includes('ENGINEERING-DEFAULTS.md'));
   assert.equal(output.agent_contract, 'already-present');
   assert.equal(output.git.action, 'already-initialized');
+  assert.equal(output.runtime_state_exclude.action, 'already-present');
+  const exclude = fs.readFileSync(path.join(project, '.git', 'info', 'exclude'), 'utf8');
+  assert.equal((exclude.match(/^\.harness\/state\/skills\.json$/gm) ?? []).length, 1);
   const agents = fs.readFileSync(path.join(project, 'AGENTS.md'), 'utf8');
   assert.equal((agents.match(/Harness v0\.4 operating handoff/g) ?? []).length, 1);
 });

@@ -1,3 +1,15 @@
+---
+name: chrome-devtools-mcp
+description: "Use when debugging or verifying front-end behaviour in a live browser via Chrome DevTools MCP: replay journeys, read console and network errors, snapshot DOM/a11y, and check LCP/CLS before claiming a fix."
+whenToUse: "Use when the workspace contains browser-rendered UI and the task involves layout, console, network, accessibility or Core Web Vitals verification."
+user-invocable: true
+metadata:
+  harness:
+    layer: capability
+    topics: [browser-automation, frontend-ui, debugging, testing, observability]
+    tags: [browser, devtools, frontend, accessibility, performance]
+    stack: []
+---
 # Chrome DevTools MCP Integration
 
 You are an advanced AI development agent equipped with the official **Chrome DevTools MCP server**. You can control and inspect a real, live browser instance to observe, test, debug, and verify front-end code. Use these capabilities to remove the blindfold from your code generation and troubleshooting workflow.

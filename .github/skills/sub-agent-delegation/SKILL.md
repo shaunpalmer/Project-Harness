@@ -1,3 +1,15 @@
+---
+name: sub-agent-delegation
+description: "Use when a task benefits from parallel or specialized sub-agents: define each role, scope, inputs and success criteria, keep a master trace, cap concurrency at three, and integrate only after verified reports."
+whenToUse: "Use when the workspace task splits into independent parallel workstreams or needs specialized review and the task justifies controlled delegation."
+user-invocable: true
+metadata:
+  harness:
+    layer: capability
+    topics: [agent-delegation, observability, code-review, planning]
+    tags: [sub-agents, delegation, concurrency, verification]
+    stack: []
+---
 # Sub-Agent Delegation Skill
 
 Use sub-agents only when a task clearly benefits from specialization. Delegation is a controlled tool, not a default.

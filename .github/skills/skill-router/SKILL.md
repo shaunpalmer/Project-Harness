@@ -1,3 +1,15 @@
+---
+name: skill-router
+description: "Use when choosing which skills to load: read the system model, engineering defaults and active phase, extract capabilities, apply deterministic bindings, exclude irrelevant skills, and emit a Skill Load Plan."
+whenToUse: "Use when the workspace has a confirmed system model and the task is to decide required, conditional, and excluded skills for the current phase."
+user-invocable: true
+metadata:
+  harness:
+    layer: core
+    topics: [skill-discovery, planning, architecture]
+    tags: [skills, routing, planning, capabilities, bindings]
+    stack: []
+---
 # SKILL: Skill Router
 
 ## Purpose
@@ -89,6 +101,41 @@ Every skill load plan names:
 - failure evidence;
 - repair rule;
 - promotion condition.
+
+## DSH composition and discovery
+
+Under DeepSeek Harness the router does not start from a blank sheet. Project
+Harness already composes a catalogue for the workspace and registers it with
+DSH's layered skill registry:
+
+```text
+core controls + find-skills + specialist skills + evidence-bound capability skills
+```
+
+So the DSH order of operations is:
+
+1. `project_harness_skill_catalog` — see what is already visible, at which tier,
+   and why. Treat this as steps 1-3 of the routing method already performed.
+2. Route within the visible set: required, conditional, excluded.
+3. If a responsibility has no visible skill, `project_harness_find_skills` to
+   search the whole library, then `project_harness_activate_skills` to promote
+   the match. Do not hand-write guidance the library already owns.
+4. Report anything promoted or excluded, so the workspace catalogue and the
+   skill load plan agree.
+
+Two rules follow from this:
+
+- **Do not re-derive composition by hand.** If the catalogue lacks something the
+  system model proves is required, widen it with `find` + `activate` rather than
+  reciting the skill's rules from memory.
+- **A capability is justified by evidence, not by the catalogue's silence.** An
+  absent skill means "not composed", not "not applicable".
+
+Adding a skill to the layering is a data change, not a code change: add
+`.github/skills/<name>/SKILL.md` with DSH frontmatter, then bind it in
+`dsh/skills/capabilities.json` (shared capability) or a preset under
+`dsh/specialists/` (domain specialist). `npm run skills:verify` fails on a
+missing binding, an unknown evidence token, or a skill no path can reach.
 
 ## Output template
 

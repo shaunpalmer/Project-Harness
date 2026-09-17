@@ -1,3 +1,15 @@
+---
+name: interface-design
+description: "Use when a module touches external dependencies: define interfaces first, wrap vendors in adapters, return Result envelopes at layer boundaries, place factories in infrastructure, and prove contracts with test doubles."
+whenToUse: "Use when the workspace integrates a swappable provider or multi-implementation seam and the task is to define the contract before implementation."
+user-invocable: true
+metadata:
+  harness:
+    layer: capability
+    topics: [architecture, oop-design, testing, refactoring]
+    tags: [adapter, envelope, factory, interfaces, contracts]
+    stack: []
+---
 # SKILL: Interface Design (Adapter / Envelope / Factory)
 
 ## Purpose

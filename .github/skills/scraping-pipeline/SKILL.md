@@ -1,3 +1,15 @@
+---
+name: scraping-pipeline
+description: "Use when the system acquires data from websites or APIs: map acquire/parse/validate/dedupe/enrich/load stages, prefer official APIs, guard rate limits and paid calls, and prove idempotent reruns end to end."
+whenToUse: "Use when the workspace ingests or scrapes external sources and the task is to design acquisition, dedupe, rate-limit, and idempotency behaviour."
+user-invocable: true
+metadata:
+  harness:
+    layer: specialist
+    topics: [scraping, parsing, background-jobs, http-integration, browser-automation, observability]
+    tags: [scraping, ingestion, dedupe, rate-limits, idempotency]
+    stack: [python]
+---
 # SKILL: Scraping / Ingestion Pipeline
 
 ## Purpose

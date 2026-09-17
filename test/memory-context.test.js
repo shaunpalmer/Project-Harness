@@ -85,35 +85,60 @@ test('freshness reports dirty or changed snapshots, not semantic certainty', (t)
   assert.notEqual(result.freshness.head, baseline);
 });
 
-test('DSH registers all three handlers and resume uses mapped context (host API stubs)', async (t) => {
+test('DSH registers every handler and resume uses mapped context (host API stubs)', async (t) => {
   const { root, write } = fixture(t);
   write('.harness/memory.json', JSON.stringify({ current_state: 'notes.md' }));
   write('notes.md', '## Current truth\nExisting project\n## Next action\nReview changes');
   const adapter = new URL('../dsh/index.js', import.meta.url);
-  // Stub only unavailable DSH host dependencies; execute the actual adapter source.
+  const absolute = (relativePath) => pathToFileURL(fileURLToPath(new URL(relativePath, import.meta.url))).href;
+  // Stub only unavailable DSH host dependencies and rewrite the module-relative
+  // imports to absolute URLs, then execute the actual adapter source.
   const source = fs.readFileSync(adapter, 'utf8')
-    .replace("import Schema from '@deepseek-ai/schemastery';", 'const Schema = { object: x => x, string: () => ({ default: x => x }) };')
+    .replace("import Schema from '@deepseek-ai/schemastery';", 'const chain = () => { const o = { default: x => x, step: () => o, min: () => o, max: () => o }; return o; }; const Schema = { object: x => x, string: chain, number: chain };')
     .replace("import { defineTool } from '@deepseek-ai/dsh-tools';", 'const defineTool = x => x;')
-    .replace("'../scripts/memory-context.js'", JSON.stringify(pathToFileURL(fileURLToPath(new URL('../scripts/memory-context.js', import.meta.url))).href))
-    .replace('fileURLToPath(import.meta.url)', JSON.stringify(fileURLToPath(adapter)));
+    .replace("'./skills/plan.js'", JSON.stringify(absolute('../dsh/skills/plan.js')))
+    .replace("'./skills/state.js'", JSON.stringify(absolute('../dsh/skills/state.js')));
   const { apply } = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
+
   const handlers = new Map();
   const ctx = {
-    effect: (register) => register(),
     tools: { register: (tool) => handlers.set(tool.name, tool) },
     skills: { registerProvider: () => () => {} },
+    effect: (callback) => callback(),
+    on: () => {},
+    logger: { warn: () => {}, info: () => {} },
   };
-  apply(ctx, { projectRoot: root });
-  assert.deepEqual([...handlers.keys()].sort(), ['project_harness_inventory', 'project_harness_resume', 'project_harness_select_specialist']);
-  const result = JSON.parse(await handlers.get('project_harness_resume').execute());
+  apply(ctx, { projectRoot: root, skillWatchIntervalMs: 0 });
+
+  assert.deepEqual([...handlers.keys()].sort(), [
+    'project_harness_activate_skills',
+    'project_harness_find_skills',
+    'project_harness_inventory',
+    'project_harness_resume',
+    'project_harness_select_specialist',
+    'project_harness_skill_catalog',
+  ]);
+
+  const result = await handlers.get('project_harness_resume').execute();
   assert.equal(result.current_state, 'Existing project');
   assert.equal(result.next_action, 'Review changes');
   assert.equal(result.harness_files_present, true);
   assert.equal(result.current_state_available, true);
   assert.equal(result.writes_performed, false);
-  const inventory = JSON.parse(await handlers.get('project_harness_inventory').execute());
+  const inventory = await handlers.get('project_harness_inventory').execute();
   assert.equal(inventory.writes_performed, false);
-  const specialist = JSON.parse(await handlers.get('project_harness_select_specialist').execute());
+  const specialist = await handlers.get('project_harness_select_specialist').execute();
   assert.equal(specialist.writes_performed, false);
+
+  const catalog = await handlers.get('project_harness_skill_catalog').execute({}, { agent: { session: { header: { cwd: root } } } });
+  assert.equal(catalog.writes_performed, false);
+  assert.equal(catalog.project_root, root);
+  assert.ok(catalog.visible_skills.some((entry) => entry.name === 'complexity-brake'));
+  assert.equal(fs.existsSync(path.join(root, '.harness', 'state', 'skills.json')), false);
+
+  const found = await handlers.get('project_harness_find_skills').execute({ query: 'scraping pipeline' }, { agent: { session: { header: { cwd: root } } } });
+  assert.ok(found.matches.some((entry) => entry.name === 'scraping-pipeline'));
+  assert.equal(found.writes_performed, false);
+
   assert.equal(fs.existsSync(path.join(root, 'docs')), false);
 });

@@ -1,48 +1,48 @@
 {
   "schema_version": 2,
-  "id": "memory-context-neutral-roles",
-  "goal": "Improve resume memory, surface stale snapshots and generalise reusable user/agent roles.",
+  "id": "skill-architecture-v2",
+  "goal": "Replace the flat specialist skill lists with a composed, discoverable, DSH-native skill layer: verified frontmatter, layered composition, find-activate-load discovery wired to DSH invalidation, a provider contract reconciled with the merged session-workspace routing fix, a generated package catalog, and verification against a real DeepSeek Harness checkout.",
   "status": "completed",
   "alignment": [
     {
       "gate": "destination",
       "answer": "YES",
-      "evidence": "Feature branch feature/memory-context-neutral-roles; reusable harness only, not Prospecting."
+      "evidence": "Feature branch feature/skill-architecture-v2 rebased onto main 44eb167; Project Harness reusable harness only, no product code and no live DSH session."
     },
     {
       "gate": "evidence",
       "answer": "YES",
-      "evidence": "Inspected main d4ce50a, memory readers, DSH adapter, active operating contracts and regression tests."
+      "evidence": "Read the DSH skill/tool subsystem docs, develop guides, testing policy, postmortems and cookbooks; ran three parallel doc-audit agents across the remaining 112 English docs (30,884 lines) to find every requirement binding an out-of-tree bundle; and executed the provider against DSH's real registry, tool runtime and a live headless session."
     },
     {
       "gate": "system_model",
       "answer": "YES",
-      "evidence": "Existing project-local memory model retained; shared reader connects CLI and DSH without another storage layer."
+      "evidence": "00-PLANNING/SKILL-ARCHITECTURE-V2.md models the gap, the composition design, and the reconciliation table mapping each merged PR #8 contract onto this implementation."
     },
     {
       "gate": "boundaries",
       "answer": "YES",
-      "evidence": "User authorised memory and reusable-role repairs; no merge, release, live provider calls or product-data writes."
+      "evidence": "Skill layer and adapter only. One bounded write (.harness/state/skills.json on activation). No shell, no Git mutation, no merge, release, deployment or live provider call. The divergent remote branch was left untouched."
     },
     {
       "gate": "ownership",
       "answer": "YES",
-      "evidence": "memory-context.js owns shared reads; project-control owns readiness; DSH owns hosting; skills own domain guidance."
+      "evidence": "DSH owns the registry, layering and catalogue rendering; dsh/skills/*.js owns composition, discovery and workspace resolution; capabilities.json owns the vocabulary; each skill owns its own frontmatter."
     },
     {
       "gate": "minimum_slice",
       "answer": "YES",
-      "evidence": "One shared reader, mapping and freshness diagnostics, neutral roles, tests and reconciled current documentation."
+      "evidence": "Phase one; reconciliation with main; the reviewed merge of the parallel branch's layer vocabulary and catalog validation; live integration and YAML-conformance verification against a real DeepSeek Harness checkout; and packaging corrected against the documented bundle contract, verified as an installed artifact. Native .dsh/skills migration, new specialists, and an in-session live model run remain out of scope."
     },
     {
       "gate": "debt_control",
       "answer": "YES",
-      "evidence": "Node built-ins only; bounded reads; path containment; no automatic initialisation. Historical attribution preserved."
+      "evidence": "Node built-ins only, no new dependency; bounded walks and reads; path containment on reads and the single write; atomic write; stat-poll instead of a chokidar dependency; stray non-skill entry and duplicate preset filename removed."
     },
     {
       "gate": "proof",
       "answer": "YES",
-      "evidence": "Node 24.19.0: 44/44 tests passed, including five memory/adapter fixtures; control:verify, memory:resume and git diff --check passed. Live DSH verification remains separate."
+      "evidence": "Node 22.23.2: 104/104 tests including the merged PR #8 regression tests, the catalog validator, and two live DeepSeek Harness probes (39 integration + 174 conformance checks); the same probes against the packed artifact installed into a throwaway DSH profile; and an end-to-end acceptance task through the shipped headless app with a live model, which composed the designed 13-skill WordPress catalogue and served a project-local override from the nearer layer. skills:verify, skills:catalog --check, dsh:verify, control:verify, memory:resume and git diff --check passed."
     }
   ]
 }

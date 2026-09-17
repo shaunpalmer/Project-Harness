@@ -1,3 +1,15 @@
+---
+name: complexity-brake
+description: "Use before adding files, classes, dependencies, tables or build tooling: climb the minimum-code ladder, reuse existing project and platform APIs, and mark shaun-debt with an explicit upgrade trigger."
+whenToUse: "Use when the workspace is about to gain a new file, class, dependency, table, queue, or build tool and the task must prove it is needed."
+user-invocable: true
+metadata:
+  harness:
+    layer: core
+    topics: [dependency-control, architecture, refactoring, planning]
+    tags: [over-engineering, dependencies, yagni, debt, simplicity]
+    stack: []
+---
 # SKILL: Complexity Brake
 
 ## Purpose

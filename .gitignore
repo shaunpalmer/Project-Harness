@@ -54,10 +54,12 @@ logs/
 tmp/
 output/
 .cache/
-# AI Harness artifacts
+
+# === AI Harness local runtime artifacts ===
 ai_memory.db
 .planning-lock
 CURRENT-SKILLS-NOTE.md
+.harness/state/skills.json
 
 # Node.js
 node_modules/

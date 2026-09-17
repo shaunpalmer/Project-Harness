@@ -1,3 +1,15 @@
+---
+name: wordpress-plugin
+description: "Use when building or reviewing a WordPress plugin: keep the root file thin, register hooks and activation/deactivation, use $wpdb->prepare and dbDelta, register_rest_route, and enqueue scoped assets."
+whenToUse: "Use when the workspace is a WordPress plugin or theme and the task involves plugin structure, hooks, admin screens, REST routes, custom tables, or assets."
+user-invocable: true
+metadata:
+  harness:
+    layer: specialist
+    topics: [wordpress-runtime, admin-ui, rest-api, database, php, frontend-ui]
+    tags: [wordpress, php, hooks, wpdb, rest-api]
+    stack: [php, wordpress]
+---
 # SKILL: WordPress Plugin
 
 ## Purpose

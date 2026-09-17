@@ -42,9 +42,14 @@ function wordpressFixture(t) {
 async function loadAdapter() {
   const adapter = new URL('../dsh/index.js', import.meta.url);
   const source = fs.readFileSync(adapter, 'utf8')
-    .replace("import Schema from '@deepseek-ai/schemastery';", 'const Schema = { object: x => x, string: () => ({ default: x => x }) };')
+    .replace("import Schema from '@deepseek-ai/schemastery';", 'const chain = () => { const o = { default: x => x, step: () => o, min: () => o, max: () => o }; return o; }; const Schema = { object: x => x, string: chain, number: chain };')
     .replace("import { defineTool } from '@deepseek-ai/dsh-tools';", 'const defineTool = x => x;')
     .replace("'../scripts/memory-context.js'", JSON.stringify(pathToFileURL(fileURLToPath(new URL('../scripts/memory-context.js', import.meta.url))).href))
+    // The adapter is executed from a data: URL, which has no directory to resolve
+    // module-relative specifiers against, so point them at their real files. The
+    // modules they import resolve normally from their own locations.
+    .replace("'./skills/plan.js'", JSON.stringify(pathToFileURL(fileURLToPath(new URL('../dsh/skills/plan.js', import.meta.url))).href))
+    .replace("'./skills/state.js'", JSON.stringify(pathToFileURL(fileURLToPath(new URL('../dsh/skills/state.js', import.meta.url))).href))
     .replace('fileURLToPath(import.meta.url)', JSON.stringify(fileURLToPath(adapter)));
 
   return import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
@@ -99,15 +104,15 @@ test('DSH session cwd overrides a configured Python fallback for tools and skill
   const { handlers, provider } = await harnessFor(t, python.root);
   const exec = execFor(wordpress.root);
 
-  const inventory = JSON.parse(await handlers.get('project_harness_inventory').execute({}, exec));
+  const inventory = await handlers.get('project_harness_inventory').execute({}, exec);
   assert.equal(inventory.project_root, wordpress.root);
   assert.equal(inventory.project_root_source, 'session-cwd');
 
-  const resume = JSON.parse(await handlers.get('project_harness_resume').execute({}, exec));
+  const resume = await handlers.get('project_harness_resume').execute({}, exec);
   assert.equal(resume.project_root, wordpress.root);
   assert.equal(resume.project_root_source, 'session-cwd');
 
-  const specialist = JSON.parse(await handlers.get('project_harness_select_specialist').execute({}, exec));
+  const specialist = await handlers.get('project_harness_select_specialist').execute({}, exec);
   assert.equal(specialist.specialist, 'wordpress-coding');
   assert.equal(specialist.confidence, 'high');
   assert.equal(specialist.project_root, wordpress.root);
@@ -132,10 +137,10 @@ test('Python and WordPress sessions stay isolated under one Project Harness regi
 
   const select = handlers.get('project_harness_select_specialist');
 
-  const pythonFirst = JSON.parse(await select.execute({}, execFor(python.root)));
-  const wordpressFirst = JSON.parse(await select.execute({}, execFor(wordpress.root)));
-  const pythonAgain = JSON.parse(await select.execute({}, execFor(python.root)));
-  const wordpressAgain = JSON.parse(await select.execute({}, execFor(wordpress.root)));
+  const pythonFirst = await select.execute({}, execFor(python.root));
+  const wordpressFirst = await select.execute({}, execFor(wordpress.root));
+  const pythonAgain = await select.execute({}, execFor(python.root));
+  const wordpressAgain = await select.execute({}, execFor(wordpress.root));
 
   assert.equal(pythonFirst.specialist, 'python-prospecting');
   assert.equal(wordpressFirst.specialist, 'wordpress-coding');
@@ -155,12 +160,12 @@ test('configured projectRoot remains the agentless fallback', async (t) => {
   const python = pythonFixture(t);
   const { handlers, provider } = await harnessFor(t, python.root);
 
-  const specialist = JSON.parse(await handlers.get('project_harness_select_specialist').execute({}, undefined));
+  const specialist = await handlers.get('project_harness_select_specialist').execute({}, undefined);
   assert.equal(specialist.specialist, 'python-prospecting');
   assert.equal(specialist.project_root, python.root);
   assert.equal(specialist.project_root_source, 'configured-fallback');
 
-  const inventory = JSON.parse(await handlers.get('project_harness_inventory').execute({}, undefined));
+  const inventory = await handlers.get('project_harness_inventory').execute({}, undefined);
   assert.equal(inventory.project_root, python.root);
   assert.equal(inventory.project_root_source, 'configured-fallback');
 
@@ -173,7 +178,7 @@ test('an invalid session cwd fails closed instead of falling back to another pro
   const { handlers } = await harnessFor(t, python.root);
   const missing = path.join(os.tmpdir(), `missing-project-harness-${Date.now()}`);
 
-  const specialist = JSON.parse(await handlers.get('project_harness_select_specialist').execute({}, execFor(missing)));
+  const specialist = await handlers.get('project_harness_select_specialist').execute({}, execFor(missing));
   assert.equal(specialist.specialist, null);
   assert.equal(specialist.status, 'blocked');
   assert.equal(specialist.code, 'WORKSPACE_NOT_FOUND');

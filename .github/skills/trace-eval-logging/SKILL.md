@@ -1,3 +1,15 @@
+---
+name: trace-eval-logging
+description: "Use when executing multi-cycle or looped work: append trace entries to AI-NOTES.md with timestamp, action, verification evidence, an eval score of Success/Partial/Failure, and lessons learned."
+whenToUse: "Use when the workspace runs iterative loops or long sessions and the task needs durable per-iteration evidence and eval scoring in the notes log."
+user-invocable: true
+metadata:
+  harness:
+    layer: capability
+    topics: [observability, documentation, project-memory]
+    tags: [tracing, eval, logging, observability, notes]
+    stack: []
+---
 # Trace & Eval Logging Skill
 
 Maintain high-quality execution traces for every loop iteration and major decision.

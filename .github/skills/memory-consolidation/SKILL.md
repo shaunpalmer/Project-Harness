@@ -1,3 +1,15 @@
+---
+name: memory-consolidation
+description: "Use when AI-NOTES.md grows past roughly 200 lines or a phase ends: extract decisions, reusable patterns and anti-patterns, promote them into accepted ADRs and notes, and archive raw entries to cut context bloat."
+whenToUse: "Use when the workspace note log has accumulated raw entries and the task is to consolidate durable decisions while shrinking active context."
+user-invocable: true
+metadata:
+  harness:
+    layer: capability
+    topics: [project-memory, documentation]
+    tags: [memory, notes, consolidation, context, anti-patterns]
+    stack: []
+---
 # Memory Consolidation Skill
 
 You must periodically consolidate learnings to prevent context bloat while preserving knowledge.

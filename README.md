@@ -151,11 +151,13 @@ The reference experience is a substantial brief followed by at most a small numb
 
 ## DeepSeek Harness bundle
 
-Project Harness can be installed into a DeepSeek Harness profile as a bundle. The bundle provides read-only project-memory resume, evidence-based specialist selection, and native on-demand WordPress and Python/prospecting skills for the explicitly selected workspace.
+Project Harness can be installed into a DeepSeek Harness profile as a bundle. The bundle provides read-only project-memory resume, evidence-based specialist selection, and a composed skill catalogue registered through DSH's native skill provider seam for the selected workspace.
+
+Every skill in `.github/skills` carries DSH-native frontmatter, so the library is valid input for DSH's own filesystem skill provider too. The catalogue is composed rather than enumerated: always-on core controls, an always-visible `find-skills` discovery entry point, the matched specialist, and capability skills bound by workspace evidence. A WordPress project with a schema and a REST surface gets database and API guidance; one without them does not. Anything not composed stays reachable through `project_harness_find_skills` and `project_harness_activate_skills`, which promotes a match into the catalogue through DSH's `control.invalidate()`. Project and user skills in `.dsh/skills` shadow the harness library natively, because harness skills rank below them.
 
 For the DSH quick-check tools and fresh-session diagnostic prompt, see `docs/DSH-INTEGRATION.md`.
 
-See `docs/DSH-INTEGRATION.md` for installation and the boundary between DSH runtime composition and Project Harness project control.
+See `docs/DSH-INTEGRATION.md` for installation, the tool contract, the single bounded write, and the boundary between DSH runtime composition and Project Harness project control. See `docs/decisions/ADR-0005-skill-architecture-v2.md` for the design decision.
 
 ## Supported vs legacy controls
 

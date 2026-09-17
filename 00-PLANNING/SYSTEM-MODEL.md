@@ -88,3 +88,24 @@ No new persistence service, runtime dependency or orchestration layer is introdu
 - Existing `scripts/git-checkpoint.js` uses interactive `readline`, broad `git add .`, timestamp commits, and unconditional push, making it unsuitable for a deterministic agent loop.
 - `docs/DECISION-RIGHTS.md` already delegates focused commits/checkpoints to Athena but previously treated every language choice as consequential, conflicting with mature ecosystem defaults.
 - v0.3 established system modelling before architecture, capability composition, local readiness proof, and CI regression gates.
+
+### Skill composition, 2026-09-17
+
+The DSH integration registered skills through the correct provider seam but used
+a fraction of the architecture. The flat `required_skills` list exposed 4-5 fixed
+paths from a 25-skill library; `skillDescription()` advertised the first H1
+instead of a routing description; only three skills carried frontmatter; the
+provider ignored the registration-scoped `control` object so a changed library
+stayed stale until restart; and the workspace came from configuration rather than
+`options.cwd`.
+
+DSH renders only `name` and `description` into the model catalogue, so the
+description is the entire routing surface, and DSH serves a cached catalogue
+without calling `list()` again, so invalidation cannot be observed from inside
+`list()`. Both facts were confirmed against the DSH source before designing.
+
+Narrowing the catalogue is only safe when the model can still reach what was not
+predicted. That missing route, not the catalogue size, was the real defect.
+Composition plus an explicit find-activate-load loop keeps the visible set small
+and the library fully reachable, and DSH's rank-based layering lets project and
+user skills shadow the harness library with no code.

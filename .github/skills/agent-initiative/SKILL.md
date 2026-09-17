@@ -1,3 +1,15 @@
+---
+name: agent-initiative
+description: "Use when blocked or unsure: walk the initiative ladder, infer from project files and defaults, record reversible assumptions, defer non-blocking decisions, and patch bugs in place rather than rewriting files."
+whenToUse: "Use when the workspace leaves decisions open and the task is blocked, ambiguous, or tempted to rewrite working code instead of patching it."
+user-invocable: false
+metadata:
+  harness:
+    layer: reference
+    topics: [debugging, refactoring, planning]
+    tags: [autonomy, assumptions, debugging, repair-in-place, question-budget]
+    stack: []
+---
 # SKILL: Agent Initiative and Judgement
 
 ## Purpose
