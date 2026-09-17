@@ -94,7 +94,7 @@ test('DSH registers every handler and resume uses mapped context (host API stubs
   // Stub only unavailable DSH host dependencies and rewrite the module-relative
   // imports to absolute URLs, then execute the actual adapter source.
   const source = fs.readFileSync(adapter, 'utf8')
-    .replace("import Schema from '@deepseek-ai/schemastery';", 'const Schema = { object: x => x, string: () => ({ default: x => x }), number: () => ({ default: x => x }) };')
+    .replace("import Schema from '@deepseek-ai/schemastery';", 'const chain = () => { const o = { default: x => x, step: () => o, min: () => o, max: () => o }; return o; }; const Schema = { object: x => x, string: chain, number: chain };')
     .replace("import { defineTool } from '@deepseek-ai/dsh-tools';", 'const defineTool = x => x;')
     .replace("'./skills/plan.js'", JSON.stringify(absolute('../dsh/skills/plan.js')))
     .replace("'./skills/state.js'", JSON.stringify(absolute('../dsh/skills/state.js')));

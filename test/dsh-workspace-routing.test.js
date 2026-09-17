@@ -42,7 +42,7 @@ function wordpressFixture(t) {
 async function loadAdapter() {
   const adapter = new URL('../dsh/index.js', import.meta.url);
   const source = fs.readFileSync(adapter, 'utf8')
-    .replace("import Schema from '@deepseek-ai/schemastery';", 'const Schema = { object: x => x, string: () => ({ default: x => x }), number: () => ({ default: x => x }) };')
+    .replace("import Schema from '@deepseek-ai/schemastery';", 'const chain = () => { const o = { default: x => x, step: () => o, min: () => o, max: () => o }; return o; }; const Schema = { object: x => x, string: chain, number: chain };')
     .replace("import { defineTool } from '@deepseek-ai/dsh-tools';", 'const defineTool = x => x;')
     .replace("'../scripts/memory-context.js'", JSON.stringify(pathToFileURL(fileURLToPath(new URL('../scripts/memory-context.js', import.meta.url))).href))
     // The adapter is executed from a data: URL, which has no directory to resolve
