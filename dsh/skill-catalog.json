@@ -12,18 +12,8 @@
         "modelInvocable": true,
         "userInvocable": false
       },
-      "tags": [
-        "autonomy",
-        "assumptions",
-        "debugging",
-        "repair-in-place",
-        "question-budget"
-      ],
-      "topics": [
-        "debugging",
-        "refactoring",
-        "planning"
-      ]
+      "tags": ["autonomy", "assumptions", "debugging", "repair-in-place", "question-budget"],
+      "topics": ["debugging", "refactoring", "planning"]
     },
     {
       "name": "api-design",
@@ -31,23 +21,9 @@
       "layer": "capability",
       "description": "Use when adding, versioning, or reviewing HTTP APIs: model REST resources or GraphQL/gRPC schemas, define error envelopes, auth scopes and rate limits, and emit an OpenAPI 3.x, SDL, or .proto contract.",
       "when_to_use": "Use when the workspace needs a new endpoint group, a breaking-change version, or an API consistency review before implementation.",
-      "invocation": {
-        "modelInvocable": true,
-        "userInvocable": true
-      },
-      "tags": [
-        "api",
-        "rest",
-        "graphql",
-        "openapi",
-        "versioning"
-      ],
-      "topics": [
-        "rest-api",
-        "http-integration",
-        "documentation",
-        "architecture"
-      ]
+      "invocation": {"modelInvocable": true, "userInvocable": true},
+      "tags": ["api", "rest", "graphql", "openapi", "versioning"],
+      "topics": ["rest-api", "http-integration", "documentation", "architecture"]
     },
     {
       "name": "architecture-canvas",
@@ -55,22 +31,39 @@
       "layer": "capability",
       "description": "Use when turning an approved PRD into ARCHITECTURE.md: choose an architecture style, map boundaries, layers, dependency direction and fallbacks, then record ADRs, directory templates and the nine-stage data-flow canvas.",
       "when_to_use": "Use when the workspace has an approved PRD and the task is to define system boundaries, layers, and ADRs before implementation.",
-      "invocation": {
-        "modelInvocable": true,
-        "userInvocable": true
-      },
-      "tags": [
-        "architecture",
-        "system-design",
-        "adr",
-        "data-flow",
-        "layers"
-      ],
-      "topics": [
-        "architecture",
-        "planning",
-        "documentation"
-      ]
+      "invocation": {"modelInvocable": true, "userInvocable": true},
+      "tags": ["architecture", "system-design", "adr", "data-flow", "layers"],
+      "topics": ["architecture", "planning", "documentation"]
+    },
+    {
+      "name": "browser-auth-session",
+      "path": ".github/skills/browser-auth-session/SKILL.md",
+      "layer": "capability",
+      "description": "Use when browser work depends on an authenticated session: establish or reuse approved login state, protect credentials, handle MFA/CAPTCHA handoff, verify the signed-in identity, and keep site/session boundaries explicit.",
+      "when_to_use": "Use when a browser task requires logging in, reusing cookies/session state, switching accounts, or continuing authenticated admin/social/directory work.",
+      "invocation": {"modelInvocable": true, "userInvocable": true},
+      "tags": ["browser", "login", "session", "authentication", "security"],
+      "topics": ["browser-automation", "authentication", "session-state", "web-operations"]
+    },
+    {
+      "name": "browser-form-operator",
+      "path": ".github/skills/browser-form-operator/SKILL.md",
+      "layer": "capability",
+      "description": "Use when a browser task must inspect and fill web forms safely: snapshot the page, map labels to known values, fill/select/check/upload, verify the resulting state, and separate preparation from consequential submission.",
+      "when_to_use": "Use when the task involves repetitive browser form entry, account/profile updates, directory forms, admin portals, uploads, checkboxes, selects, or multi-step web forms.",
+      "invocation": {"modelInvocable": true, "userInvocable": true},
+      "tags": ["browser", "forms", "playwright", "automation", "verification"],
+      "topics": ["browser-automation", "form-filling", "web-operations", "verification"]
+    },
+    {
+      "name": "browser-research",
+      "path": ".github/skills/browser-research/SKILL.md",
+      "layer": "capability",
+      "description": "Use when research needs live browser exploration rather than static search alone: inspect rendered pages, follow relevant links, compare sources, capture evidence URLs, and stop when the research question is answered rather than browsing endlessly.",
+      "when_to_use": "Use when the task requires browser-assisted research across live websites, directories, rendered pages, authenticated sources, or link structures that search snippets cannot answer reliably.",
+      "invocation": {"modelInvocable": true, "userInvocable": true},
+      "tags": ["browser", "research", "discovery", "evidence", "playwright"],
+      "topics": ["browser-automation", "research", "source-discovery", "evidence"]
     },
     {
       "name": "chrome-devtools-mcp",
@@ -78,24 +71,9 @@
       "layer": "capability",
       "description": "Use when debugging or verifying front-end behaviour in a live browser via Chrome DevTools MCP: replay journeys, read console and network errors, snapshot DOM/a11y, and check LCP/CLS before claiming a fix.",
       "when_to_use": "Use when the workspace contains browser-rendered UI and the task involves layout, console, network, accessibility or Core Web Vitals verification.",
-      "invocation": {
-        "modelInvocable": true,
-        "userInvocable": true
-      },
-      "tags": [
-        "browser",
-        "devtools",
-        "frontend",
-        "accessibility",
-        "performance"
-      ],
-      "topics": [
-        "browser-automation",
-        "frontend-ui",
-        "debugging",
-        "testing",
-        "observability"
-      ]
+      "invocation": {"modelInvocable": true, "userInvocable": true},
+      "tags": ["browser", "devtools", "frontend", "accessibility", "performance"],
+      "topics": ["browser-automation", "frontend-ui", "debugging", "testing", "observability"]
     },
     {
       "name": "code-review",
@@ -103,23 +81,9 @@
       "layer": "capability",
       "description": "Use when reviewing a diff or PR before merge: run L1/L2/L3 checks for correctness, edge cases, secrets, injection, auth, architecture compliance and N+1 queries, and tag findings MUST/SHOULD/NIT/QUESTION.",
       "when_to_use": "Use when the workspace has an unmerged diff, branch, or module and the task is to review it before merge or as a pre-PR self-check.",
-      "invocation": {
-        "modelInvocable": true,
-        "userInvocable": true
-      },
-      "tags": [
-        "code-review",
-        "security",
-        "testing",
-        "pull-request",
-        "maintainability"
-      ],
-      "topics": [
-        "code-review",
-        "testing",
-        "architecture",
-        "refactoring"
-      ]
+      "invocation": {"modelInvocable": true, "userInvocable": true},
+      "tags": ["code-review", "security", "testing", "pull-request", "maintainability"],
+      "topics": ["code-review", "testing", "architecture", "refactoring"]
     },
     {
       "name": "complexity-brake",
@@ -127,23 +91,9 @@
       "layer": "core",
       "description": "Use before adding files, classes, dependencies, tables or build tooling: climb the minimum-code ladder, reuse existing project and platform APIs, and mark shaun-debt with an explicit upgrade trigger.",
       "when_to_use": "Use when the workspace is about to gain a new file, class, dependency, table, queue, or build tool and the task must prove it is needed.",
-      "invocation": {
-        "modelInvocable": true,
-        "userInvocable": true
-      },
-      "tags": [
-        "over-engineering",
-        "dependencies",
-        "yagni",
-        "debt",
-        "simplicity"
-      ],
-      "topics": [
-        "dependency-control",
-        "architecture",
-        "refactoring",
-        "planning"
-      ]
+      "invocation": {"modelInvocable": true, "userInvocable": true},
+      "tags": ["over-engineering", "dependencies", "yagni", "debt", "simplicity"],
+      "topics": ["dependency-control", "architecture", "refactoring", "planning"]
     },
     {
       "name": "database-design",
@@ -151,22 +101,9 @@
       "layer": "capability",
       "description": "Use when modelling a new schema or entity: list entities and attributes, map 1:N and N:N relationships with junction tables, index each query pattern, and write numbered reversible migrations.",
       "when_to_use": "Use when the workspace needs a persisted data model and the task is to define entities, relationships, indexes, constraints, and reversible migrations.",
-      "invocation": {
-        "modelInvocable": true,
-        "userInvocable": true
-      },
-      "tags": [
-        "database",
-        "schema",
-        "indexes",
-        "migrations",
-        "normalisation"
-      ],
-      "topics": [
-        "database",
-        "migrations",
-        "architecture"
-      ]
+      "invocation": {"modelInvocable": true, "userInvocable": true},
+      "tags": ["database", "schema", "indexes", "migrations", "normalisation"],
+      "topics": ["database", "migrations", "architecture"]
     },
     {
       "name": "database-selection",
@@ -174,23 +111,9 @@
       "layer": "capability",
       "description": "Use when choosing storage per data concern: classify shape, access pattern and volume, apply PostgreSQL/Redis/search/time-series/queue defaults, score operational cost and familiarity, and record the pick as an ADR.",
       "when_to_use": "Use when the workspace needs a store for a new data concern and the task is to justify the choice with documented trade-offs before schema design.",
-      "invocation": {
-        "modelInvocable": true,
-        "userInvocable": true
-      },
-      "tags": [
-        "database",
-        "storage",
-        "postgresql",
-        "redis",
-        "trade-offs"
-      ],
-      "topics": [
-        "database",
-        "architecture",
-        "stack-selection",
-        "planning"
-      ]
+      "invocation": {"modelInvocable": true, "userInvocable": true},
+      "tags": ["database", "storage", "postgresql", "redis", "trade-offs"],
+      "topics": ["database", "architecture", "stack-selection", "planning"]
     },
     {
       "name": "documentation",
@@ -198,22 +121,9 @@
       "layer": "capability",
       "description": "Use when a feature or repo needs docs: get README to the 10-minute local-run standard, generate API reference plus auth/errors/versioning, backfill ADRs, and write a runbook covering deploy, rollback and common errors.",
       "when_to_use": "Use when the workspace has shipping code and the task is to write or refresh the README, API reference, ADRs, or operational runbook.",
-      "invocation": {
-        "modelInvocable": true,
-        "userInvocable": true
-      },
-      "tags": [
-        "documentation",
-        "readme",
-        "api-docs",
-        "adr",
-        "runbook"
-      ],
-      "topics": [
-        "documentation",
-        "architecture",
-        "observability"
-      ]
+      "invocation": {"modelInvocable": true, "userInvocable": true},
+      "tags": ["documentation", "readme", "api-docs", "adr", "runbook"],
+      "topics": ["documentation", "architecture", "observability"]
     },
     {
       "name": "find-skills",
@@ -221,22 +131,9 @@
       "layer": "discovery",
       "description": "Use when a task needs a capability the visible catalogue does not cover: search the full Project Harness library with project_harness_find_skills, check DSH-native project and user skills, then search the installable skills.sh ecosystem with npx skills find.",
       "when_to_use": "Use when the workspace needs a capability that may already exist as a harness or installable skill and the task is discovery, activation, or installation.",
-      "invocation": {
-        "modelInvocable": true,
-        "userInvocable": true
-      },
-      "tags": [
-        "skills",
-        "discovery",
-        "activation",
-        "npx",
-        "ecosystem"
-      ],
-      "topics": [
-        "skill-discovery",
-        "cli-automation",
-        "dependency-control"
-      ]
+      "invocation": {"modelInvocable": true, "userInvocable": true},
+      "tags": ["skills", "discovery", "activation", "npx", "ecosystem"],
+      "topics": ["skill-discovery", "cli-automation", "dependency-control"]
     },
     {
       "name": "guard-debugging",
@@ -244,20 +141,9 @@
       "layer": "reference",
       "description": "Use when a failure or regression appears: forbids deleting or replacing source files, requires reading the file, logging a .debug-session record, then applying surgical patches that preserve architecture.",
       "when_to_use": "Use when the workspace contains a reproducible failure and the task is to patch the existing implementation without deleting or rewriting files.",
-      "invocation": {
-        "modelInvocable": true,
-        "userInvocable": false
-      },
-      "tags": [
-        "debugging",
-        "patching",
-        "regression",
-        "surgical-edit"
-      ],
-      "topics": [
-        "debugging",
-        "refactoring"
-      ]
+      "invocation": {"modelInvocable": true, "userInvocable": false},
+      "tags": ["debugging", "patching", "regression", "surgical-edit"],
+      "topics": ["debugging", "refactoring"]
     },
     {
       "name": "interface-design",
@@ -265,23 +151,9 @@
       "layer": "capability",
       "description": "Use when a module touches external dependencies: define interfaces first, wrap vendors in adapters, return Result envelopes at layer boundaries, place factories in infrastructure, and prove contracts with test doubles.",
       "when_to_use": "Use when the workspace integrates a swappable provider or multi-implementation seam and the task is to define the contract before implementation.",
-      "invocation": {
-        "modelInvocable": true,
-        "userInvocable": true
-      },
-      "tags": [
-        "adapter",
-        "envelope",
-        "factory",
-        "interfaces",
-        "contracts"
-      ],
-      "topics": [
-        "architecture",
-        "oop-design",
-        "testing",
-        "refactoring"
-      ]
+      "invocation": {"modelInvocable": true, "userInvocable": true},
+      "tags": ["adapter", "envelope", "factory", "interfaces", "contracts"],
+      "topics": ["architecture", "oop-design", "testing", "refactoring"]
     },
     {
       "name": "loop-controller",
@@ -289,23 +161,9 @@
       "layer": "core",
       "description": "Use when running a significant task: plan success criteria, execute the smallest safe increment, verify with tests or Chrome DevTools MCP, score Success/Partial/Failure, and escalate after three failed attempts.",
       "when_to_use": "Use when the workspace task is non-trivial and the task needs a bounded plan/execute/verify/evaluate cycle with logged evidence before completion.",
-      "invocation": {
-        "modelInvocable": true,
-        "userInvocable": true
-      },
-      "tags": [
-        "loop",
-        "self-review",
-        "verification",
-        "pacing",
-        "escalation"
-      ],
-      "topics": [
-        "planning",
-        "testing",
-        "observability",
-        "debugging"
-      ]
+      "invocation": {"modelInvocable": true, "userInvocable": true},
+      "tags": ["loop", "self-review", "verification", "pacing", "escalation"],
+      "topics": ["planning", "testing", "observability", "debugging"]
     },
     {
       "name": "memory-consolidation",
@@ -313,21 +171,9 @@
       "layer": "capability",
       "description": "Use when AI-NOTES.md grows past roughly 200 lines or a phase ends: extract decisions, reusable patterns and anti-patterns, promote them into accepted ADRs and notes, and archive raw entries to cut context bloat.",
       "when_to_use": "Use when the workspace note log has accumulated raw entries and the task is to consolidate durable decisions while shrinking active context.",
-      "invocation": {
-        "modelInvocable": true,
-        "userInvocable": true
-      },
-      "tags": [
-        "memory",
-        "notes",
-        "consolidation",
-        "context",
-        "anti-patterns"
-      ],
-      "topics": [
-        "project-memory",
-        "documentation"
-      ]
+      "invocation": {"modelInvocable": true, "userInvocable": true},
+      "tags": ["memory", "notes", "consolidation", "context", "anti-patterns"],
+      "topics": ["project-memory", "documentation"]
     },
     {
       "name": "oop-standards",
@@ -335,26 +181,9 @@
       "layer": "reference",
       "description": "Use when designing, refactoring or reviewing classes, services, repositories or adapters: apply SOLID and the four pillars, justify each pattern, and enforce PHP/WordPress, TypeScript and Python standards.",
       "when_to_use": "Use when the workspace has non-trivial classes, services, or plugin structure and the task is design, refactor, or SOLID/testability review.",
-      "invocation": {
-        "modelInvocable": true,
-        "userInvocable": false
-      },
-      "tags": [
-        "oop",
-        "solid",
-        "design-patterns",
-        "php",
-        "typescript",
-        "python"
-      ],
-      "topics": [
-        "oop-design",
-        "architecture",
-        "refactoring",
-        "testing",
-        "php",
-        "python"
-      ]
+      "invocation": {"modelInvocable": true, "userInvocable": false},
+      "tags": ["oop", "solid", "design-patterns", "php", "typescript", "python"],
+      "topics": ["oop-design", "architecture", "refactoring", "testing", "php", "python"]
     },
     {
       "name": "prd-writer",
@@ -362,22 +191,9 @@
       "layer": "capability",
       "description": "Use when starting, pivoting or scoping a product: turn PROJECT-INTAKE.md into PRD.md with a problem statement, user stories carrying Given/When/Then acceptance criteria, success metrics, non-goals and open questions.",
       "when_to_use": "Use when the workspace has intake answers but no agreed requirements and the task is to define scope, stories, metrics, and non-goals.",
-      "invocation": {
-        "modelInvocable": true,
-        "userInvocable": true
-      },
-      "tags": [
-        "prd",
-        "requirements",
-        "user-stories",
-        "acceptance-criteria",
-        "metrics"
-      ],
-      "topics": [
-        "requirements",
-        "planning",
-        "documentation"
-      ]
+      "invocation": {"modelInvocable": true, "userInvocable": true},
+      "tags": ["prd", "requirements", "user-stories", "acceptance-criteria", "metrics"],
+      "topics": ["requirements", "planning", "documentation"]
     },
     {
       "name": "project-memory",
@@ -385,23 +201,9 @@
       "layer": "core",
       "description": "Use at session entry, before compaction or on doc/code conflict: run memory:resume and memory:checkpoint, inspect .harness/state/active-task.json, supersede stale ADRs, and reconcile CURRENT-STATE without secrets.",
       "when_to_use": "Use when the workspace resumes after a gap or compaction or its documents disagree with code, and the task is resume, checkpoint, reconcile, or pivot.",
-      "invocation": {
-        "modelInvocable": true,
-        "userInvocable": true
-      },
-      "tags": [
-        "memory",
-        "resume",
-        "checkpoint",
-        "adr",
-        "reconciliation"
-      ],
-      "topics": [
-        "project-memory",
-        "documentation",
-        "observability",
-        "planning"
-      ]
+      "invocation": {"modelInvocable": true, "userInvocable": true},
+      "tags": ["memory", "resume", "checkpoint", "adr", "reconciliation"],
+      "topics": ["project-memory", "documentation", "observability", "planning"]
     },
     {
       "name": "scraping-pipeline",
@@ -409,25 +211,29 @@
       "layer": "specialist",
       "description": "Use when the system acquires data from websites or APIs: map acquire/parse/validate/dedupe/enrich/load stages, prefer official APIs, guard rate limits and paid calls, and prove idempotent reruns end to end.",
       "when_to_use": "Use when the workspace ingests or scrapes external sources and the task is to design acquisition, dedupe, rate-limit, and idempotency behaviour.",
-      "invocation": {
-        "modelInvocable": true,
-        "userInvocable": true
-      },
-      "tags": [
-        "scraping",
-        "ingestion",
-        "dedupe",
-        "rate-limits",
-        "idempotency"
-      ],
-      "topics": [
-        "scraping",
-        "parsing",
-        "background-jobs",
-        "http-integration",
-        "browser-automation",
-        "observability"
-      ]
+      "invocation": {"modelInvocable": true, "userInvocable": true},
+      "tags": ["scraping", "ingestion", "dedupe", "rate-limits", "idempotency"],
+      "topics": ["scraping", "parsing", "background-jobs", "http-integration", "browser-automation", "observability"]
+    },
+    {
+      "name": "seo-directory-qualifier",
+      "path": ".github/skills/seo-directory-qualifier/SKILL.md",
+      "layer": "capability",
+      "description": "Use when evaluating directory/citation opportunities before submission: score local and industry relevance, trust, listing quality, duplicate risk, crawlability and likely SEO/business value, then separate worthwhile targets from noise.",
+      "when_to_use": "Use when a business has a large list of directories, citation sites, chambers, associations, community listings or backlink opportunities and needs a prioritized submission queue rather than blanket submission.",
+      "invocation": {"modelInvocable": true, "userInvocable": true},
+      "tags": ["seo", "citations", "directories", "backlinks", "local-seo"],
+      "topics": ["seo", "local-search", "directory-submission", "source-qualification"]
+    },
+    {
+      "name": "seo-directory-submission",
+      "path": ".github/skills/seo-directory-submission/SKILL.md",
+      "layer": "capability",
+      "description": "Use when submitting or updating a business on an approved directory: load the canonical business profile, detect existing listings, map fields without guessing, use the browser form operator, verify the result, and record durable submission evidence.",
+      "when_to_use": "Use when an approved business directory/citation target is ready for claim, update, or new listing submission and the task must preserve NAP/category consistency and a durable result ledger.",
+      "invocation": {"modelInvocable": true, "userInvocable": true},
+      "tags": ["seo", "citations", "directories", "forms", "local-seo"],
+      "topics": ["seo", "local-search", "directory-submission", "browser-automation"]
     },
     {
       "name": "skill-router",
@@ -435,22 +241,9 @@
       "layer": "core",
       "description": "Use when choosing which skills to load: read the system model, engineering defaults and active phase, extract capabilities, apply deterministic bindings, exclude irrelevant skills, and emit a Skill Load Plan.",
       "when_to_use": "Use when the workspace has a confirmed system model and the task is to decide required, conditional, and excluded skills for the current phase.",
-      "invocation": {
-        "modelInvocable": true,
-        "userInvocable": true
-      },
-      "tags": [
-        "skills",
-        "routing",
-        "planning",
-        "capabilities",
-        "bindings"
-      ],
-      "topics": [
-        "skill-discovery",
-        "planning",
-        "architecture"
-      ]
+      "invocation": {"modelInvocable": true, "userInvocable": true},
+      "tags": ["skills", "routing", "planning", "capabilities", "bindings"],
+      "topics": ["skill-discovery", "planning", "architecture"]
     },
     {
       "name": "stack-selector",
@@ -458,22 +251,9 @@
       "layer": "capability",
       "description": "Use when picking a language or framework: walk the decision tree from project type to PHP/WordPress, Python FastAPI/Flask/Playwright, or TypeScript with Vite/Prisma, and record the trade-off in TECH-SPEC.md.",
       "when_to_use": "Use when the workspace has no confirmed stack and the task is to choose a language, framework, or database tier with a documented trade-off.",
-      "invocation": {
-        "modelInvocable": true,
-        "userInvocable": true
-      },
-      "tags": [
-        "stack",
-        "language-selection",
-        "frameworks",
-        "python",
-        "typescript"
-      ],
-      "topics": [
-        "stack-selection",
-        "architecture",
-        "planning"
-      ]
+      "invocation": {"modelInvocable": true, "userInvocable": true},
+      "tags": ["stack", "language-selection", "frameworks", "python", "typescript"],
+      "topics": ["stack-selection", "architecture", "planning"]
     },
     {
       "name": "sub-agent-delegation",
@@ -481,22 +261,9 @@
       "layer": "capability",
       "description": "Use when a task benefits from parallel or specialized sub-agents: define each role, scope, inputs and success criteria, keep a master trace, cap concurrency at three, and integrate only after verified reports.",
       "when_to_use": "Use when the workspace task splits into independent parallel workstreams or needs specialized review and the task justifies controlled delegation.",
-      "invocation": {
-        "modelInvocable": true,
-        "userInvocable": true
-      },
-      "tags": [
-        "sub-agents",
-        "delegation",
-        "concurrency",
-        "verification"
-      ],
-      "topics": [
-        "agent-delegation",
-        "observability",
-        "code-review",
-        "planning"
-      ]
+      "invocation": {"modelInvocable": true, "userInvocable": true},
+      "tags": ["sub-agents", "delegation", "concurrency", "verification"],
+      "topics": ["agent-delegation", "observability", "code-review", "planning"]
     },
     {
       "name": "testing-plan",
@@ -504,22 +271,9 @@
       "layer": "capability",
       "description": "Use when starting a feature, module or coverage push: define the 70/20/10 test pyramid, Given/When/Then cases for happy, empty, boundary, invalid and failure paths, integration boundaries and coverage targets per layer.",
       "when_to_use": "Use when the workspace is adding a feature or module and the task is to plan test cases, boundaries, data strategy, and coverage targets before writing tests.",
-      "invocation": {
-        "modelInvocable": true,
-        "userInvocable": true
-      },
-      "tags": [
-        "testing",
-        "test-pyramid",
-        "coverage",
-        "e2e",
-        "integration"
-      ],
-      "topics": [
-        "testing",
-        "planning",
-        "architecture"
-      ]
+      "invocation": {"modelInvocable": true, "userInvocable": true},
+      "tags": ["testing", "test-pyramid", "coverage", "e2e", "integration"],
+      "topics": ["testing", "planning", "architecture"]
     },
     {
       "name": "trace-eval-logging",
@@ -527,22 +281,9 @@
       "layer": "capability",
       "description": "Use when executing multi-cycle or looped work: append trace entries to AI-NOTES.md with timestamp, action, verification evidence, an eval score of Success/Partial/Failure, and lessons learned.",
       "when_to_use": "Use when the workspace runs iterative loops or long sessions and the task needs durable per-iteration evidence and eval scoring in the notes log.",
-      "invocation": {
-        "modelInvocable": true,
-        "userInvocable": true
-      },
-      "tags": [
-        "tracing",
-        "eval",
-        "logging",
-        "observability",
-        "notes"
-      ],
-      "topics": [
-        "observability",
-        "documentation",
-        "project-memory"
-      ]
+      "invocation": {"modelInvocable": true, "userInvocable": true},
+      "tags": ["tracing", "eval", "logging", "observability", "notes"],
+      "topics": ["observability", "documentation", "project-memory"]
     },
     {
       "name": "wordpress-plugin",
@@ -550,25 +291,9 @@
       "layer": "specialist",
       "description": "Use when building or reviewing a WordPress plugin: keep the root file thin, register hooks and activation/deactivation, use $wpdb->prepare and dbDelta, register_rest_route, and enqueue scoped assets.",
       "when_to_use": "Use when the workspace is a WordPress plugin or theme and the task involves plugin structure, hooks, admin screens, REST routes, custom tables, or assets.",
-      "invocation": {
-        "modelInvocable": true,
-        "userInvocable": true
-      },
-      "tags": [
-        "wordpress",
-        "php",
-        "hooks",
-        "wpdb",
-        "rest-api"
-      ],
-      "topics": [
-        "wordpress-runtime",
-        "admin-ui",
-        "rest-api",
-        "database",
-        "php",
-        "frontend-ui"
-      ]
+      "invocation": {"modelInvocable": true, "userInvocable": true},
+      "tags": ["wordpress", "php", "hooks", "wpdb", "rest-api"],
+      "topics": ["wordpress-runtime", "admin-ui", "rest-api", "database", "php", "frontend-ui"]
     },
     {
       "name": "wordpress-way",
@@ -576,25 +301,9 @@
       "layer": "specialist",
       "description": "Use when writing WordPress PHP: apply WPCS naming, prefer core APIs such as WP_Query and the Options/Transients APIs, sanitise input, escape output, verify nonces and capabilities, and prepare $wpdb SQL.",
       "when_to_use": "Use when the workspace targets a WordPress runtime and the task is any server-side PHP, hooks, REST, admin UI, database, or i18n work.",
-      "invocation": {
-        "modelInvocable": true,
-        "userInvocable": false
-      },
-      "tags": [
-        "wordpress",
-        "php",
-        "wpcs",
-        "security",
-        "rest-api"
-      ],
-      "topics": [
-        "wordpress-runtime",
-        "php",
-        "rest-api",
-        "admin-ui",
-        "database",
-        "testing"
-      ]
+      "invocation": {"modelInvocable": true, "userInvocable": false},
+      "tags": ["wordpress", "php", "wpcs", "security", "rest-api"],
+      "topics": ["wordpress-runtime", "php", "rest-api", "admin-ui", "database", "testing"]
     }
   ]
 }
