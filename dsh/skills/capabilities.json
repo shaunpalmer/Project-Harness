@@ -32,9 +32,14 @@
       "summary": "Templates, components and user-facing presentation."
     },
     "browser": {
-      "skills": ["chrome-devtools-mcp"],
+      "skills": ["chrome-devtools-mcp", "browser-form-operator", "browser-auth-session", "browser-research"],
       "evidence": ["browser-dependency"],
-      "summary": "Live browser inspection and front-end verification."
+      "summary": "Live browser inspection, research, authenticated sessions, form operation and front-end verification."
+    },
+    "seo": {
+      "skills": ["seo-directory-qualifier", "seo-directory-submission"],
+      "evidence": [],
+      "summary": "Qualified directory/citation operations and governed business listing submissions."
     },
     "oop": {
       "skills": ["oop-standards"],
