@@ -1,9 +1,9 @@
 # Current State
 
 Last verified: 2026-09-17
-Verified commit: 44eb167 (main after PR #6 and PR #8)
-Working branch: `feature/skill-architecture-v2` (rebased onto 44eb167)
-Verification: Node 22.23.2; 103/103 tests including the merged `test/dsh-workspace-routing.test.js` and two live DeepSeek Harness integration probes (39 integration + 174 conformance checks), plus `skills:verify`, `skills:catalog --check`, `control:verify`, `memory:resume` and `git diff --check`.
+Verified base: 44eb167 (main after PR #6 and PR #8)
+Working branch: `feature/skill-architecture-v2` (rebased onto 44eb167 and now the retained Skill Architecture v2 line)
+Verification: Node 22.23.2; 104/104 tests including the merged `test/dsh-workspace-routing.test.js` and two live DeepSeek Harness integration probes (39 integration + 174 conformance checks), plus `skills:verify`, `skills:catalog --check`, `control:verify`, `memory:resume` and `git diff --check`.
 
 ## Current truth
 
@@ -40,24 +40,27 @@ loaded into another. Skills rank at DSH's `BUNDLED_SKILL_RANK` of 600, so projec
 and user roots shadow them natively. The catalogue stays fresh through a stat poll
 and the `fs/observed` recorder.
 
-## Divergent branch (partially merged)
+## Reviewed parallel branch (superseded)
 
 `origin/feat/skill-architecture-v2` (213b65c) is a separate, parallel implementation
-of the same phase-one goal, built on PR #8. On review the route chosen was to merge
-its best ideas onto this branch:
+of the same phase-one goal, built on PR #8. Its six unique commits were reviewed in
+full. The retained branch already carries the useful ideas:
 
-- **merged:** an explicit layer vocabulary (`tier` renamed to `layer`), and a
+- **kept:** an explicit layer vocabulary (`tier` renamed to `layer`), and a
   package-owned `dsh/skill-catalog.json` with strict schema validation. The catalog is
-  generated here rather than hand-authored, and its validator is stricter.
-- **not merged:** exposing the whole 21-entry catalog to every session with a
+  generated here rather than hand-authored, and its validator is stricter;
+- **kept in stronger form:** WordPress and Python specialist profiles, DSH-native
+  discovery, cwd-sensitive provider wiring, and fail-closed invalid-workspace behavior;
+- **not kept:** exposing the whole 21-entry catalog to every session with a
   `metadata.recommended` flag. DSH renders only `name` and `description`, so that flag
   never reaches the model; the effect would be a wider catalogue with no routing signal,
-  which is the context cost this design exists to avoid. This branch keeps composition
-  at 12-14 evidence-bound skills plus the executable find/activate loop. The parallel
-  branch also edited two negative isolation assertions in the merged
-  `test/dsh-workspace-routing.test.js`; this branch keeps them.
+  which is the context cost this design exists to avoid;
+- **not kept:** the parallel branch's routing-test edits that weakened negative
+  isolation assertions by requiring cross-specialist skills to stay visible. This branch
+  keeps workspace composition narrow and keeps `get()` scoped to the current plan.
 
-The remote branch is retained for reference. Do not merge it wholesale.
+The remote parallel branch is retained only as historical reference. Do not merge it
+wholesale.
 
 ## Verified against a real DeepSeek Harness checkout
 
@@ -125,6 +128,8 @@ the regression and watching them fail.
 - Session-scoped workspace identity with reported provenance and fail-closed errors.
 - Read-only DSH resume, inventory, specialist selection, catalogue and search tools.
 - One bounded workspace write: `.harness/state/skills.json`, on activation only.
+- Activation state is local runtime state: this repository ignores it, and project handoff
+  adds the same path to `.git/info/exclude` without modifying a project's tracked `.gitignore`.
 - `npm run skills:verify` gate over metadata, bindings, reachability and catalog freshness.
 - `npm run skills:catalog` regenerates the package catalog; drift is a verification failure.
 - Eight-gate readiness, project discovery, safe project handoff and Git controls.
@@ -137,22 +142,20 @@ the regression and watching them fail.
   `dsh/index.js` through a `data:` URL, so its loader rewrites the adapter's
   module-relative imports to absolute URLs. Its assertions are unmodified.
 - `skills:verify` proves metadata and binding integrity, not routing quality.
-- An end-to-end run inside a booted `dsh` profile with a live model is still not covered;
-  it would consume provider credits and needs explicit approval. The registry-level and
-  parser-level integration are covered; the model-facing in-session run is not.
-- `.harness/state/skills.json` is not covered by any `.gitignore`, here or in the handoff,
-  so activating a skill leaves an untracked file in the project. The lifecycle decision
-  (commit as project intent, or ignore as regenerable state) is still open.
+- The packed plugin and a live-model headless session are covered; the user's long-running
+  `web` profile has deliberately not been replaced or smoke-tested yet.
 - `.github/skills/INDEX.md` was removed and `guard_debugging.md` renamed to
   `guard-debugging.md`; `scripts/guard_debugging.js` was updated to match.
 - The root `complexity-brake/` directory is a byte-identical duplicate of
-  `.github/skills/complexity-brake/SKILL.md` and is intentionally left in place.
+  `.github/skills/complexity-brake/SKILL.md` and is intentionally left in place until a
+  separate cleanup confirms no legacy path still consumes it.
 - `.github/skills/front-dev-UI-Engineering` and `.github/skills/SkillOpt/` are not
   skills; DSH ignores them and `skills:verify` reports them as unindexed.
 - Merge, release, deployment, paid services and production mutation need approval.
 
 ## Next action
 
-Decide the route for the two Skill Architecture v2 implementations, then push this
-branch, open it for review, and confirm the catalogue, `find_skills`, activation and
-session-scoped loading in a live DSH session. Do not merge or release automatically.
+Run the full branch verification after the activation-state lifecycle change. If green,
+review the feature branch as the single Skill Architecture v2 candidate, merge it to
+`main` with approval, build a fresh package from merged `main`, then install and smoke-test
+the live `web` profile. The older `feat/skill-architecture-v2` branch is reference only.
