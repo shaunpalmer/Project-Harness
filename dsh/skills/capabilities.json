@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "description": "Shared Project Harness skill composition vocabulary. Core and discovery skills are always composed. Capabilities bind skills to evidence detectors; a capability with no evidence is reachable only through explicit activation or a preset default.",
+  "core_skills": [
+    "complexity-brake",
+    "loop-controller",
+    "project-memory",
+    "skill-router"
+  ],
+  "discovery_skills": [
+    "find-skills"
+  ],
+  "capabilities": {
+    "testing": {
+      "skills": ["testing-plan"],
+      "evidence": ["tests-present"],
+      "summary": "Test strategy, coverage and failure-case planning."
+    },
+    "database": {
+      "skills": ["database-selection", "database-design"],
+      "evidence": ["persistence-surface"],
+      "summary": "Choosing and modelling persistent storage."
+    },
+    "api": {
+      "skills": ["api-design"],
+      "evidence": ["api-surface"],
+      "summary": "HTTP/API contract design, versioning and error shapes."
+    },
+    "ui": {
+      "skills": ["interface-design"],
+      "evidence": ["presentation-surface"],
+      "summary": "Templates, components and user-facing presentation."
+    },
+    "browser": {
+      "skills": ["chrome-devtools-mcp"],
+      "evidence": ["browser-dependency"],
+      "summary": "Live browser inspection and front-end verification."
+    },
+    "oop": {
+      "skills": ["oop-standards"],
+      "evidence": ["class-declarations"],
+      "summary": "Class, interface and service-boundary conventions."
+    },
+    "scraping": {
+      "skills": ["scraping-pipeline"],
+      "evidence": ["scraper-sources"],
+      "summary": "Acquisition, parsing, validation and idempotent ingestion."
+    },
+    "logging": {
+      "skills": ["trace-eval-logging"],
+      "evidence": [],
+      "summary": "Execution traces and evaluation records."
+    },
+    "planning": {
+      "skills": ["prd-writer", "architecture-canvas", "stack-selector"],
+      "evidence": ["planning-artifacts"],
+      "summary": "Requirements, architecture canvases and stack justification."
+    },
+    "review": {
+      "skills": ["code-review"],
+      "evidence": [],
+      "summary": "Systematic review of completed changes."
+    },
+    "docs": {
+      "skills": ["documentation"],
+      "evidence": ["docs-present"],
+      "summary": "Repository documentation standards."
+    },
+    "memory": {
+      "skills": ["memory-consolidation"],
+      "evidence": [],
+      "summary": "Consolidating growing notes and preventing context bloat."
+    },
+    "delegation": {
+      "skills": ["sub-agent-delegation"],
+      "evidence": [],
+      "summary": "Splitting bounded work across sub-agents."
+    },
+    "initiative": {
+      "skills": ["agent-initiative"],
+      "evidence": [],
+      "summary": "Judgement boundaries for autonomous action."
+    },
+    "debugging": {
+      "skills": ["guard-debugging"],
+      "evidence": [],
+      "summary": "Surgical in-place repair instead of rewriting working code."
+    }
+  }
+}

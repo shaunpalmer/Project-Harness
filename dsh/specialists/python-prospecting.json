@@ -2,13 +2,21 @@
   "id": "python-prospecting",
   "domain": "coding",
   "stack": ["Python", "data pipelines", "web scraping"],
-  "required_skills": [
-    ".github/skills/scraping-pipeline/SKILL.md",
-    ".github/skills/testing-plan/SKILL.md",
-    ".github/skills/trace-eval-logging/SKILL.md",
-    ".github/skills/skill-router/SKILL.md",
-    ".github/skills/project-memory/SKILL.md"
+  "specialist_skills": [
+    "scraping-pipeline"
   ],
+  "capability_skills": [
+    "api",
+    "database",
+    "testing",
+    "logging",
+    "browser",
+    "oop",
+    "docs",
+    "planning"
+  ],
+  "default_capabilities": ["testing", "logging"],
+  "extra_skills": [],
   "defaults": {
     "project_shape": "python-data-or-prospecting-pipeline",
     "source_boundary": "project-defined-python-sources",

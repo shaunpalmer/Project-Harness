@@ -29,6 +29,7 @@
     "vcs": "node scripts/vcs-control.js",
     "vcs:status": "node scripts/vcs-control.js status",
     "vcs:preflight": "node scripts/vcs-control.js preflight",
+    "skills:verify": "node scripts/skills-verify.js",
     "test": "node --test"
   },
   "engines": {

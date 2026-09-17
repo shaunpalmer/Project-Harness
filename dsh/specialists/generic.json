@@ -1,0 +1,21 @@
+{
+  "id": "generic",
+  "domain": "coding",
+  "stack": [],
+  "specialist_skills": [],
+  "capability_skills": [
+    "testing",
+    "database",
+    "api",
+    "ui",
+    "browser",
+    "oop",
+    "scraping",
+    "planning",
+    "docs"
+  ],
+  "default_capabilities": ["testing"],
+  "extra_skills": [],
+  "excluded_domains": [],
+  "routing_note": "Base composition scope for any confirmed coding workspace. It carries no specialist skills of its own; a matched specialist adds domain rules on top, and evidence-bound capabilities add the domain guidance the workspace actually needs."
+}
