@@ -56,7 +56,7 @@ A natural-language project prompt is a valid intake. Do not require the user to 
 6. When confidence is low or an assumption is material, inspect evidence or run the smallest bounded proof that can resolve it.
 7. Write an architecture hypothesis only after the system model is confirmed.
 8. Obtain the user's approval only for consequential architecture/deviation decisions, then promote the hypothesis to accepted.
-9. Only then plan and execute the smallest useful slice.
+9. Only then plan and execute the smallest complete connected slice that satisfies the cumulative acceptance criteria.
 
 `UNKNOWN` means investigate autonomously unless the Decision Rights Contract assigns the missing answer to the user.
 
@@ -83,12 +83,18 @@ Valid answers are `YES`, `NO`, and `UNKNOWN`. A task marked `ready`, `in_progres
 4. Write a tangible plan before product code.
 5. Run the complexity brake before adding dependencies, layers, classes, tables, queues, services, or build tooling.
 6. Put the project under Git and work on a safe non-default branch before meaningful implementation.
-7. Implement the smallest safe useful slice.
+7. Implement the smallest complete connected slice that satisfies the cumulative acceptance criteria.
 8. Run relevant tests, linting, builds, and scenario checks.
 9. Create focused version-control checkpoints using only intended files.
 10. Repair only failed parts; do not rewrite unrelated work.
 11. Reconcile memory and decisions in the same change.
 12. Stop when the outcome and proof condition pass.
+
+### Slice completeness invariant
+
+"Smallest" constrains unnecessary scope; it never permits an incomplete path. A slice is complete only when every requirement needed for its stated outcome is connected through the real consumer, persistence boundary, side effect, or observable output that makes the feature useful. An intermediate object, preview, fixture, adapter return value, generated row, or green test is not completion when the accepted design requires durable downstream movement.
+
+Instructions and acceptance criteria accumulate unless the user or an accepted decision explicitly supersedes them. A later narrow request does not silently erase an earlier architectural requirement. Before coding, reconstruct the current cumulative contract and implement the earliest missing dependency first.
 
 Security, validation, escaping, permissions, error handling, accessibility, and data protection are never optional simplifications.
 
@@ -149,7 +155,7 @@ The harness repository, canonical project source, build output, distribution art
 
 Before reporting completion:
 
-- The stated goal and smallest useful slice are complete.
+- The stated goal and smallest complete connected slice are complete, including required persistence, downstream consumption, and observable output.
 - `npm run control:verify` passes.
 - Task-specific verification passes.
 - Current state, active task, discovery artifacts, engineering defaults, decisions, code, and tests agree.
