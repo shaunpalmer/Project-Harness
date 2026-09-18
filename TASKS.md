@@ -20,7 +20,7 @@ Do NOT look for tasks yet. Instead:
    - `TECH-SPEC.md` (defines stack)
    - `DATABASE.md` (if architecture mentions database)
    - `DATA-FLOW.md` (if architecture mentions data movement)
-   - `TASKS.md` (fill with first useful build slice + 3–5 tasks)
+   - `TASKS.md` (fill with the first complete connected build slice + 3–5 tasks)
    - `AI-NOTES.md` (record key decisions)
 5. Wait for the user's second approval
 6. Only THEN proceed to **PHASE 3: Pick up a task**
@@ -50,7 +50,7 @@ Before picking up any task:
 5. Mark it `[~]` before starting.
 6. Do not deviate from the stack in `TECH-SPEC.md`.
 7. Do not create files or folders not in `ARCHITECTURE.md` without updating it first.
-8. Mark it `[x]` only when acceptance criteria are met and you have tested it.
+8. Mark it `[x]` only when its cumulative acceptance criteria are met, required downstream connections are real, and you have tested the observable outcome.
 9. If blocked, mark it `[-]` and add a row to the Blocked table.
 
 ---
