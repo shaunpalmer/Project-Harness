@@ -1,6 +1,6 @@
 # PROJECT-INTAKE.md — Natural-Language Project Brief
 
-> Give the AI the outcome, first useful slice, and hard constraints. A natural-language prompt is enough to begin discovery.
+> Give the AI the outcome, first complete connected slice, and hard constraints. A natural-language prompt is enough to begin discovery.
 > Do not force an unfamiliar system into a single project type before the system has been modelled.
 
 ---
@@ -35,10 +35,10 @@ Choose a hint only if obvious. The AI may revise it after discovery.
 
 A hint is not an architecture decision. `PROJECT-TYPES.md` contains reusable presets, not mandatory boxes.
 
-### 3. First useful slice
+### 3. First complete connected slice
 
 ```text
-The first observable working outcome: ___________
+The first observable end-to-end working outcome: ___________
 ```
 
 Example: "Given one directory URL, collect business name + phone, normalise it, and persist one idempotent record."
