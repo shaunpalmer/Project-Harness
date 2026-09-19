@@ -28,6 +28,7 @@ This section decides **that** routing happens. Skills hold the **how**. The arch
 3. **Widen only when the catalogue is insufficient.** If no visible skill adequately covers a required capability, invoke `find-skills`. Search the current DSH, project, and user catalogue before any external skill discovery.
 4. **Compose with `skill-router` when several skills plausibly apply.** `skill-router` refines skill composition for a task; it is not responsible for bootstrapping itself — this section is.
 5. **Classify the work mode before applying process ceremony.** Research, evaluation, and reconnaissance may remain lightweight. Build, refactor, and migration work uses the Project Harness planning and execution gates (system model, Alignment Ladder, minimum slice, proof).
+6. **A verdict is a decision.** An adopt/reject/constrain verdict on an external dependency — or any evaluation outcome that changes what the project depends on — is recorded in `docs/decisions/`, not in scratch notes. Research may stay lightweight in process; its verdict is durable knowledge. See `docs/decisions/ADR-0007`.
 
 ## Competency and decision rights
 
