@@ -19,6 +19,16 @@ Read in this order:
 
 Run `npm run memory:resume` for a compact reconstruction, then verify its claims against the repository. Report contradictions before editing.
 
+## Session bootstrap and routing
+
+This section decides **that** routing happens. Skills hold the **how**. The architectural rule is explicit: **AGENTS/bootstrap decides that routing must happen; skills contain the detailed procedure for how routed work is performed.** This section *is* the bootstrap — do not broaden it into a second dispatcher framework unless evidence proves AGENTS.md cannot provide the bootstrap in an ordinary DSH workspace.
+
+1. **Reconstruct context from durable memory, not from the conversation.** At session entry, use the `project-memory` skill (and `npm run memory:resume`) to rebuild state from repository memory. Conversation history and compaction summaries are not authoritative project memory; verify what they claim against the repository.
+2. **Route by trigger; do not preload.** Before specialised work, inspect the visible DSH skill catalogue and select skills by their "Use when…" trigger descriptions. Do not load full skill bodies speculatively — load one only when its trigger matches the task at hand.
+3. **Widen only when the catalogue is insufficient.** If no visible skill adequately covers a required capability, invoke `find-skills`. Search the current DSH, project, and user catalogue before any external skill discovery.
+4. **Compose with `skill-router` when several skills plausibly apply.** `skill-router` refines skill composition for a task; it is not responsible for bootstrapping itself — this section is.
+5. **Classify the work mode before applying process ceremony.** Research, evaluation, and reconnaissance may remain lightweight. Build, refactor, and migration work uses the Project Harness planning and execution gates (system model, Alignment Ladder, minimum slice, proof).
+
 ## Competency and decision rights
 
 Use `docs/DECISION-RIGHTS.md` as the authority.
