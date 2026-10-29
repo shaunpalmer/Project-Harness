@@ -2,7 +2,7 @@
 
 This file records meaningful user-facing harness changes. Git remains the source for exact file history.
 
-## Unreleased
+## 0.4.3 — 2026-10-29
 
 ### Subprocess, environment and state-write hygiene
 

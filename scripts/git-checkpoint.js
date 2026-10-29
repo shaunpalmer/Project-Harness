@@ -8,6 +8,13 @@ const rl = readline.createInterface({
 
 async function checkpoint() {
     console.log('--- 🚦 GIT CHECKPOINT GATE ---');
+    // ⛔ RETIRED 2026-10-29 (J80). This script ran `git add .`, committed with a timestamp
+    // message and pushed unconditionally — in a scratch repo it committed `.env`.
+    // README.md:166, docs/VERSION-CONTROL.md:61 and docs/LEGACY-CONTROLS.md:5 already call it
+    // a legacy experiment; it now enforces that instead of contradicting it.
+    console.error('⛔ git-checkpoint.js is retired: it staged everything and pushed unconditionally.');
+    console.error('   Use the supported path: npm run vcs -- checkpoint --file <paths>');
+    process.exit(1);
     
     // 1. Show the user what's changed
     const status = execSync('git status --short').toString();

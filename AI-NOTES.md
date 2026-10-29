@@ -12,6 +12,7 @@
 - Record **Decisions** with a one-line rationale so the next session does not re-derive them.
 - Park anything **UNRESOLVED** here and flag it to the owner. Do not guess past it.
 - Keep entries short and dated. Newest at top.
+- **Watch `dsh-github-intelligence` for read-write behaviour.** It is installed with no token of its own and is documented plus code-verified as read-only (see Scratch). If any evidence ever shows it mutating — a POST/PUT/PATCH/DELETE, a created issue/PR/release, or a write scope — **alert the owner immediately** and record it here. Owner asked for this watch on 2026-09-20.
 
 ---
 
@@ -21,6 +22,7 @@
 
 | Date | Change | Why |
 |------|--------|-----|
+| 2026-09-20 | Verified `dsh-github-intelligence@2.9.0` is code-level read-only; added `githubToken: !!js 'process.env.GITHUB_TOKEN'` to the web profile's `cordis.patch.yml` | Confirm the read-only claim against source rather than the README, and lift the anonymous GitHub ceiling from 60 to 5,000 req/h |
 | 2026-08-01 | Added project lifecycle layout and type-aware destination scaffold | Keep product work outside the harness and distinguish planning, source, proof, disposable build files, distributable packages, and deployment |
 | 2026-08-01 | Added unified project-control foundation | Preserve alignment, decision rights, memory, pivots, and safe destinations across sessions |
 | 2026-08-01 | Replaced executable SQLite memory demo with file-backed resume/checkpoint commands | Avoid fake seeded memory and make checked-in truth authoritative |
@@ -34,6 +36,7 @@
 
 | # | Decision | Rationale | Date |
 |---|----------|-----------|------|
+| 3 | Treat `dsh-github-intelligence` as read-only and safe to leave loaded permanently | Source audit found only 3 `fetch` call sites, all defaulting to GET, and zero POST/PUT/PATCH/DELETE; blast radius is nil | 2026-09-20 |
 | 2 | Use `00-PLANNING/`, `src/`, `tests/`, `build/`, and `dist/` in each external project | Gives the agent explicit folder ownership and produces clean release artifacts without mixing product code into the harness | 2026-08-01 |
 | 1 | Use files + JSON + Git + a zero-dependency CLI for memory v1 | Transparent, versioned, sufficient at current scale, and testable without an external service | 2026-08-01 |
 
@@ -73,3 +76,18 @@
 ## Scratch / Working Notes
 
 > Freeform context worth remembering between turns or sessions. Clear when stale.
+
+### dsh-github-intelligence — read-only verification (2026-09-20)
+
+**Claim:** 196+ read-only tools across 16 ecosystems. No API key required.
+
+**Verified at source, not from the README.** Audited `~/.dsh/profiles/web/node_modules/dsh-github-intelligence/lib/` (`github.js`, `ecosystems.js`, `arxiv.js`, `catalog.js`, `index.js`):
+
+- **3 `fetch` call sites total** — `arxiv.js:58`, `ecosystems.js:27`, `github.js:75`. **None pass a `method`**, so all three default to GET.
+- **Zero occurrences** of `method: 'POST'`, `'PUT'`, `'PATCH'`, or `'DELETE'` anywhere in `lib/`.
+- Grep hits for "push"/"create" were false positives: JS `Array.push()` in render/build code, and `'push'` appearing only as a *GitHub permission name* in a permission list (`catalog.js:78`).
+
+**Conclusion:** the read-only claim holds at code level. It cannot create an issue, open a PR, cut a release, or write to any repo it inspects.
+
+**Open action for the owner — token plumbing:**
+`GITHUB_TOKEN` is **not set** anywhere (not in `~/.bashrc`, `~/.profile`, `~/.bash_profile`, or `~/.config/environment.d/`). Until it is exported before `dsh web` launches, the `!!js` patch resolves to `undefined` and the 60 req/h anonymous limit still applies. Plugin schema tolerates `undefined`/`""`/`absent` without throwing, so a missing variable cannot break boot.

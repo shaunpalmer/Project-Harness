@@ -1,6 +1,6 @@
 {
-  "name": "project-harness",
-  "version": "0.4.2",
+  "name": "project-harness-ai",
+  "version": "0.4.3",
   "description": "AI-assisted project harness with infer-before-implement discovery, engineering defaults, and deterministic execution controls.",
   "main": "dsh/index.js",
   "type": "module",
@@ -11,6 +11,8 @@
   },
   "files": [
     "cordis.patch.yml",
+    "docs",
+    "00-PLANNING",
     "dsh/index.js",
     "dsh/skill-catalog.json",
     "dsh/skills",
@@ -27,7 +29,7 @@
   ],
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.2",
-    "@deepseek-ai/dsh-tools": "^0.1.5-rc.1"
+    "@deepseek-ai/dsh-tools": "^0.1.5-rc.1 || ^0.2.0-rc.1"
   },
   "dependencies": {
     "@deepseek-ai/schemastery": "^3.18.2"
