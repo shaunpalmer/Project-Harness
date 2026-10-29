@@ -73,13 +73,26 @@ export function buildIndexBlock(skills) {
  * @returns {string}
  */
 export function applyIndexBlock(document, block) {
-  const start = document.indexOf(INDEX_START);
-  const end = document.indexOf(INDEX_END);
-  if (start !== -1 && end !== -1 && end > start) {
-    return `${document.slice(0, start)}${block}${document.slice(end + INDEX_END.length)}`;
+  const heading = '## Skill index (generated)';
+  // Remove any existing index first, wherever it sits, so the block is always
+  // re-placed at the top rather than left where a previous version put it.
+  let body = document;
+  const from = body.indexOf(INDEX_START);
+  const to = body.indexOf(INDEX_END);
+  if (from !== -1 && to !== -1 && to > from) {
+    body = `${body.slice(0, from)}${body.slice(to + INDEX_END.length)}`;
+    body = body.replace(new RegExp(`\\n{0,2}${heading.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}\\n*`), '\n');
+    body = body.replace(/\n{3,}/gu, '\n\n');
   }
-  const trimmed = document.replace(/\s+$/u, '');
-  return `${trimmed}\n\n## Skill index (generated)\n\n${block}\n`;
+  const section = `${heading}\n\n${block}`;
+  // Place it directly under the title, not at the end. A cold agent reads the top
+  // first, and any consumer that truncates a large instruction file cuts the tail:
+  // this file is 209 lines and sat exactly at 16,384 bytes, which is a budget a
+  // reader is likely to apply. A generated index nobody reads is the same as none.
+  const title = /^# .*$/mu.exec(body);
+  if (title === null) return `${section}\n\n${body.replace(/^\s+/u, '')}`;
+  const at = title.index + title[0].length;
+  return `${body.slice(0, at)}\n\n${section}\n${body.slice(at)}`.replace(/\n{3,}/gu, '\n\n');
 }
 
 /**
