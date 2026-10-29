@@ -13,7 +13,10 @@ test('DSH bundle manifest points to the Project Harness Cordis patch', () => {
   const packageJson = readJson('package.json');
   assert.equal(packageJson.dsh.bundle.patch, './cordis.patch.yml');
   assert.equal(packageJson.main, 'dsh/index.js');
-  assert.match(read('cordis.patch.yml'), /name: project-harness\s*$/m);
+  // The patch must name THIS package, whatever it is called. Hardcoding the name
+  // meant the 0.4.3 rename turned a green suite red one commit after it was green.
+  const patch = read('cordis.patch.yml');
+  assert.match(patch, new RegExp(`name: ${packageJson.name.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}\\s*$`, 'm'));
 });
 
 test('the DSH entry point is a thin shell over the testable skill modules', () => {
