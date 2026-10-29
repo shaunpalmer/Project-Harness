@@ -74,3 +74,7 @@ Thumbs.db
 # Local env
 .env
 .env.local
+
+# === Build output ===
+# npm pack writes these into the root; they are the artefact, not the source.
+*.tgz
