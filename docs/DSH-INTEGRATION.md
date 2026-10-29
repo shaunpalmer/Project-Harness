@@ -208,13 +208,13 @@ checkout can pass while the package is missing a file:
 
 ```sh
 npm pack --pack-destination /tmp/phpack
-dsh plugin --profile phcheck add /tmp/phpack/project-harness-0.4.2.tgz
-node scripts/dsh-integration-check.js --package-root "$DSH_HOME/profiles/phcheck/node_modules/project-harness"
-dsh --profile phcheck --dump-config | grep -A2 '== project-harness'
-dsh plugin --profile phcheck remove project-harness
+dsh plugin --profile phcheck add /tmp/phpack/project-harness-ai-0.4.3.tgz
+node scripts/dsh-integration-check.js --package-root "$DSH_HOME/profiles/phcheck/node_modules/project-harness-ai"
+dsh --profile phcheck --dump-config | grep -A2 '== project-harness-ai'
+dsh plugin --profile phcheck remove project-harness-ai
 ```
 
-`--dump-config` should show a `# == project-harness` layer, which proves the bundle patch
+`--dump-config` should show a `# == project-harness-ai` layer, which proves the bundle patch
 composes into the profile. The probes then prove the installed package composes skills
 from its own `.github/skills`. Both were run against this branch: 29 integration checks
 and 174 conformance checks pass against the installed artifact, and the composed config
