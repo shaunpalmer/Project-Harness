@@ -52,7 +52,8 @@
     "skills:verify": "node scripts/skills-verify.js",
     "skills:catalog": "node scripts/skills-catalog.js",
     "dsh:verify": "node scripts/dsh-integration-check.js",
-    "test": "node --test"
+    "test": "node --test",
+    "skills:activate": "node --test test/skill-activation.test.js"
   },
   "engines": {
     "node": ">=20.0.0"

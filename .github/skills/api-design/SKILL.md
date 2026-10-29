@@ -1,6 +1,6 @@
 ---
 name: api-design
-description: "Use when adding, versioning, or reviewing HTTP APIs: model REST resources or GraphQL/gRPC schemas, define error envelopes, auth scopes and rate limits, and emit an OpenAPI 3.x, SDL, or .proto contract."
+description: "Use when other services, teams or clients need to call your data over HTTP: design or review versioned REST, GraphQL or gRPC APIs, error envelopes, auth and pagination before consumers depend on them."
 whenToUse: "Use when the workspace needs a new endpoint group, a breaking-change version, or an API consistency review before implementation."
 user-invocable: true
 metadata:

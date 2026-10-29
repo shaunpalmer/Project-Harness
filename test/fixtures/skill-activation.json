@@ -1,0 +1,80 @@
+{
+  "note": "Routing fixtures for the generated skill index. Level 1 names the skill, level 2 describes the task, level 3 states the goal without naming a skill. Levels 1-2 must rank the skill first; level 3 must rank it in the top two, because a goal is a wider net than a task. 'none' cases must score zero. LIMIT, stated so it is not mistaken for a guarantee: this is a vocabulary measure, not a model. It cannot tell a database table from a table for two, so the negative cases are chosen to be disjoint in wording; disambiguating homonyms is what the model-in-the-loop run is for.",
+  "cases": [
+    {
+      "level": "named",
+      "prompt": "Use the api-design skill to review this endpoint",
+      "expect": "api-design"
+    },
+    {
+      "level": "task",
+      "prompt": "We need versioned REST endpoints with error envelopes and auth",
+      "expect": "api-design"
+    },
+    {
+      "level": "goal",
+      "prompt": "I want other teams to call our data safely over HTTP",
+      "expect": "api-design"
+    },
+    {
+      "level": "task",
+      "prompt": "Model a new schema: entities, attributes, one to many relationships",
+      "expect": "database-design"
+    },
+    {
+      "level": "task",
+      "prompt": "Define the test pyramid for this module before we write it",
+      "expect": "testing-plan"
+    },
+    {
+      "level": "task",
+      "prompt": "Review this diff before merge for correctness and security",
+      "expect": "code-review"
+    },
+    {
+      "level": "task",
+      "prompt": "Build a WordPress plugin that registers a custom post type",
+      "expect": "wordpress-plugin"
+    },
+    {
+      "level": "task",
+      "prompt": "The README needs a ten minute local run section",
+      "expect": "documentation"
+    },
+    {
+      "level": "task",
+      "prompt": "The task is ambiguous and I am blocked on which approach to take",
+      "expect": "agent-initiative"
+    },
+    {
+      "level": "task",
+      "prompt": "Should we add another dependency and a new build tool",
+      "expect": "complexity-brake"
+    },
+    {
+      "level": "task",
+      "prompt": "AI-NOTES has grown past 200 lines and the phase is ending",
+      "expect": "memory-consolidation"
+    },
+    {
+      "level": "named",
+      "prompt": "Run the skill-router skill over this work",
+      "expect": "skill-router"
+    },
+    {
+      "level": "none",
+      "prompt": "What is the capital of France",
+      "expect": null
+    },
+    {
+      "level": "none",
+      "prompt": "Who won the rugby final on Saturday",
+      "expect": null
+    },
+    {
+      "level": "none",
+      "prompt": "Translate this sentence into Spanish",
+      "expect": null
+    }
+  ]
+}
