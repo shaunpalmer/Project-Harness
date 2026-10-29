@@ -89,6 +89,9 @@ test('destination create scaffolds infer-before-implement state and lifecycle fo
   assert.equal(project.layout.release.ship_from, path.join('src', 'safe-project'));
   const agentContract = fs.readFileSync(path.join(destination, 'AGENTS.md'), 'utf8');
   assert.match(agentContract, /Infer before implement/);
+  assert.match(agentContract, /smallest complete connected slice/);
+  const intake = fs.readFileSync(path.join(destination, '00-PLANNING/PROJECT-INTAKE.md'), 'utf8');
+  assert.match(intake, /First complete connected working slice/);
   assert.equal(fs.existsSync(path.join(deployRoot, 'safe-project')), false);
 });
 

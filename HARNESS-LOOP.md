@@ -60,15 +60,15 @@ Compare credible alternatives. Run the smallest bounded proof needed to resolve 
 
 ## 5. Planning
 
-Define the smallest safe useful slice and tangible acceptance criteria. Run the complexity brake before adding dependencies, services, queues, layers, tables, classes, or build tooling.
+Define the smallest complete connected slice and tangible cumulative acceptance criteria. "Smallest" limits unnecessary scope; it does not permit stopping before the real consumer, persistence boundary, or observable output required by the accepted design. Run the complexity brake before adding dependencies, services, queues, layers, tables, classes, or build tooling.
 
 ## 6. Execution
 
-Complete one useful step at a time inside the accepted source boundary. Do not rewrite unrelated work or silently change architecture.
+Complete one useful step at a time inside the accepted source boundary, but keep the whole cumulative contract in view. Earlier requirements remain binding unless explicitly superseded. Do not stop at an intermediate artifact when the slice requires persistence, downstream consumption, or a real observable effect. Do not rewrite unrelated work or silently change architecture.
 
 ## 7. Verification
 
-Run the strongest available proof: unit/integration tests, syntax checks, builds, smoke tests, scenario tests, filesystem inspection, API contract checks, or browser/runtime evidence.
+Run the strongest available proof: unit/integration tests, syntax checks, builds, smoke tests, scenario tests, filesystem inspection, API contract checks, or browser/runtime evidence. For stateful or pipeline work, verify the real persistence boundary and downstream delta; a generated object or green test alone is not end-to-end proof.
 
 ## 8. Repair in place
 
@@ -76,7 +76,7 @@ If proof fails, repair only the failed responsibility. Re-run proof. If evidence
 
 ## 9. Ship / stop
 
-Stop when the stated outcome, minimum slice, and proof condition pass. Do not add unrequested features. Merge, deployment, and release remain user-owned actions unless explicitly authorised.
+Stop when the stated outcome, smallest complete connected slice, and proof condition pass. Do not add unrequested features. Merge, deployment, and release remain user-owned actions unless explicitly authorised.
 
 ## Readiness contract
 

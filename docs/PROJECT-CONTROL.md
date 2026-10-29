@@ -18,11 +18,15 @@ Every active task records eight evidence-backed gates. Valid answers are `YES`, 
 3. `system_model` — responsibilities, data/state movement, failure boundaries, invariants, and material unknowns are understood from evidence.
 4. `boundaries` — the work fits approved scope and accepted architecture.
 5. `ownership` — the owning component and folder are known.
-6. `minimum_slice` — this is the smallest safe, useful step.
+6. `minimum_slice` — this is the smallest complete connected step that satisfies the cumulative acceptance criteria; it does not stop before a required consumer, persistence boundary, or observable effect.
 7. `debt_control` — reuse, security, testing, cost/rate controls, and future-change risks are addressed.
 8. `proof` — a concrete verification and stop condition exist.
 
 A `ready`, `in_progress`, or `completed` task requires `YES` on every gate, `MODEL_STATUS: CONFIRMED`, and `HYPOTHESIS_STATUS: ACCEPTED`. Each gate must occur exactly once with non-empty evidence. State uses `schema_version: 2`. A `blocked` task can record `NO` or `UNKNOWN`; changing its status cannot bypass unresolved gates. `UNKNOWN` triggers evidence gathering and asks the user only if the missing answer belongs to the user under the Decision Rights Contract.
+
+### Cumulative slice rule
+
+Requirements, architecture constraints, and acceptance criteria accumulate unless the user or an accepted decision explicitly supersedes them. The `minimum_slice` gate is not evidence that the agent may choose the easiest demonstrable subset. It means the least scope that still completes the accepted path end to end. If the design requires a producer, consumer, persistence boundary, and measurable output, all four belong to the slice before it can be called complete.
 
 ## Controlled Pivot Loop
 

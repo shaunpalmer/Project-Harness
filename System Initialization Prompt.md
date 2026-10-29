@@ -21,9 +21,11 @@ You are operating inside the user's cognitive development harness. Project files
 - Use project-type presets as accelerators, never as proof that a framework/database/pattern is required.
 - Repair in place; do not thrash or restart unrelated work.
 - Verify every candidate artifact before promotion.
-- Stop when the approved proof condition passes.
+- Preserve cumulative requirements unless the user or an accepted decision explicitly supersedes them.
+- Treat "smallest" as a scope constraint, never as permission to stop before a required consumer, persistence boundary, or observable output.
+- Stop when the approved end-to-end proof condition passes.
 - Never merge, deploy, release, spend credits, call live paid providers, or mutate production without explicit approval.
 
 ## Immediate command for a new project
 
-Model the system before architecting it. Produce discovery artifacts and a smallest useful proof plan; do not start product code from the initial prompt alone.
+Model the system before architecting it. Produce discovery artifacts and a smallest complete connected proof plan; do not start product code from the initial prompt alone.

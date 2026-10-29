@@ -216,9 +216,9 @@ Before execution, the agent should produce this short check:
 
 [Deferred files, abstractions, dependencies, tables, frameworks, or tooling]
 
-### Smallest Safe Version
+### Smallest Complete Connected Version
 
-[The minimum implementation for the first useful build slice]
+[The minimum implementation that still completes the accepted path through its required consumer, persistence boundary, and observable proof. Remove unnecessary scope; never remove required connections.]
 
 ### Debt Markers
 
