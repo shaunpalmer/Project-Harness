@@ -1,3 +1,15 @@
+---
+name: front-dev-ui-engineering
+description: "Use when writing or changing a user interface: state the target operator, the single primary screen action, the state strategy and the responsive and accessibility rules before any markup is written."
+whenToUse: "Use when the task produces interface code — layout, components, forms, navigation or responsive behaviour — so the layout is decided before the markup is authored."
+user-invocable: false
+metadata:
+  harness:
+    layer: reference
+    topics: [frontend, ui]
+    tags: [layout, accessibility, responsive, checklist, ui-engineering]
+    stack: []
+---
 # Checklist Enforcement (Logical Layout Primitives)
 Before outputting any code, the agent MUST explicitly output this markdown block:
 ### [SYSTEM INTERACTION CHECKLIST]

@@ -311,6 +311,28 @@
       ]
     },
     {
+      "name": "front-dev-ui-engineering",
+      "path": ".github/skills/front-dev-ui-engineering.md",
+      "layer": "reference",
+      "description": "Use when writing or changing a user interface: state the target operator, the single primary screen action, the state strategy and the responsive and accessibility rules before any markup is written.",
+      "when_to_use": "Use when the task produces interface code — layout, components, forms, navigation or responsive behaviour — so the layout is decided before the markup is authored.",
+      "invocation": {
+        "modelInvocable": true,
+        "userInvocable": false
+      },
+      "tags": [
+        "layout",
+        "accessibility",
+        "responsive",
+        "checklist",
+        "ui-engineering"
+      ],
+      "topics": [
+        "frontend",
+        "ui"
+      ]
+    },
+    {
       "name": "guard-debugging",
       "path": ".github/skills/guard-debugging.md",
       "layer": "reference",
