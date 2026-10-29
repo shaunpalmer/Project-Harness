@@ -16,7 +16,7 @@ Purpose: keep a durable map of DSH ecosystem capabilities so Project Harness doe
 
 | Capability | Candidate / implementation | Status | Likely use | Notes / next check |
 |---|---|---:|---|---|
-| Project governance | `project-harness` | Installed | All roles | Core composition, skill routing, memory, controls and project context. |
+| Project governance | `project-harness-ai` | Installed | All roles | Core composition, skill routing, memory, controls and project context. |
 | Cost visibility | `@shaunpalmer/dsh-cost-tracker` | Installed | All roles | Project Studios hardened fork; NZD display, CNY canonical accounting. |
 | Browser automation | `ben7am1n/dsh-browser` | Audited | Admin, Sales, Marketing, Developer | Clean Playwright base; persistent page; tabs are missing. Compare stronger browser candidates before forking. |
 | Browser automation | multi-tab Playwright candidates from DSH Directory | Candidate | Admin, Sales, Marketing, Developer | Prioritise multi-tab, persistent context, semantic locators, screenshots and form filling. |
