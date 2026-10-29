@@ -239,4 +239,4 @@ Do not remove structure that protects maintainability.
 
 Do not add structure that only decorates the project.
 
-The best implementation is the smallest safe implementation that fits the architecture and lets the user keep moving.
+The best implementation is the smallest complete connected one: it reaches its real consumer, its persistence boundary or its observable output, fits the architecture, and lets the user keep moving.

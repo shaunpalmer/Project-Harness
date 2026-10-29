@@ -78,3 +78,4 @@ Thumbs.db
 # === Build output ===
 # npm pack writes these into the root; they are the artefact, not the source.
 *.tgz
+*.tgz.old-*
