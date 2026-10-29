@@ -8,9 +8,9 @@
  * which does not exist, or a committed `dsh/skill-catalog.json` that is invalid
  * or stale.
  *
- * Reports but does not fail on entries that are not skills (a stray asset in
- * the skill root) or on skills reachable only through `find_skills`, because
- * those are reachable by design.
+ * Fails on an entry in the skill root that is not a skill, unless it is declared
+ * in `dsh/skills/unindexed-allowlist.json` with a reason. Still only warns on
+ * skills reachable solely through `find_skills`, because those are reachable by design.
  *
  * Usage:
  *   node scripts/skills-verify.js [--workspace /path] [--json]
@@ -24,6 +24,30 @@ import { EVIDENCE_DETECTORS, listPresetIds, readPreset, readVocabulary } from '.
 import { CATALOG_PATH, buildCatalog, readCatalog, serializeCatalog } from '../dsh/skills/catalog.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+/** The entry name a directory or file contributes, without its suffix or any parent path. */
+function unindexedKey(entry) {
+  return String(entry)
+    .replace(/\s*\(.*\)$/u, '')
+    .split('/')
+    .filter((part) => part !== '' && part !== '.')
+    .pop() ?? '';
+}
+
+/**
+ * Entries that are deliberately not skills, with the reason each one is allowed.
+ * Absent or invalid file: nothing is allowed, so every unindexed entry fails.
+ * @param {string} packageRoot
+ */
+function readUnindexedAllowlist(packageRoot) {
+  const file = path.join(packageRoot, 'dsh', 'skills', 'unindexed-allowlist.json');
+  try {
+    const parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
+    return { entries: parsed !== null && typeof parsed === 'object' && typeof parsed.entries === 'object' ? parsed.entries : {} };
+  } catch {
+    return { entries: {} };
+  }
+}
+
 
 function parseArgs(argv) {
   const args = { _: [], json: false, workspace: '' };
@@ -164,7 +188,18 @@ export function verifySkillLibrary(options = {}) {
   if (library.duplicates.length > 0) {
     for (const duplicate of library.duplicates) warnings.push(`shadowed: ${duplicate}`);
   }
-  for (const entry of library.unindexed) warnings.push(`not a skill (unindexed): ${entry}`);
+  // Everything under .github/skills must be a skill the loader can read. An undeclared
+  // non-skill is a FAILURE, not a warning: a file that cannot be loaded is invisible to
+  // find_skills and to composition, so a warning about it is a warning about nothing.
+  const allowlist = readUnindexedAllowlist(packageRoot);
+  for (const entry of library.unindexed) {
+    const key = unindexedKey(entry);
+    if (allowlist.entries[key] !== undefined) {
+      warnings.push(`declared non-skill: ${entry} — ${allowlist.entries[key]}`);
+      continue;
+    }
+    failures.push(`not a skill and not declared in dsh/skills/unindexed-allowlist.json: ${entry}`);
+  }
   for (const unbound of audit.unbound) {
     warnings.push(`"${unbound}" is reachable only through project_harness_find_skills`);
   }

@@ -1,6 +1,7 @@
 // scripts/harness-init.js
 import fs from 'fs';
 import path from 'path';
+import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const PROJECT_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -17,6 +18,36 @@ const requiredFiles = [
   'AI-NOTES.md',
   'HARNESS-LOOP.md',
 ];
+
+/**
+ * The skill library is only useful if the agent can load it, and the bindings are
+ * only true if something checks them. Boot verifies them, so a file that is not a
+ * skill (or a binding that points at nothing) fails here instead of being found
+ * months later in a catalogue nobody read.
+ *
+ * Skipped when this tree carries no library, so a minimal project fixture still
+ * initialises; the check runs wherever `dsh/skills/library.js` exists.
+ * @returns {boolean} whether the library verified.
+ */
+function verifySkillLibrary() {
+  const verify = path.join(PROJECT_ROOT, 'scripts', 'skills-verify.js');
+  const library = path.join(PROJECT_ROOT, 'dsh', 'skills', 'library.js');
+  if (!fs.existsSync(verify) || !fs.existsSync(library)) {
+    console.log('ℹ️  No skill library in this tree - skipping skill verification.');
+    return true;
+  }
+  console.log('\n🧠 Verifying the skill library...');
+  const result = spawnSync(process.execPath, [verify], { cwd: PROJECT_ROOT, encoding: 'utf8' });
+  const output = `${result.stdout ?? ''}${result.stderr ?? ''}`.trim();
+  if (result.status === 0) {
+    if (output !== '') console.log(output);
+    return true;
+  }
+  if (output !== '') console.error(output);
+  console.error('\n⛔ Skill verification failed: a file under .github/skills cannot be loaded, or a binding points at nothing.');
+  console.error('   Declare an intentional non-skill in dsh/skills/unindexed-allowlist.json, or remove it.');
+  return false;
+}
 
 function ensureDirectory(dir) {
   const fullPath = path.join(PROJECT_ROOT, dir);
@@ -53,6 +84,12 @@ function main() {
 
   // Validate before making changes so incomplete copies fail without a success message.
   if (!checkRequiredFiles()) {
+    process.exitCode = 1;
+    return;
+  }
+
+  // A skill nobody can load is not a skill. Verify before anything is written.
+  if (!verifySkillLibrary()) {
     process.exitCode = 1;
     return;
   }

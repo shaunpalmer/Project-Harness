@@ -157,8 +157,13 @@ the regression and watching them fail.
 - The root `complexity-brake/` directory is a byte-identical duplicate of
   `.github/skills/complexity-brake/SKILL.md` and is intentionally left in place until a
   separate cleanup confirms no legacy path still consumes it.
-- `.github/skills/front-dev-UI-Engineering` and `.github/skills/SkillOpt/` are not
-  skills; DSH ignores them and `skills:verify` reports them as unindexed.
+- `.github/skills/front-dev-UI-Engineering` **was** not a skill (no extension, so the
+  loader could not read it, and `skills:verify` warned and exited 0). It is now
+  `front-dev-ui-engineering.md`, bound to the `ui` capability (2026-10-29).
+- `.github/skills/SkillOpt/` is still not a skill. An undeclared entry like it is now a
+  **failure**, not a warning, and `npm run setup` runs the verification at boot, so a
+  file the agent cannot load stops the boot instead of being found months later. Declared
+  exceptions live in `dsh/skills/unindexed-allowlist.json` with a reason each.
 - Merge, release, deployment, paid services and production mutation need approval.
 
 ## Next action

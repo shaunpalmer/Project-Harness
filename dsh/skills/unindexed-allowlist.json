@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "why": "Everything under .github/skills must be a skill the loader can read. An entry that is not a skill is a BOOT FAILURE unless it is listed here with a reason — so silence becomes a declaration. This exists because a 5.9KB file sat in the skill root for six weeks, invisible to find_skills and to composition, while skills:verify printed it as a warning and exited 0.",
+  "entries": {
+    "SkillOpt": "reference notes about skill optimisation (howitwork.md, skills.md), not a skill. Either move it to docs/ or give it a SKILL.md; until then it is declared here."
+  }
+}
