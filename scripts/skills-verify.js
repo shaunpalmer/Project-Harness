@@ -22,6 +22,7 @@ import { fileURLToPath } from 'node:url';
 import { auditReachability, discoverLibrary } from '../dsh/skills/library.js';
 import { EVIDENCE_DETECTORS, listPresetIds, readPreset, readVocabulary } from '../dsh/skills/composition.js';
 import { CATALOG_PATH, buildCatalog, readCatalog, serializeCatalog } from '../dsh/skills/catalog.js';
+import { SKILL_INDEX_BUDGET, INDEX_END, INDEX_START, buildIndexBlock } from '../dsh/skills/agent-index.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 /** The entry name a directory or file contributes, without its suffix or any parent path. */
@@ -206,6 +207,23 @@ export function verifySkillLibrary(options = {}) {
 
   // The committed catalog is generated from the library, so a mismatch means it is
   // stale, not authoritative. Validate it and require it to be byte-fresh.
+  // The agent can only pick a skill it can see, so the index AGENTS.md carries must
+  // exist, must match the library, and must fit its budget. A stale index is how a
+  // new skill becomes invisible even though every other check is green.
+  {
+    const agentsFile = path.join(packageRoot, 'AGENTS.md');
+    const agentsText = fs.existsSync(agentsFile) ? fs.readFileSync(agentsFile, 'utf8') : '';
+    const block = buildIndexBlock([...library.skills.values()].map((entry) => ({ name: entry.name, description: entry.description })));
+    if (!agentsText.includes(INDEX_START) || !agentsText.includes(INDEX_END)) {
+      failures.push('AGENTS.md carries no skill index (run: npm run skills:catalog)');
+    } else if (!agentsText.includes(block)) {
+      failures.push('AGENTS.md skill index is stale (run: npm run skills:catalog)');
+    }
+    if (block.length > SKILL_INDEX_BUDGET) {
+      failures.push(`AGENTS.md skill index is ${block.length} characters, over its ${SKILL_INDEX_BUDGET} budget`);
+    }
+  }
+
   const catalogState = verifyCatalog(packageRoot, library, workspaceRoot === '');
   failures.push(...catalogState.failures);
   warnings.push(...catalogState.warnings);
